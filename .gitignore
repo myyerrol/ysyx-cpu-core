@@ -11,3 +11,5 @@
 !.gitignore
 !init.sh
 /fceux-am
+
+*.out
