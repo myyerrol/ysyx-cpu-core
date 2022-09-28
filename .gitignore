@@ -12,5 +12,5 @@
 !init.sh
 /fceux-am
 
-!/pa
+!/pa/*
 *.out
