@@ -1,5 +1,5 @@
-*.*
-*
+# *.*
+# *
 !*/
 !/nemu/*
 !/nexus-am/*
@@ -11,3 +11,6 @@
 !.gitignore
 !init.sh
 /fceux-am
+
+!/pa/*
+*.out
