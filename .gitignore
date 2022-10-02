@@ -12,6 +12,7 @@
 !init.sh
 /fceux-am
 
+obj_dir/
 !/pa/*
 *.out
-obj_dir/
+*.vcd
