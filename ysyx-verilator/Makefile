@@ -12,11 +12,22 @@ endif
 .PHONY:
 	clean
 
-default:
-	$(VERILATOR) -cc --exe --build -j top.v top_main.cpp
+default: build_top
 
-run:
-	obj_dir/Vtop
+build_top:
+	$(VERILATOR) -cc --exe --build -j top.v top.cpp -o top
+
+build_top_vcd:
+	$(VERILATOR) -cc --exe --build -j top.v top_vcd.cpp -o top_vcd --trace
+
+run_top:
+	obj_dir/top
+
+run_top_vcd:
+	obj_dir/top_vcd
+
+run_sim:
+	gtkwave wave.vcd
 
 clean:
 	-rm -rf obj_dir
