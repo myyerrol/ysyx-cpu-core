@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include <verilated.h>
+
 #include "Vtop.h"
 
 int main(int argc, char** argv, char** env) {
@@ -20,4 +21,7 @@ int main(int argc, char** argv, char** env) {
         printf("a = %d, b = %d, f = %d\n", a, b, top->f);
         assert(top->f == (a ^ b));
     }
+
+    delete top;
+    return 0;
 }
