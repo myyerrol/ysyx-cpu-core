@@ -17,3 +17,4 @@ obj_dir/
 *.out
 *.vcd
 *.swp
+/nvboard
