@@ -14,3 +14,4 @@
 
 !/pa/*
 *.out
+obj_dir/
