@@ -12,9 +12,9 @@
 !init.sh
 /fceux-am
 
+build/
+nvboard/
 obj_dir/
-!/pa/*
 *.out
 *.vcd
 *.swp
-/nvboard
