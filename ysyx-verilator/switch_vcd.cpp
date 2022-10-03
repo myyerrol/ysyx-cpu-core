@@ -5,35 +5,35 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
-#include "Vtop.h"
+#include "Vswitch.h"
 
 int main(int argc, char** argv, char** env) {
     VerilatedContext* contextp = new VerilatedContext;
     contextp->commandArgs(argc, argv);
-    Vtop* top = new Vtop{
+    Vswitch* switchp = new Vswitch{
         contextp
     };
 
     VerilatedVcdC* tfp = new VerilatedVcdC;
     contextp->traceEverOn(true);
-    top->trace(tfp, 0);
+    switchp->trace(tfp, 0);
     tfp->open("wave.vcd");
 
     while (!contextp->gotFinish()) {
         int a = rand() & 1;
         int b = rand() & 1;
-        top->a = a;
-        top->b = b;
-        top->eval();
-        printf("a = %d, b = %d, f = %d\n", a, b, top->f);
+        switchp->a = a;
+        switchp->b = b;
+        switchp->eval();
+        printf("a = %d, b = %d, f = %d\n", a, b, switchp->f);
 
         tfp->dump(contextp->time());
         contextp->timeInc(1);
 
-        assert(top->f == (a ^ b));
+        assert(switchp->f == (a ^ b));
     }
 
-    delete top;
+    delete switchp;
     tfp->close();
     delete contextp;
     return 0;

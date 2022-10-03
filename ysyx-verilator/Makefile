@@ -10,24 +10,27 @@ else
 endif
 
 .PHONY:
-	clean
+	default clean
 
-default: build_top
+default: build_switch
 
-build_top:
-	$(VERILATOR) -cc --exe --build -j top.v top.cpp -o top
+build_switch:
+	$(VERILATOR) -cc --exe --build -j switch.v switch.cpp -o switch
 
-build_top_vcd:
-	$(VERILATOR) -cc --exe --build -j top.v top_vcd.cpp -o top_vcd --trace
+build_switch_vcd:
+	$(VERILATOR) -cc --exe --build -j switch.v switch_vcd.cpp -o switch_vcd --trace
 
-run_top:
-	obj_dir/top
+run_switch:
+	obj_dir/switch
 
-run_top_vcd:
-	obj_dir/top_vcd
+run_switch_vcd:
+	obj_dir/switch_vcd
 
 run_sim:
+	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	gtkwave wave.vcd
 
 clean:
 	-rm -rf obj_dir
+
+include ../Makefile

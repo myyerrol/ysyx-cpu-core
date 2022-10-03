@@ -4,24 +4,24 @@
 
 #include <verilated.h>
 
-#include "Vtop.h"
+#include "Vswitch.h"
 
 int main(int argc, char** argv, char** env) {
     if (false && argc && argv && env) {
     }
 
-    Vtop* top = new Vtop;
+    Vswitch* switchp = new Vswitch;
 
     while (!Verilated::gotFinish()) {
         int a = rand() & 1;
         int b = rand() & 1;
-        top->a = a;
-        top->b = b;
-        top->eval();
-        printf("a = %d, b = %d, f = %d\n", a, b, top->f);
-        assert(top->f == (a ^ b));
+        switchp->a = a;
+        switchp->b = b;
+        switchp->eval();
+        printf("a = %d, b = %d, f = %d\n", a, b, switchp->f);
+        assert(switchp->f == (a ^ b));
     }
 
-    delete top;
+    delete switchp;
     return 0;
 }
