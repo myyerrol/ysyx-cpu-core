@@ -9,8 +9,7 @@ else
     VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 endif
 
-.PHONY:
-	default clean
+.PHONY: default clean
 
 default: build_switch
 
