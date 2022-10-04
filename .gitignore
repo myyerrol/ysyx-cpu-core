@@ -11,9 +11,9 @@
 !.gitignore
 !init.sh
 /fceux-am
+/nvboard
 
 build/
-nvboard/
 obj_dir/
 *.out
 *.vcd
