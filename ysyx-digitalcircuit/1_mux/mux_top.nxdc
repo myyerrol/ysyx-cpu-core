@@ -1,0 +1,8 @@
+top=mux_top
+
+x0 (SW3, SW2)
+x1 (SW5, SW4)
+x2 (SW7, SW6)
+x3 (SW9, SW8)
+y  (SW1, SW0)
+f  (LD1, LD0)
