@@ -1,0 +1,6 @@
+top=encoder_top
+
+i_en SW8
+i_num (SW7, SW6, SW5, SW4, SW3, SW2, SW1, SW0)
+o_num (LD3, LD2, LD1, LD0)
+o_seg (SEG0A, SEG0B, SEG0C, SEG0D, SEG0E, SEG0F, SEG0G)
