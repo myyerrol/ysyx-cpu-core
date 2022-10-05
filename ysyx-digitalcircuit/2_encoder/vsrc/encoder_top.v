@@ -5,13 +5,13 @@ module encoder_top (
     output reg  [6:0] o_seg
 );
 
-    encoder_8to4 encoder_8to4_inst(
+    encoder_8to4 encoder_8to4_inst0(
         .i_en(i_en),
         .i_num(i_num),
         .o_num(o_num)
     );
 
-    encoder_seg encoder_seg_inst(
+    seg seg_inst0(
         .i_num({ 1'b0, o_num[2:0]}),
         .o_seg(o_seg)
     );

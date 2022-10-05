@@ -1,4 +1,4 @@
-module counter_seg (
+module seg (
     input  wire [3:0] i_num,
     output reg  [6:0] o_seg
 );

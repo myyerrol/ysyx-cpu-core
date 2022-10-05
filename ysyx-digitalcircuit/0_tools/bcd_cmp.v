@@ -1,4 +1,4 @@
-module counter_bcd_cmp(
+module bcd_cmp(
     input  wire [3:0] i_cmp,
     output reg  [3:0] o_cmp
 );

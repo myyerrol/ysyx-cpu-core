@@ -15,15 +15,15 @@ module counter_top(
         .i_ctr(i_ctr),
         .o_num(t_num));
 
-    counter_bcd counter_bcd_inst0(
+    bcd bcd_inst0(
         .i_bin(t_num),
         .o_bcd(t_bcd));
 
-    counter_seg conter_seg_inst0(
+    seg seg_inst0(
         .i_num(t_bcd[3:0]),
         .o_seg(o_seg0));
 
-    counter_seg conter_seg_inst1(
+    seg seg_inst1(
         .i_num(t_bcd[7:4]),
         .o_seg(o_seg1));
 
