@@ -1,0 +1,6 @@
+top=shifter_top
+
+i_clk BTNC
+o_num (LD7, LD6, LD5, LD4, LD3, LD2, LD1, LD0)
+o_seg0 (SEG0A, SEG0B, SEG0C, SEG0D, SEG0E, SEG0F, SEG0G)
+o_seg1 (SEG1A, SEG1B, SEG1C, SEG1D, SEG1E, SEG1F, SEG1G)
