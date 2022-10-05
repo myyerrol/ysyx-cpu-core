@@ -1,0 +1,7 @@
+top=regs_top
+
+i_wt_en BTNC
+i_data (SW7, SW6, SW5, SW4, SW3, SW2, SW1, SW0)
+i_data_addr (SW11, SW10, SW9, SW8)
+o_data_addr (SW15, SW14, SW13, SW12)
+o_data (LD7, LD6, LD5, LD4, LD3, LD2, LD1, LD0)
