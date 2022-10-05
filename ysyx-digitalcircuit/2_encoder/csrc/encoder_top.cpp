@@ -3,7 +3,7 @@
 
 static TOP_NAME dut;
 
-void nvboard_bind_all_pins(Vencoder_top* encodertop);
+void nvboard_bind_all_pins(Vencoder_top* encoder_top);
 
 int main() {
     nvboard_bind_all_pins(&dut);

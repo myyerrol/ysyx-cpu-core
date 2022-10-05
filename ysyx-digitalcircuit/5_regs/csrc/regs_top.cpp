@@ -3,7 +3,7 @@
 
 static TOP_NAME dut;
 
-void nvboard_bind_all_pins(Vregs_top* regstop);
+void nvboard_bind_all_pins(Vregs_top* regs_top);
 
 static void simple_cycle() {
     dut.i_clk = 0;
