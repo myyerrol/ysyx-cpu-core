@@ -4,9 +4,9 @@ module ps2_keyboard(
     input wire [0:0] i_ps2_clk,
     input wire [0:0] i_ps2_data,
     input wire [0:0] i_nextdata_n,
-    output reg [7:0] o_data;
-    output reg [0:0] o_ready;
-    output reg [0:0] o_overflow;
+    output reg [7:0] o_data,
+    output reg [0:0] o_ready,
+    output reg [0:0] o_overflow
 );
 
     reg [9:0] t_buffer;
@@ -47,7 +47,7 @@ module ps2_keyboard(
             if (t_sampling) begin
                 // 从缓冲区获取数据并进行处理
                 if (t_ps2_data_count == 4'd10) begin
-                    if ((t_buffer[0] == 0) &&                   // 起始位
+                    if ((t_buffer[0] == 1'b0) &&                // 起始位
                         (i_ps2_data)       &&                   // 停止位
                         (^t_buffer[9:1])) begin                 // 校验位
                         t_fifo[t_fifo_wt_ptr] <= t_buffer[8:1]; // 扫描码
