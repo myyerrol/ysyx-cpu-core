@@ -4,9 +4,10 @@ module ps2_keyboard(
     input wire [0:0] i_ps2_clk,
     input wire [0:0] i_ps2_data,
     input wire [0:0] i_nextdata_n,
-    output reg [7:0] o_data,
-    output reg [0:0] o_ready,
-    output reg [0:0] o_overflow
+    output reg [7:0] o_ps2_data,
+    output reg [0:0] o_ps2_ready,
+    output reg [0:0] o_ps2_overflow,
+    output reg [7:0] o_ps2_count
 );
 
     reg [9:0] t_buffer;
@@ -27,37 +28,47 @@ module ps2_keyboard(
 
     always @(posedge i_clk) begin
         if (i_clr_n == 1'b0) begin
-            o_overflow <= 0;
-            o_ready <= 0;
-            t_fifo_wt_ptr <= 0;
-            t_fifo_rd_ptr <= 0;
-            t_ps2_data_count <= 0;
+            o_ps2_overflow <= 1'b0;
+            o_ps2_ready <= 1'b0;
+            o_ps2_count <= 8'b0;
+            t_fifo_wt_ptr <= 3'b0;
+            t_fifo_rd_ptr <= 3'b0;
+            t_ps2_data_count <= 4'b0;
         end
         else begin
             // 读取数据
-            if (o_ready) begin
+            if (o_ps2_ready == 1'b1) begin
                 if (i_nextdata_n == 1'b0) begin
                     t_fifo_rd_ptr <= t_fifo_rd_ptr + 3'b1;
-                    if (t_fifo_wt_ptr == (t_fifo_rd_ptr + 1'b1)) begin
-                        o_ready <= 1'b0;
+                    if (t_fifo_wt_ptr == (t_fifo_rd_ptr + 3'b1)) begin
+                        o_ps2_ready <= 1'b0;
                     end
                 end
             end
             // 采集数据
-            if (t_sampling) begin
+            if (t_sampling == 1'b1) begin
                 // 从缓冲区获取数据并进行处理
                 if (t_ps2_data_count == 4'd10) begin
                     if ((t_buffer[0] == 1'b0) &&                // 起始位
-                        (i_ps2_data)       &&                   // 停止位
+                        (i_ps2_data == 1'b1)  &&                // 停止位
                         (^t_buffer[9:1])) begin                 // 校验位
-                        t_fifo[t_fifo_wt_ptr] <= t_buffer[8:1]; // 扫描码
+                        t_fifo[t_fifo_wt_ptr] <= t_buffer[8:1];
+
+                        if (t_buffer[8:1] == 8'hf0) begin
+                            o_ps2_count <= o_ps2_count + 1'b1;
+                            t_fifo[t_fifo_wt_ptr] <= 8'b0;
+                        end
+                        else begin
+                        end
+
                         $display("scan code: %x", t_buffer[8:1]);
                         t_fifo_wt_ptr <= t_fifo_wt_ptr + 3'b1;
-                        o_ready <= 1'b1;
-                        o_overflow <= o_overflow |
-                                     (t_fifo_rd_ptr == (t_fifo_wt_ptr + 3'b1));
+                        o_ps2_ready <= 1'b1;
+                        o_ps2_overflow <=
+                            o_ps2_overflow |
+                            (t_fifo_rd_ptr == (t_fifo_wt_ptr + 3'b1));
                     end
-                    t_ps2_data_count <= 0;
+                    t_ps2_data_count <= 4'b0;
                 end
                 // 将数据存储到缓冲区
                 else begin
@@ -68,6 +79,6 @@ module ps2_keyboard(
         end
     end
 
-    assign o_data = t_fifo[t_fifo_rd_ptr];
+    assign o_ps2_data = t_fifo[t_fifo_rd_ptr];
 
 endmodule
