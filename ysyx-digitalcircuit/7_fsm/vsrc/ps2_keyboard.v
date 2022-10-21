@@ -17,7 +17,7 @@ module ps2_keyboard(
     reg [3:0] t_ps2_data_count;
     reg [2:0] t_ps2_clk_sync;
 
-    // 通过向左移位的方式每次将最新的i_ps2_clk保存在最低位， 此时t_ps2_clk_sync从低到高
+    // 通过向左移位的方式每次将最新的i_ps2_clk保存在最低位，此时t_ps2_clk_sync从低到高
     // 依次保存有i_ps2_clk最新的3个数值
     always @(posedge i_clk) begin
         t_ps2_clk_sync <=  { t_ps2_clk_sync[1:0], i_ps2_clk };
@@ -52,16 +52,14 @@ module ps2_keyboard(
                     if ((t_buffer[0] == 1'b0) &&                // 起始位
                         (i_ps2_data == 1'b1)  &&                // 停止位
                         (^t_buffer[9:1])) begin                 // 校验位
+                        $display("scan code: %x", t_buffer[8:1]);
                         t_fifo[t_fifo_wt_ptr] <= t_buffer[8:1];
-
                         if (t_buffer[8:1] == 8'hf0) begin
                             o_ps2_count <= o_ps2_count + 1'b1;
-                            t_fifo[t_fifo_wt_ptr] <= 8'b0;
+                            // t_fifo[t_fifo_wt_ptr] <= 8'b0;
                         end
                         else begin
                         end
-
-                        $display("scan code: %x", t_buffer[8:1]);
                         t_fifo_wt_ptr <= t_fifo_wt_ptr + 3'b1;
                         o_ps2_ready <= 1'b1;
                         o_ps2_overflow <=
