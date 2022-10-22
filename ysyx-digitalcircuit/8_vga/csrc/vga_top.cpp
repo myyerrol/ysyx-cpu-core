@@ -5,7 +5,7 @@ static TOP_NAME dut;
 
 void nvboard_bind_all_pins(Vvga_top* vga_top);
 
-static void simple_cycle() {
+static void single_cycle() {
     dut.i_clk = 0;
     dut.eval();
     dut.i_clk = 1;
@@ -13,10 +13,11 @@ static void simple_cycle() {
 }
 
 static void reset(int n) {
-    dut.i_clr_n = 0;
+    dut.i_rst = 1;
     while (n-- > 0) {
+        single_cycle();
     }
-    dut.i_clr_n = 1;
+    dut.i_rst = 0;
 }
 
 int main() {
@@ -27,7 +28,7 @@ int main() {
 
     while(1) {
         nvboard_update();
-        simple_cycle();
+        single_cycle();
     }
 
     nvboard_quit();
