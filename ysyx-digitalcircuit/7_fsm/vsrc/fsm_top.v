@@ -13,9 +13,8 @@ module fsm_top(
     output reg [6:0] o_seg5
 );
 
-    reg [7:0] t_ps2_data    = 8'b0;
-    reg [7:0] t_ps2_count   = 8'b0;
-    // reg [0:0] t_ps2_release = 1'b0;
+    reg [7:0] t_ps2_data  = 8'b0;
+    reg [7:0] t_ps2_count = 8'b0;
 
     ps2_keyboard ps2_keyboard_inst0(
         .i_clk(i_clk),

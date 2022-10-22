@@ -56,7 +56,6 @@ module ps2_keyboard(
                         t_fifo[t_fifo_wt_ptr] <= t_buffer[8:1];
                         if (t_buffer[8:1] == 8'hf0) begin
                             o_ps2_count <= o_ps2_count + 1'b1;
-                            // t_fifo[t_fifo_wt_ptr] <= 8'b0;
                         end
                         else begin
                         end
