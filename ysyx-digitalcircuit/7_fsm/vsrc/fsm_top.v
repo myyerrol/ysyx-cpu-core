@@ -1,16 +1,16 @@
 module fsm_top(
-    input wire [0:0] i_clk,
-    input wire [0:0] i_clr_n,
-    input wire [0:0] i_ps2_clk,
-    input wire [0:0] i_ps2_data,
-    output reg [0:0] o_ps2_ready,
-    output reg [0:0] o_ps2_overflow,
-    output reg [6:0] o_seg0,
-    output reg [6:0] o_seg1,
-    output reg [6:0] o_seg2,
-    output reg [6:0] o_seg3,
-    output reg [6:0] o_seg4,
-    output reg [6:0] o_seg5
+    input  wire [0:0] i_clk,
+    input  wire [0:0] i_clr_n,
+    input  wire [0:0] i_ps2_clk,
+    input  wire [0:0] i_ps2_data,
+    output reg  [0:0] o_ps2_ready,
+    output reg  [0:0] o_ps2_overflow,
+    output reg  [6:0] o_seg0,
+    output reg  [6:0] o_seg1,
+    output reg  [6:0] o_seg2,
+    output reg  [6:0] o_seg3,
+    output reg  [6:0] o_seg4,
+    output reg  [6:0] o_seg5
 );
 
     reg [7:0] t_ps2_data  = 8'b0;

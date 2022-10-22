@@ -1,13 +1,13 @@
 module ps2_keyboard(
-    input wire [0:0] i_clk,
-    input wire [0:0] i_clr_n,
-    input wire [0:0] i_ps2_clk,
-    input wire [0:0] i_ps2_data,
-    input wire [0:0] i_nextdata_n,
-    output reg [7:0] o_ps2_data,
-    output reg [0:0] o_ps2_ready,
-    output reg [0:0] o_ps2_overflow,
-    output reg [7:0] o_ps2_count
+    input  wire [0:0] i_clk,
+    input  wire [0:0] i_clr_n,
+    input  wire [0:0] i_ps2_clk,
+    input  wire [0:0] i_ps2_data,
+    input  wire [0:0] i_nextdata_n,
+    output reg  [7:0] o_ps2_data,
+    output reg  [0:0] o_ps2_ready,
+    output reg  [0:0] o_ps2_overflow,
+    output reg  [7:0] o_ps2_count
 );
 
     reg [9:0] t_buffer;
