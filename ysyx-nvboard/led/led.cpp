@@ -5,7 +5,7 @@ static TOP_NAME dut;
 
 void nvboard_bind_all_pins(Vled* led);
 
-static void simple_cycle() {
+static void single_cycle() {
     dut.clk = 0;
     dut.eval();
     dut.clk = 1;
@@ -15,7 +15,7 @@ static void simple_cycle() {
 static void reset(int n) {
     dut.rst = 1;
     while (n-- > 0) {
-        simple_cycle();
+        single_cycle();
     }
     dut.rst = 0;
 }
@@ -28,7 +28,7 @@ int main() {
 
     while(1) {
         nvboard_update();
-        simple_cycle();
+        single_cycle();
     }
 
     nvboard_quit();
