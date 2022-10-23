@@ -13,9 +13,7 @@ module regs #(
     reg [REGS_WIDTH-1:0] regs[(2**REGS_WIDTH_ADDR)-1:0];
 
     initial begin
-        $readmemb(
-            "/home/myyerrol/Workspaces/ysyx-workbench/ysyx-digitalcircuit/5_regs/mem.txt",
-            regs);
+        $readmemb("mem.txt", regs);
     end
 
     always @(posedge i_clk) begin
