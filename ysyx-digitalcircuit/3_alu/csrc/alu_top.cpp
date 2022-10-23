@@ -3,7 +3,7 @@
 
 static TOP_NAME dut;
 
-void nvboard_bind_all_pins(Valu_top* mux_top);
+void nvboard_bind_all_pins(Valu_top* alu_top);
 
 int main() {
     nvboard_bind_all_pins(&dut);
