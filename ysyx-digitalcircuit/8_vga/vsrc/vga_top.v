@@ -13,7 +13,7 @@ module vga_top(
     wire [9:0]  t_h_addr;
     wire [9:0]  t_v_addr;
 
-    vga_ctrl vga_ctrl_inst(
+    vga_ctrl vga_ctrl_inst0(
         .i_pclk(i_clk),
         .i_reset(i_rst),
         .i_vga_data(t_vga_data),
@@ -27,7 +27,7 @@ module vga_top(
         .o_vga_b(o_vga_b)
     );
 
-    vga_mem vga_mem_inst(
+    vga_mem vga_mem_inst0(
         .i_h_addr(t_h_addr),
         .i_v_addr(t_v_addr[8:0]),
         .o_vga_data(t_vga_data)

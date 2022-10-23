@@ -34,7 +34,7 @@ module vga_ctrl (
             y_cnt <= 1;
         end
         else begin
-            if(x_cnt == h_total) begin
+            if (x_cnt == h_total) begin
                 x_cnt <= 1;
                 if (y_cnt == v_total) begin
                     y_cnt <= 1;
@@ -56,7 +56,7 @@ module vga_ctrl (
     assign h_valid = (x_cnt > h_active) & (x_cnt <= h_backporch);
     assign v_valid = (y_cnt > v_active) & (y_cnt <= v_backporch);
     assign o_valid = h_valid & v_valid;
-    // 计算当前有效像素坐标
+    // 计算有效像素坐标
     assign o_h_addr = h_valid ? (x_cnt - 10'd145) : 10'd0;
     assign o_v_addr = v_valid ? (y_cnt - 10'd36) : 10'd0;
     // 设置输出的颜色值
