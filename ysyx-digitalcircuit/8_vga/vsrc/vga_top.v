@@ -1,7 +1,6 @@
 module vga_top(
     input  wire [0:0] i_clk,
     input  wire [0:0] i_rst,
-    output wire [0:0] o_vga_clk,
     output wire [0:0] o_vga_hsync,
     output wire [0:0] o_vga_vsync,
     output wire [0:0] o_vga_blank_n,
@@ -10,11 +9,9 @@ module vga_top(
     output wire [7:0] o_vga_b
 );
 
-    assign o_vga_clk = i_clk;
-
+    wire [23:0] t_vga_data;
     wire [9:0]  t_h_addr;
     wire [9:0]  t_v_addr;
-    wire [23:0] t_vga_data;
 
     vga_ctrl vga_ctrl_inst(
         .i_pclk(i_clk),
