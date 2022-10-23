@@ -1,4 +1,4 @@
-module fsm_top(
+module ps2_top(
     input  wire [0:0] i_clk,
     input  wire [0:0] i_clr_n,
     input  wire [0:0] i_ps2_clk,

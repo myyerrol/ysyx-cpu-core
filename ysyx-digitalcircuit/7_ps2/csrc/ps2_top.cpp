@@ -1,9 +1,9 @@
 #include <nvboard.h>
-#include "Vfsm_top.h"
+#include "Vps2_top.h"
 
 static TOP_NAME dut;
 
-void nvboard_bind_all_pins(Vfsm_top* fsm_top);
+void nvboard_bind_all_pins(Vps2_top* fsm_top);
 
 static void single_cycle() {
     dut.i_clk = 0;

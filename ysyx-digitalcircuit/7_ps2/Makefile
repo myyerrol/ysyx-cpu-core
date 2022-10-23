@@ -1,5 +1,5 @@
-TOPNAME = fsm_top
-NXDC_FILES = fsm_top.nxdc
+TOPNAME = ps2_top
+NXDC_FILES = ps2_top.nxdc
 INC_PATH ?=
 
 VERILATOR = verilator

@@ -1,4 +1,4 @@
-top=fsm_top
+top=ps2_top
 
 i_ps2_clk PS2_CLK
 i_ps2_data PS2_DAT
