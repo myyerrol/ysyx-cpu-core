@@ -1,0 +1,9 @@
+top=alu_top
+
+i_func (SW2, SW1, SW0)
+i_num_a (SW7, SW6, SW5, SW4)
+i_num_b (SW11, SW10, SW9, SW8)
+o_num_c (LD3, LD2, LD1, LD0)
+o_num_carry LD4
+o_num_overflow LD5
+o_num_zero LD6
