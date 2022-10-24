@@ -18,3 +18,4 @@ obj_dir/
 *.out
 *.vcd
 *.swp
+/am-kernels
