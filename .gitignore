@@ -12,10 +12,10 @@
 !init.sh
 /fceux-am
 /nvboard
+/am-kernels
 
 build/
 obj_dir/
 *.out
 *.vcd
 *.swp
-/am-kernels
