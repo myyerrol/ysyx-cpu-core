@@ -47,13 +47,22 @@ static int cmd_c(char *args) {
   return 0;
 }
 
-
 static int cmd_q(char *args) {
   set_nemu_state(NEMU_QUIT, 0, 0);
   return -1;
 }
 
 static int cmd_help(char *args);
+
+static int cmd_si(char *args) {
+  char *args_t = strtok(args, " ");
+  uint64_t n = 1;
+  if (args_t != NULL) {
+    n = atol(args_t);
+  }
+  cpu_exec(n);
+  return 0;
+}
 
 static struct {
   const char *name;
@@ -65,7 +74,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-
+  { "si", "Step one instruction exactly", cmd_si }
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -117,6 +126,7 @@ void sdb_mainloop() {
     if (args >= str_end) {
       args = NULL;
     }
+    Log("command args: %s", args);
 
 #ifdef CONFIG_DEVICE
     extern void sdl_clear_event_queue();
