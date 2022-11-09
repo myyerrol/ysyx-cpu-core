@@ -24,6 +24,18 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
+  char *space_l = "          ";
+  char *space_s = "         ";
+  char *space = space_l;
+  for (uint8_t i = 0; i < sizeof(regs) / sizeof(regs[0]); i++) {
+    if (strcmp(regs[i], "s10") == 0 || strcmp(regs[i], "s11") == 0) {
+      space = space_s;
+    }
+    else {
+      space = space_l;
+    }
+    printf("%s:%s0x%lx\n", regs[i], space, cpu.gpr[i]);
+  }
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {

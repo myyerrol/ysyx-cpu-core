@@ -64,6 +64,17 @@ static int cmd_si(char *args) {
   return 0;
 }
 
+static int cmd_info(char *args) {
+  char *args_t = strtok(args, " ");
+  if (args_t != NULL) {
+    printf("%s\n", args_t);
+    if (strcmp(args_t, "r") == 0) {
+      isa_reg_display();
+    }
+  }
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -74,7 +85,8 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-  { "si", "Step one instruction exactly", cmd_si }
+  { "si", "Step one instruction exactly", cmd_si },
+  { "info", "Generic command for showing things about the program being debugged", cmd_info }
 };
 
 #define NR_CMD ARRLEN(cmd_table)
