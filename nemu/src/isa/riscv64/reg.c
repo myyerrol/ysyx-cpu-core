@@ -24,25 +24,25 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
-  char *space_l = "          ";
-  char *space_s = "         ";
-  char *space = space_l;
+  char *space = " ";
+  char *flag  = "";
   for (uint8_t i = 0; i < sizeof(regs) / sizeof(regs[0]); i++) {
     if (strcmp(regs[i], "s10") == 0 || strcmp(regs[i], "s11") == 0) {
-      space = space_s;
+      space = "";
     }
     else {
-      space = space_l;
+      space = " ";
     }
 
     word_t gpr = cpu.gpr[i];
     if (gpr != 0) {
-      // printf("Welcome to %s-NEMU!\n", ANSI_FMT(str(__GUEST_ISA__), ANSI_FG_YELLOW ANSI_BG_RED));
-      printf("%s:%s0x%s\n", regs[i], space, ANSI_FMT(str(gpr), ANSI_FG_YELLOW ANSI_BG_RED));
+      flag = ANSI_FMT("[x]", ANSI_FG_GREEN);
     }
     else {
-      printf("%s:%s0x%016lx\n", regs[i], space, gpr);
+      flag = "";
     }
+
+    printf("%s%s     =     0x%016lx%s\n", space, regs[i], gpr, flag);
   }
 }
 
