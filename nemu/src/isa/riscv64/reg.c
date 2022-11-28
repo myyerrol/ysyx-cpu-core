@@ -34,7 +34,15 @@ void isa_reg_display() {
     else {
       space = space_l;
     }
-    printf("%s:%s0x%lx\n", regs[i], space, cpu.gpr[i]);
+
+    word_t gpr = cpu.gpr[i];
+    if (gpr != 0) {
+      // printf("Welcome to %s-NEMU!\n", ANSI_FMT(str(__GUEST_ISA__), ANSI_FG_YELLOW ANSI_BG_RED));
+      printf("%s:%s0x%s\n", regs[i], space, ANSI_FMT(str(gpr), ANSI_FG_YELLOW ANSI_BG_RED));
+    }
+    else {
+      printf("%s:%s0x%016lx\n", regs[i], space, gpr);
+    }
   }
 }
 

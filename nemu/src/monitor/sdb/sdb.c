@@ -19,6 +19,8 @@
 #include <readline/history.h>
 #include "sdb.h"
 
+#include <memory/paddr.h>
+
 static int is_batch_mode = false;
 
 void init_regex();
@@ -67,9 +69,25 @@ static int cmd_si(char *args) {
 static int cmd_info(char *args) {
   char *args_t = strtok(args, " ");
   if (args_t != NULL) {
-    printf("%s\n", args_t);
     if (strcmp(args_t, "r") == 0) {
       isa_reg_display();
+    }
+  }
+  return 0;
+}
+
+static int cmd_x(char *args) {
+  char *args_n = strtok(args, " ");
+  char *args_addr = strtok(NULL, " ");
+  Log("%s", args_n);
+  Log("%s", args_addr);
+  if (args_n != NULL && args_addr != NULL) {
+    uint64_t n = atol(args_n);
+    uint64_t addr = atol(args_addr);
+    Log("%ld", n);
+    Log("%ld", addr);
+    for (uint64_t i = 0; i < n; i++) {
+      printf("%lx\n", paddr_read(addr, 8));
     }
   }
   return 0;
@@ -86,7 +104,8 @@ static struct {
 
   /* TODO: Add more commands */
   { "si", "Step one instruction exactly", cmd_si },
-  { "info", "Generic command for showing things about the program being debugged", cmd_info }
+  { "info", "Generic command for showing things about the program being debugged", cmd_info },
+  { "x", "Address ", cmd_x }
 };
 
 #define NR_CMD ARRLEN(cmd_table)
