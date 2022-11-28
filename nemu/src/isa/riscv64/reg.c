@@ -42,7 +42,7 @@ void isa_reg_display() {
       flag = "";
     }
 
-    printf("%s%s     =     0x%016lx%s\n", space, regs[i], gpr, flag);
+    printf("%s%s     =     0x%016"PRIx64"%s\n", space, regs[i], gpr, flag);
   }
 }
 
