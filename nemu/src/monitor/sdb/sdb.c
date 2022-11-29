@@ -96,15 +96,14 @@ static int cmd_x(char *args) {
   char *args_n = strtok(args, " ");
   char *args_addr = strtok(NULL, " ");
   strrpc(args_addr, "0x", "");
-  Log("%s", args_addr);
   if (args_n != NULL && args_addr != NULL) {
     uint32_t n = atoi(args_n);
     uint32_t addr = strtol(args_addr, NULL, 16);
     for (uint32_t i = 0; i < n; i++) {
-      uint32_t addr_t = addr + i;
       printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
-             addr_t,
-             paddr_read(addr_t, 8));
+             addr,
+             paddr_read(addr, 8));
+      addr = addr + 8;
     }
   }
   return 0;
