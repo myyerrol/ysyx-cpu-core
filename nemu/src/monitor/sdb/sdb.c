@@ -103,7 +103,7 @@ static int cmd_x(char *args) {
       printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
              addr,
              paddr_read(addr, 8));
-      addr = addr + 8;
+      addr = addr + 4;
     }
   }
   return 0;
