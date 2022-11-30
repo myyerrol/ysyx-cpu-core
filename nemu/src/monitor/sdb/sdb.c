@@ -76,36 +76,43 @@ static int cmd_info(char *args) {
   return 0;
 }
 
-static char *strrpc(char *str, char *str_old, char *str_new) {
-  char str_buf[strlen(str)];
-  memset(str_buf, 0, sizeof(str_buf));
-  for (int i = 0; i < strlen(str); i++) {
-    if (!strncmp(str + i, str_old, strlen(str_old))) {
-      strcat(str_buf, str_new);
-      i += strlen(str_old) - 1;
-    }
-    else {
-      strncat(str_buf, str + i, 1);
-    }
-  }
-  strcpy(str, str_buf);
-  return str;
-}
+// static char *strrpc(char *str, char *str_old, char *str_new) {
+//   char str_buf[strlen(str)];
+//   memset(str_buf, 0, sizeof(str_buf));
+//   for (int i = 0; i < strlen(str); i++) {
+//     if (!strncmp(str + i, str_old, strlen(str_old))) {
+//       strcat(str_buf, str_new);
+//       i += strlen(str_old) - 1;
+//     }
+//     else {
+//       strncat(str_buf, str + i, 1);
+//     }
+//   }
+//   strcpy(str, str_buf);
+//   return str;
+// }
 
 static int cmd_x(char *args) {
   char *args_n = strtok(args, " ");
   char *args_addr = strtok(NULL, " ");
-  strrpc(args_addr, "0x", "");
-  if (args_n != NULL && args_addr != NULL) {
-    uint32_t n = atoi(args_n);
-    uint32_t addr = strtol(args_addr, NULL, 16);
-    for (uint32_t i = 0; i < n; i++) {
-      printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
-             addr,
-             paddr_read(addr, 8));
-      addr = addr + 4;
-    }
-  }
+  // strrpc(args_addr, "0x", "");
+  // if (args_n != NULL && args_addr != NULL) {
+  //   uint32_t n = atoi(args_n);
+  //   uint32_t addr = strtol(args_addr, NULL, 16);
+  //   for (uint32_t i = 0; i < n; i++) {
+  //     printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
+  //            addr,
+  //            paddr_read(addr, 8));
+  //     addr = addr + 4;
+  //   }
+  // }
+
+
+  bool *flag = false;
+  uint64_t ret = expr(args_addr, flag);
+  Log("n: %s", args_n);
+  Log("ret: %ld", ret);
+
   return 0;
 }
 

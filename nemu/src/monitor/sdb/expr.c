@@ -24,7 +24,7 @@ enum {
   TK_NOTYPE = 256, TK_EQ,
 
   /* TODO: Add more token types */
-
+  TK_INTEGER
 };
 
 static struct rule {
@@ -39,6 +39,13 @@ static struct rule {
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+
+  {"[0-9]+", TK_INTEGER},
+  {"\\-", '-'},
+  {"\\*", '*'},
+  {"\\/", '/'},
+  {"\\(", '('},
+  {"\\)", ')'}
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -94,8 +101,24 @@ static bool make_token(char *e) {
          * of tokens, some extra actions should be performed.
          */
 
-        switch (rules[i].token_type) {
-          default: TODO();
+        // switch (rules[i].token_type) {
+        //   default: TODO();
+        // }
+
+        Token token;
+        Log("token.type: %d", token.type);
+        token.type = rules[i].token_type;
+        Log("token.type: %d", token.type);
+
+        Log("substr_start: %s", substr_start);
+
+        Log("token.str: %s", token.str);
+        strncpy(token.str, substr_start, substr_len);
+        Log("token.str: %s\n", token.str);
+
+        nr_token++;
+        if (nr_token < 32) {
+          tokens[nr_token + 1] = token;
         }
 
         break;
