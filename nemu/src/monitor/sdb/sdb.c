@@ -107,7 +107,6 @@ static int cmd_x(char *args) {
   //   }
   // }
 
-
   bool *flag = false;
   uint64_t ret = expr(args_addr, flag);
   Log("n: %s", args_n);

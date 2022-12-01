@@ -105,21 +105,22 @@ static bool make_token(char *e) {
         //   default: TODO();
         // }
 
-        Token token;
-        Log("token.type: %d", token.type);
+        Log("substr_start: %s", substr_start);
+
+        Token token = { 0, "" };
         token.type = rules[i].token_type;
         Log("token.type: %d", token.type);
 
-        Log("substr_start: %s", substr_start);
-
-        Log("token.str: %s", token.str);
+        if (substr_len > 32) {
+          substr_len = 32;
+        }
         strncpy(token.str, substr_start, substr_len);
         Log("token.str: %s\n", token.str);
 
-        nr_token++;
         if (nr_token < 32) {
-          tokens[nr_token + 1] = token;
+          tokens[nr_token] = token;
         }
+        nr_token++;
 
         break;
       }
@@ -130,6 +131,12 @@ static bool make_token(char *e) {
       return false;
     }
   }
+
+  // for (int i = 0; i < nr_token; i++) {
+  //   Token token = tokens[i];
+  //   Log("token.type: %d", token.type);
+  //   Log("token.str: %s\n", token.str);
+  // }
 
   return true;
 }
