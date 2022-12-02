@@ -117,7 +117,7 @@ static bool make_token(char *e) {
         strncpy(token.str, substr_start, substr_len);
         Log("token.str: %s\n", token.str);
 
-        if (nr_token < 32) {
+        if (nr_token < ARRLEN(tokens)) {
           tokens[nr_token] = token;
         }
         nr_token++;
@@ -132,15 +132,60 @@ static bool make_token(char *e) {
     }
   }
 
-  // for (int i = 0; i < nr_token; i++) {
-  //   Token token = tokens[i];
-  //   Log("token.type: %d", token.type);
-  //   Log("token.str: %s\n", token.str);
-  // }
-
   return true;
 }
 
+bool check_parentheses(word_t p, word_t q) {
+  char arr[100] = "\0";
+
+  for (int i = p, j = 0; i < q; i++) {
+    Token token = tokens[i];
+    int type = token.type;
+    if (type == '(') {
+      arr[j] = '(';
+      j++;
+    }
+    else if (type == ')') {
+      j--;
+      if (j < 0) {
+        return false;
+      }
+      arr[j] = '0';
+    }
+  }
+
+  if (arr[0] != '(') {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+word_t eval(word_t p, word_t q) {
+  if (p > q) {
+    return 0;
+  }
+  else if (p == q) {
+    return strtol(tokens[p].str, NULL, 10);
+  }
+  else if (check_parentheses(p, q) == true) {
+    return eval(p + 1, q - 1);
+  }
+  else {
+    word_t op = 0;
+    word_t val1 = eval(p, op - 1);
+    word_t val2 = eval(op + 1, q);
+
+    switch (tokens[op].type) {
+      case '+': return val1 + val2;
+      case '-': return val1 - val2;
+      case '*': return val1 * val2;
+      case '/': return val1 / val2;
+      default: assert(0);
+    }
+  }
+}
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
@@ -149,7 +194,7 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+  return eval(0, nr_token);
 
-  return 0;
+  // return 0;
 }
