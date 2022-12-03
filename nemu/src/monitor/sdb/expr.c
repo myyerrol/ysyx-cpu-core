@@ -138,23 +138,32 @@ static bool make_token(char *e) {
 bool check_parentheses(word_t p, word_t q) {
   char arr[100] = "\0";
 
-  for (int i = p, j = 0; i < q; i++) {
+  for (int i = p, j = 0; i <= q; i++) {
     Token token = tokens[i];
     int type = token.type;
+    // 表达式第一个元素必须是左括号
+    if (i == p && type != '(') {
+      return false;
+    }
     if (type == '(') {
       arr[j] = '(';
       j++;
     }
     else if (type == ')') {
       j--;
+      // 表达式第一个括号必须是左括号
       if (j < 0) {
         return false;
       }
       arr[j] = '0';
+      // 表达式第一个左括号必须正好与最后一个右括号匹配
+      if (arr[0] == '0' && i != q) {
+        return false;
+      }
     }
   }
 
-  if (arr[0] != '(') {
+  if (arr[0] == '0') {
     return true;
   }
   else {
@@ -162,7 +171,52 @@ bool check_parentheses(word_t p, word_t q) {
   }
 }
 
+word_t find_op(word_t p, word_t q) {
+  bool flag = false;
+  int type_temp  = 0;
+  int type_index = 0;
+
+  for (int i = p; i <= q; i++) {
+    Token token = tokens[i];
+    int type = token.type;
+    if (type == TK_INTEGER) {
+      continue;;
+    }
+    else if (type == '(') {
+      flag = true;
+    }
+    else if (type == ')') {
+      flag = false;
+    }
+
+    if (flag) {
+      continue;
+    }
+    else {
+      if (type_temp == 0) {
+        type_temp = type;
+        type_index = i;
+      }
+      if (type_temp == '+' || type_temp == '-') {
+        if (type == '+' || type == '-') {
+          type_temp = type;
+          type_index = i;
+        }
+      }
+      else if (type_temp == '*' || type_temp == '/') {
+        if (type == '+' || type == '-' || type == '*' || type == '/') {
+          type_temp = type;
+          type_index = i;
+        }
+      }
+    }
+  }
+
+  return type_index;
+}
+
 word_t eval(word_t p, word_t q) {
+  Log("p: %lu, q: %lu", p, q);
   if (p > q) {
     return 0;
   }
@@ -173,7 +227,7 @@ word_t eval(word_t p, word_t q) {
     return eval(p + 1, q - 1);
   }
   else {
-    word_t op = 0;
+    word_t op = find_op(p, q);
     word_t val1 = eval(p, op - 1);
     word_t val2 = eval(op + 1, q);
 
@@ -194,7 +248,7 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  return eval(0, nr_token);
+  return eval(0, nr_token - 1);
 
   // return 0;
 }
