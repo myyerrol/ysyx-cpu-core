@@ -93,7 +93,8 @@ static int cmd_info(char *args) {
 // }
 
 static int cmd_x(char *args) {
-  char *args_n = strtok(args, " ");
+  // char *args_n = strtok(args, " ");
+  strtok(args, " ");
   char *args_addr = strtok(NULL, " ");
   // strrpc(args_addr, "0x", "");
   // if (args_n != NULL && args_addr != NULL) {
@@ -109,7 +110,6 @@ static int cmd_x(char *args) {
 
   bool *flag = false;
   uint64_t ret = expr(args_addr, flag);
-  Log("n: %s", args_n);
   Log("ret: %ld", ret);
 
   return 0;

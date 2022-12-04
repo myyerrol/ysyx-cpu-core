@@ -50,6 +50,9 @@ static struct rule {
 
 #define NR_REGEX ARRLEN(rules)
 
+#define DEBUG_EXPR_MAKE_TOKEN 0
+#define DEBUG_EXPR_EVAL 1
+
 static regex_t re[NR_REGEX] = {};
 
 /* Rules are used for many times.
@@ -105,17 +108,23 @@ static bool make_token(char *e) {
         //   default: TODO();
         // }
 
+#if DEBUG_EXPR_MAKE_TOKEN
         Log("substr_start: %s", substr_start);
+#endif
 
         Token token = { 0, "" };
         token.type = rules[i].token_type;
+#if DEBUG_EXPR_MAKE_TOKEN
         Log("token.type: %d", token.type);
+#endif
 
         if (substr_len > 32) {
           substr_len = 32;
         }
         strncpy(token.str, substr_start, substr_len);
+#if DEBUG_EXPR_MAKE_TOKEN
         Log("token.str: %s\n", token.str);
+#endif
 
         if (nr_token < ARRLEN(tokens)) {
           tokens[nr_token] = token;
@@ -179,8 +188,9 @@ word_t find_op(word_t p, word_t q) {
   for (int i = p; i <= q; i++) {
     Token token = tokens[i];
     int type = token.type;
-    if (type == TK_INTEGER) {
-      continue;;
+    // 主运算符必须是运算符
+    if (type != '+' && type != '-' && type != '*' && type != "/") {
+      continue;
     }
     else if (type == '(') {
       flag = true;
@@ -188,7 +198,7 @@ word_t find_op(word_t p, word_t q) {
     else if (type == ')') {
       flag = false;
     }
-
+    // 主运算符不会出现在括号里
     if (flag) {
       continue;
     }
@@ -197,16 +207,19 @@ word_t find_op(word_t p, word_t q) {
         type_temp = type;
         type_index = i;
       }
-      if (type_temp == '+' || type_temp == '-') {
-        if (type == '+' || type == '-') {
-          type_temp = type;
-          type_index = i;
+      else {
+        // 主运算符优先级最低，同级别运算符以最后被结合的为准
+        if (type_temp == '+' || type_temp == '-') {
+          if (type == '+' || type == '-') {
+            type_temp = type;
+            type_index = i;
+          }
         }
-      }
-      else if (type_temp == '*' || type_temp == '/') {
-        if (type == '+' || type == '-' || type == '*' || type == '/') {
-          type_temp = type;
-          type_index = i;
+        else if (type_temp == '*' || type_temp == '/') {
+          if (type == '+' || type == '-' || type == '*' || type == '/') {
+            type_temp = type;
+            type_index = i;
+          }
         }
       }
     }
