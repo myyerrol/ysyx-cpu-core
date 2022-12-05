@@ -189,7 +189,7 @@ word_t find_op(word_t p, word_t q) {
     Token token = tokens[i];
     int type = token.type;
     // 主运算符必须是运算符
-    if (type != '+' && type != '-' && type != '*' && type != "/") {
+    if (type == TK_INTEGER) {
       continue;
     }
     else if (type == '(') {
@@ -229,7 +229,6 @@ word_t find_op(word_t p, word_t q) {
 }
 
 word_t eval(word_t p, word_t q) {
-  Log("p: %lu, q: %lu", p, q);
   if (p > q) {
     return 0;
   }
@@ -244,13 +243,38 @@ word_t eval(word_t p, word_t q) {
     word_t val1 = eval(p, op - 1);
     word_t val2 = eval(op + 1, q);
 
+#if DEBUG_EXPR_EVAL
+    Log("op: %s", tokens[op].str);
+    Log("val1: %lu", val1);
+    Log("val2: %lu", val2);
+#endif
+
+    word_t ret = 0;
     switch (tokens[op].type) {
-      case '+': return val1 + val2;
-      case '-': return val1 - val2;
-      case '*': return val1 * val2;
-      case '/': return val1 / val2;
+      case '+': {
+        ret = val1 + val2;
+        break;
+      }
+      case '-': {
+        ret = val1 - val2;
+        break;
+      }
+      case '*': {
+        ret = val1 * val2;
+        break;
+      }
+      case '/': {
+        ret = val1 / val2;
+        break;
+      }
       default: assert(0);
     }
+
+#if DEBUG_EXPR_EVAL
+    Log("ret: %lu\n", ret);
+#endif
+
+    return ret;
   }
 }
 
