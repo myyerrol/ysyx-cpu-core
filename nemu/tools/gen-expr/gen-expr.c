@@ -31,8 +31,77 @@ static char *code_format =
 "  return 0; "
 "}";
 
+int buf_index = 0;
+
+static uint32_t choose(uint32_t n) {
+  uint32_t num = rand() % n;
+  printf("num: %u\n", num);
+  return num;
+}
+
+static void gen_num() {
+  uint32_t num = rand() % 100 + 1;
+  sprintf(buf + buf_index, "%u", num);
+}
+
+static void gen(char str) {
+  char arr[65536] = {};
+  arr[0] = '\0';
+  if (str == '(') {
+    strcpy(arr, buf);
+    buf[0] = '(';
+  }
+  else if (str == ')') {
+    arr[0] = ')';
+  }
+  strcat(buf, arr);
+}
+
+static void gen_rand_op() {
+  uint32_t num = rand() % 4;
+  char op = '+';
+  switch (num) {
+    case 0: {
+      op = '+';
+      break;
+    }
+    case 1: {
+      op = '-';
+      break;
+    }
+    case 2: {
+      op = '*';
+      break;
+    }
+    case 3: {
+      op = '/';
+      break;
+    }
+  }
+  strcat(buf, &op);
+}
+
 static void gen_rand_expr() {
   buf[0] = '\0';
+
+  switch (choose(3)) {
+    case 0: {
+      gen_num();
+      break;
+    }
+    case 1: {
+      gen('(');
+      gen_rand_expr();
+      gen(')');
+      break;;
+    }
+    default: {
+      gen_rand_expr();
+      gen_rand_op();
+      gen_rand_expr();
+      break;
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -60,7 +129,7 @@ int main(int argc, char *argv[]) {
     assert(fp != NULL);
 
     int result;
-    fscanf(fp, "%d", &result);
+    ret = fscanf(fp, "%d", &result);
     pclose(fp);
 
     printf("%u %s\n", result, buf);
