@@ -180,7 +180,7 @@ bool check_parentheses(word_t p, word_t q) {
   }
 }
 
-word_t find_op(word_t p, word_t q) {
+static word_t find_op(word_t p, word_t q) {
   bool flag = false;
   int type_temp  = 0;
   int type_index = 0;
@@ -228,7 +228,7 @@ word_t find_op(word_t p, word_t q) {
   return type_index;
 }
 
-word_t eval(word_t p, word_t q) {
+static word_t eval(word_t p, word_t q) {
   if (p > q) {
     return 0;
   }
