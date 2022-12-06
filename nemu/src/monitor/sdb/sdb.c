@@ -98,8 +98,8 @@ static int cmd_x(char *args) {
   char *args_addr = strtok(NULL, " ");
   // strrpc(args_addr, "0x", "");
   // if (args_n != NULL && args_addr != NULL) {
-  //   uint32_t n = atoi(args_n);
-  //   uint32_t addr = strtol(args_addr, NULL, 16);
+  //   uint32_t n = strtoul(args_n, NULL, 10);
+  //   uint32_t addr = strtoul(args_addr, NULL, 16);
   //   for (uint32_t i = 0; i < n; i++) {
   //     printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
   //            addr,
