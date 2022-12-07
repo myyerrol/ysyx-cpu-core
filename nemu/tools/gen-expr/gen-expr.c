@@ -41,7 +41,10 @@ static uint32_t choose(uint32_t n) {
 
 static void gen_num() {
   uint32_t num = rand() % 100 + 1;
-  sprintf(buf + buf_index, "%u", num);
+  printf("num: %u\n", num);
+  printf("buf len: %lu\n", strlen(buf));
+  sprintf(buf + strlen(buf), "%u", num);
+  printf("buf: %s\n", buf);
 }
 
 static void gen(char str) {
@@ -49,6 +52,7 @@ static void gen(char str) {
   arr[0] = '\0';
   if (str == '(') {
     strcpy(arr, buf);
+    buf[0] = '\0';
     buf[0] = '(';
   }
   else if (str == ')') {
@@ -82,7 +86,7 @@ static void gen_rand_op() {
 }
 
 static void gen_rand_expr() {
-  buf[0] = '\0';
+  // buf[0] = '\0';
 
   switch (choose(3)) {
     case 0: {
@@ -108,9 +112,11 @@ int main(int argc, char *argv[]) {
   int seed = time(0);
   srand(seed);
   int loop = 1;
-  if (argc > 1) {
-    sscanf(argv[1], "%d", &loop);
-  }
+  buf[0] = '\0';
+  // if (argc > 1) {
+  //   sscanf(argv[1], "%d", &loop);
+  // }
+  // loop = 1;
   int i;
   for (i = 0; i < loop; i ++) {
     gen_rand_expr();
