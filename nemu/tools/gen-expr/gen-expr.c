@@ -52,7 +52,7 @@ static void gen(char str) {
   arr[0] = '\0';
   if (str == '(') {
     strcpy(arr, buf);
-    buf[0] = '\0';
+    memset(buf, '\0', strlen(buf));
     buf[0] = '(';
   }
   else if (str == ')') {
@@ -113,10 +113,9 @@ int main(int argc, char *argv[]) {
   srand(seed);
   int loop = 1;
   buf[0] = '\0';
-  // if (argc > 1) {
-  //   sscanf(argv[1], "%d", &loop);
-  // }
-  // loop = 1;
+  if (argc > 1) {
+    sscanf(argv[1], "%d", &loop);
+  }
   int i;
   for (i = 0; i < loop; i ++) {
     gen_rand_expr();
