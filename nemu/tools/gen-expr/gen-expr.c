@@ -44,7 +44,7 @@ static void gen_num() {
   uint32_t num = rand() % 100 + 1;
   sprintf(buf + strlen(buf), "%u", num);
 #if DEBUG_GEN_EXPR
-  printf("buf gen_num: %s\n", buf);
+  printf("buf gen_num    : %s\n", buf);
 #endif
 }
 
@@ -61,7 +61,7 @@ static void gen(char str) {
   }
   strcat(buf, arr);
 #if DEBUG_GEN_EXPR
-  printf("buf gen: %s\n", buf);
+  printf("buf gen        : %s\n", buf);
 #endif
 }
 
@@ -117,12 +117,12 @@ int main(int argc, char *argv[]) {
   int seed = time(0);
   srand(seed);
   int loop = 1;
-  buf[0] = '\0';
   if (argc > 1) {
     sscanf(argv[1], "%d", &loop);
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    memset(buf, '\0', strlen(buf));
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
