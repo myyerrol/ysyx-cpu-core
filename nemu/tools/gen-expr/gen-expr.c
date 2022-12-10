@@ -20,6 +20,8 @@
 #include <assert.h>
 #include <string.h>
 
+#define DEBUG_GEN_EXPR 1
+
 // this should be enough
 static char buf[65536] = {};
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
@@ -35,16 +37,15 @@ int buf_index = 0;
 
 static uint32_t choose(uint32_t n) {
   uint32_t num = rand() % n;
-  printf("num: %u\n", num);
   return num;
 }
 
 static void gen_num() {
   uint32_t num = rand() % 100 + 1;
-  printf("num: %u\n", num);
-  printf("buf len: %lu\n", strlen(buf));
   sprintf(buf + strlen(buf), "%u", num);
-  printf("buf: %s\n", buf);
+#if DEBUG_GEN_EXPR
+  printf("buf gen_num: %s\n", buf);
+#endif
 }
 
 static void gen(char str) {
@@ -59,6 +60,9 @@ static void gen(char str) {
     arr[0] = ')';
   }
   strcat(buf, arr);
+#if DEBUG_GEN_EXPR
+  printf("buf gen: %s\n", buf);
+#endif
 }
 
 static void gen_rand_op() {
@@ -83,11 +87,12 @@ static void gen_rand_op() {
     }
   }
   strcat(buf, &op);
+#if DEBUG_GEN_EXPR
+  printf("buf gen_rand_op: %s\n", buf);
+#endif
 }
 
 static void gen_rand_expr() {
-  // buf[0] = '\0';
-
   switch (choose(3)) {
     case 0: {
       gen_num();
@@ -137,7 +142,7 @@ int main(int argc, char *argv[]) {
     ret = fscanf(fp, "%d", &result);
     pclose(fp);
 
-    printf("%u %s\n", result, buf);
+    printf("%u %s\n\n", result, buf);
   }
   return 0;
 }
