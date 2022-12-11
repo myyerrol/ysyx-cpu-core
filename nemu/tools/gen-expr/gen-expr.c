@@ -21,7 +21,7 @@
 #include <string.h>
 
 #define BUF_LENGTH     65536
-#define DEBUG_GEN_EXPR 0
+#define DEBUG_GEN_EXPR 1
 
 // this should be enough
 static char buf[BUF_LENGTH] = {};
