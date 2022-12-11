@@ -75,3 +75,5 @@ uint64_t get_time();
 
 
 #endif
+
+char *strrpc(char *str, char *str_old, char *str_new);
