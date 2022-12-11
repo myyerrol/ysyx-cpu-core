@@ -19,7 +19,6 @@
 #include <common.h>
 
 // ----------- state -----------
-
 enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };
 
 typedef struct {
@@ -31,11 +30,9 @@ typedef struct {
 extern NEMUState nemu_state;
 
 // ----------- timer -----------
-
 uint64_t get_time();
 
 // ----------- log -----------
-
 #define ANSI_FG_BLACK   "\33[1;30m"
 #define ANSI_FG_RED     "\33[1;31m"
 #define ANSI_FG_GREEN   "\33[1;32m"
@@ -72,8 +69,7 @@ uint64_t get_time();
     printf(__VA_ARGS__); \
     log_write(__VA_ARGS__); \
   } while (0)
-
-
 #endif
 
+// ----------- utils -----------
 char *strrpc(char *str, char *str_old, char *str_new);
