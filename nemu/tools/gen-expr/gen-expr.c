@@ -20,20 +20,65 @@
 #include <assert.h>
 #include <string.h>
 
-#define DEBUG_GEN_EXPR 1
+#define BUF_LENGTH     65536
+#define DEBUG_GEN_EXPR 0
 
 // this should be enough
-static char buf[65536] = {};
-static char code_buf[65536 + 128] = {}; // a little larger than `buf`
+static char buf[BUF_LENGTH] = {};
+static char code_buf[BUF_LENGTH + 128] = {}; // a little larger than `buf`
 static char *code_format =
-"#include <stdio.h>\n"
+"#include <stdio.h>\n "
 "int main() { "
-"  unsigned result = %s; "
-"  printf(\"%%u\", result); "
+"  int a = -1; "
+"  int b = %s; "
+"  if (b > 0) { "
+"    a = b; "
+"  } "
+"  printf(\"%%d\", a); "
 "  return 0; "
 "}";
 
-int buf_index = 0;
+// static char *code_format =
+// "#include <stdio.h>\n"
+// "int main() { "
+// "  unsigned result = %s; "
+// "  printf(\"%%u\", result); "
+// "  return 0; "
+// "}";
+
+static uint32_t calc_expr(int *result_flag) {
+  memset(code_buf, '\0', strlen(code_buf));
+  sprintf(code_buf, code_format, buf);
+
+  FILE *fp = fopen("/tmp/.code.c", "w");
+  assert(fp != NULL);
+  fputs(code_buf, fp);
+  fclose(fp);
+
+  fp = fopen("/tmp/.code_build.txt", "w");
+  assert(fp != NULL);
+  fclose(fp);
+
+  int ret = system(
+    "gcc /tmp/.code.c -Werror -o /tmp/.expr > /tmp/.code_build.txt 2>&1");
+  if (ret != 0) {
+    *result_flag = -1;
+    return 0;
+  }
+
+  fp = popen("/tmp/.expr", "r");
+  assert(fp != NULL);
+
+  int result = 0;
+  ret = fscanf(fp, "%d", &result);
+  pclose(fp);
+  if (result == -1) {
+    *result_flag = -1;
+    return 0;
+  }
+
+  return result;
+}
 
 static uint32_t choose(uint32_t n) {
   uint32_t num = rand() % n;
@@ -116,33 +161,30 @@ static void gen_rand_expr() {
 int main(int argc, char *argv[]) {
   int seed = time(0);
   srand(seed);
+
   int loop = 1;
   if (argc > 1) {
     sscanf(argv[1], "%d", &loop);
   }
-  int i;
-  for (i = 0; i < loop; i ++) {
+
+  // 一直执行循环直到所有计算结果均正确
+  for (int i = 0; i != loop;) {
     memset(buf, '\0', strlen(buf));
     gen_rand_expr();
 
-    sprintf(code_buf, code_format, buf);
+    int result_flag = 0;
+    uint32_t result = calc_expr(&result_flag);
+    // 去除计算结果中无符号整数溢出的情况
+    if (result_flag == -1) {
+      continue;
+    }
+    i++;
 
-    FILE *fp = fopen("/tmp/.code.c", "w");
-    assert(fp != NULL);
-    fputs(code_buf, fp);
-    fclose(fp);
-
-    int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
-    if (ret != 0) continue;
-
-    fp = popen("/tmp/.expr", "r");
-    assert(fp != NULL);
-
-    int result;
-    ret = fscanf(fp, "%d", &result);
-    pclose(fp);
-
+#if DEBUG_GEN_EXPR
     printf("%u %s\n\n", result, buf);
+#else
+    printf("%u %s\n", result, buf);
+#endif
   }
   return 0;
 }
