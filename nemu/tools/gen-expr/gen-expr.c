@@ -37,7 +37,6 @@ static char *code_format =
 "  printf(\"%%d\", a); "
 "  return 0; "
 "}";
-
 // static char *code_format =
 // "#include <stdio.h>\n"
 // "int main() { "
