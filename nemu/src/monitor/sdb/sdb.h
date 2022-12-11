@@ -18,6 +18,7 @@
 
 #include <common.h>
 
-word_t expr(char *e, bool *success);
+word_t expr(char *e, char *r, bool *success);
+word_t expr_test();
 
 #endif

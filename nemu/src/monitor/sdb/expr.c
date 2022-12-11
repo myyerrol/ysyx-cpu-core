@@ -50,8 +50,9 @@ static struct rule {
 
 #define NR_REGEX ARRLEN(rules)
 
+#define BUF_LENGTH            65536
 #define DEBUG_EXPR_MAKE_TOKEN 0
-#define DEBUG_EXPR_EVAL 1
+#define DEBUG_EXPR_EVAL       1
 
 static regex_t re[NR_REGEX] = {};
 
@@ -77,7 +78,7 @@ typedef struct token {
   char str[32];
 } Token;
 
-static Token tokens[32] __attribute__((used)) = {};
+static Token tokens[BUF_LENGTH] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
 
 static bool make_token(char *e) {
@@ -197,6 +198,7 @@ static word_t find_op(word_t p, word_t q) {
     }
     else if (type == ')') {
       flag = false;
+      continue;
     }
     // 主运算符不会出现在括号里
     if (flag) {
@@ -278,12 +280,38 @@ static word_t eval(word_t p, word_t q) {
   }
 }
 
-word_t expr(char *e, bool *success) {
+word_t expr(char *e, char *r, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  return eval(0, nr_token - 1);
+  word_t ret = eval(0, nr_token - 1);
+  if (r != NULL) {
+    if (ret == strtoul(r, NULL, 10)) {
+      *success = true;
+    }
+    else {
+      *success = false;
+    }
+  }
+
+  return ret;
+}
+
+word_t expr_test() {
+  char str[BUF_LENGTH + 1];
+  FILE *fp = fopen("./tools/gen-expr/input.txt", "r");
+  assert(fp != NULL);
+  while (fgets(str, BUF_LENGTH, fp) != NULL) {
+    char *input_ret = strtok(str, " ");
+    char *input_expr = strrpc(strtok(NULL, " "), "\n", "");
+    bool flag = false;
+    word_t ret = expr(input_expr, input_ret, &flag);
+    printf("success: %d, ret: %ld\n", flag, ret);
+    memset(str, '\0', strlen(str));
+  }
+  fclose(fp);
+  return 0;
 }
