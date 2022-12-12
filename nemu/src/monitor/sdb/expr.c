@@ -174,9 +174,10 @@ bool check_parentheses(word_t p, word_t q) {
 }
 
 static word_t find_op(word_t p, word_t q) {
-  bool flag = false;
-  int type_temp  = 0;
+  int type_temp = 0;
   int type_index = 0;
+  int parentheses_count = 0;
+  bool parentheses_flag = false;
 
   for (int i = p; i <= q; i++) {
     Token token = tokens[i];
@@ -186,14 +187,18 @@ static word_t find_op(word_t p, word_t q) {
       continue;
     }
     else if (type == '(') {
-      flag = true;
+      parentheses_count++;
+      parentheses_flag = true;
     }
     else if (type == ')') {
-      flag = false;
-      continue;
+      parentheses_count--;
+      if (parentheses_count == 0) {
+        parentheses_flag = false;
+        continue;
+      }
     }
     // 主运算符不会出现在括号里
-    if (flag) {
+    if (parentheses_flag) {
       continue;
     }
     else {
