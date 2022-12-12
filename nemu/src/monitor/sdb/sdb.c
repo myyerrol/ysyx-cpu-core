@@ -21,6 +21,8 @@
 
 #include <memory/paddr.h>
 
+#define DEBUG_CMD_ARGS 0
+
 static int is_batch_mode = false;
 
 void init_regex();
@@ -75,22 +77,6 @@ static int cmd_info(char *args) {
   }
   return 0;
 }
-
-// static char *strrpc(char *str, char *str_old, char *str_new) {
-//   char str_buf[strlen(str)];
-//   memset(str_buf, 0, sizeof(str_buf));
-//   for (int i = 0; i < strlen(str); i++) {
-//     if (!strncmp(str + i, str_old, strlen(str_old))) {
-//       strcat(str_buf, str_new);
-//       i += strlen(str_old) - 1;
-//     }
-//     else {
-//       strncat(str_buf, str + i, 1);
-//     }
-//   }
-//   strcpy(str, str_buf);
-//   return str;
-// }
 
 static int cmd_x(char *args) {
   char *args_n = strtok(args, " ");
@@ -183,7 +169,9 @@ void sdb_mainloop() {
     if (args >= str_end) {
       args = NULL;
     }
+#if DEBUG_CMD_ARGS
     Log("command args: %s", args);
+#endif
 
 #ifdef CONFIG_DEVICE
     extern void sdl_clear_event_queue();
