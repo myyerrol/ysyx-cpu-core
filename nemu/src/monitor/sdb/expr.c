@@ -22,7 +22,6 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
-
   /* TODO: Add more token types */
   TK_INTEGER
 };
@@ -31,15 +30,12 @@ static struct rule {
   const char *regex;
   int token_type;
 } rules[] = {
-
-  /* TODO: Add more rules.
-   * Pay attention to the precedence level of different rules.
-   */
-
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
-
+  /* TODO: Add more rules.
+   * Pay attention to the precedence level of different rules.
+   */
   {"[0-9]+", TK_INTEGER},
   {"\\-", '-'},
   {"\\*", '*'},
@@ -52,7 +48,7 @@ static struct rule {
 
 #define BUF_LENGTH            65536
 #define DEBUG_EXPR_MAKE_TOKEN 0
-#define DEBUG_EXPR_EVAL       1
+#define DEBUG_EXPR_EVAL       0
 
 static regex_t re[NR_REGEX] = {};
 
@@ -95,30 +91,24 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
+#if DEBUG_EXPR_MAKE_TOKEN
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
             i, rules[i].regex, position, substr_len, substr_len, substr_start);
-
+#endif
         position += substr_len;
 
         /* TODO: Now a new token is recognized with rules[i]. Add codes
          * to record the token in the array `tokens'. For certain types
          * of tokens, some extra actions should be performed.
          */
-
-        // switch (rules[i].token_type) {
-        //   default: TODO();
-        // }
-
 #if DEBUG_EXPR_MAKE_TOKEN
         Log("substr_start: %s", substr_start);
 #endif
-
         Token token = { 0, "" };
         token.type = rules[i].token_type;
 #if DEBUG_EXPR_MAKE_TOKEN
         Log("token.type: %d", token.type);
 #endif
-
         if (substr_len > 32) {
           substr_len = 32;
         }
@@ -126,13 +116,15 @@ static bool make_token(char *e) {
 #if DEBUG_EXPR_MAKE_TOKEN
         Log("token.str: %s\n", token.str);
 #endif
-
         if (nr_token < ARRLEN(tokens)) {
           tokens[nr_token] = token;
         }
         nr_token++;
-
         break;
+
+        switch (rules[i].token_type) {
+          // default: TODO();
+        }
       }
     }
 
@@ -273,7 +265,7 @@ static word_t eval(word_t p, word_t q) {
     }
 
 #if DEBUG_EXPR_EVAL
-    Log("ret: %lu\n", ret);
+    Log("ret: %lu", ret);
 #endif
 
     return ret;
@@ -309,7 +301,11 @@ word_t expr_test() {
     char *input_expr = strrpc(strtok(NULL, " "), "\n", "");
     bool flag = false;
     word_t ret = expr(input_expr, input_ret, &flag);
-    printf("success: %d, ret: %ld\n", flag, ret);
+#if DEBUG_EXPR_EVAL
+    Log("success: %d, ret: %ld\n", flag, ret);
+#else
+    Log("success: %d, ret: %ld", flag, ret);
+#endif
     memset(str, '\0', strlen(str));
   }
   fclose(fp);
