@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include <isa.h>
+#include <memory/paddr.h>
 
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
@@ -21,27 +22,37 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
   /* TODO: Add more token types */
-  TK_INTEGER
+  TK_NOTYPE = 256,
+  TK_NUM_DEC,
+  TK_NUM_HEX,
+  TK_REG,
+  TK_EQ,
+  TK_EQN,
+  TK_AND,
+  TK_PTR_DEREF
 };
 
 static struct rule {
   const char *regex;
   int token_type;
 } rules[] = {
-  {" +", TK_NOTYPE},    // spaces
-  {"\\+", '+'},         // plus
-  {"==", TK_EQ},        // equal
   /* TODO: Add more rules.
    * Pay attention to the precedence level of different rules.
    */
-  {"[0-9]+", TK_INTEGER},
-  {"\\-", '-'},
-  {"\\*", '*'},
-  {"\\/", '/'},
-  {"\\(", '('},
-  {"\\)", ')'}
+  { " +", TK_NOTYPE },
+  { "[0-9]+", TK_NUM_DEC },
+  { "^(0x)[0-9]+", TK_NUM_HEX },
+  { "^(\\$)[\\$a-z][a-z0-9]", TK_REG },
+  { "\\(", '(' },
+  { "\\)", ')' },
+  { "\\+", '+' },
+  { "\\-", '-' },
+  { "\\*", '*' },
+  { "\\/", '/' },
+  { "==", TK_EQ },
+  { "!=", TK_EQN },
+  { "&&", TK_AND }
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -182,8 +193,16 @@ static word_t find_op(word_t p, word_t q) {
   for (int i = p; i <= q; i++) {
     Token token = tokens[i];
     int type = token.type;
+    if (i == p && type == TK_PTR_DEREF) {
+      return i;
+    }
     // 主运算符必须是运算符
-    if (type == TK_INTEGER) {
+    if (type != '(' &&
+        type != ')' &&
+        type != '+' &&
+        type != '-' &&
+        type != '*' &&
+        type != '/') {
       continue;
     }
     else if (type == '(') {
@@ -197,6 +216,7 @@ static word_t find_op(word_t p, word_t q) {
         continue;
       }
     }
+
     // 主运算符不会出现在括号里
     if (parentheses_flag) {
       continue;
@@ -232,14 +252,45 @@ static word_t eval(word_t p, word_t q) {
     return 0;
   }
   else if (p == q) {
-    return strtol(tokens[p].str, NULL, 10);
+    char *token_str = tokens[p].str;
+    if (token_str != NULL) {
+      switch (tokens[p].type) {
+        case TK_NUM_DEC: {
+          return strtoul(token_str, NULL, 10);
+        }
+        case TK_NUM_HEX: {
+          strrpc(token_str, "0x", "");
+          return strtoul(token_str, NULL, 16);
+        }
+        case TK_REG: {
+          bool success = false;
+          strrpc(token_str, "$", "");
+          word_t val = isa_reg_str2val(token_str, &success);
+          if (success) {
+            return val;
+          }
+          else {
+            assert(0);
+          }
+        }
+        default: {
+          assert(0);
+        }
+      }
+    }
+    assert(0);
   }
   else if (check_parentheses(p, q) == true) {
     return eval(p + 1, q - 1);
   }
   else {
     word_t op = find_op(p, q);
-    word_t val1 = eval(p, op - 1);
+    word_t val1 = 0;
+    // 指针解引用只有右侧子表达式
+    int token_type = tokens[op].type;
+    if (token_type != TK_PTR_DEREF) {
+      val1 = eval(p, op - 1);
+    }
     word_t val2 = eval(op + 1, q);
 
 #if DEBUG_EXPR_EVAL
@@ -249,7 +300,7 @@ static word_t eval(word_t p, word_t q) {
 #endif
 
     word_t ret = 0;
-    switch (tokens[op].type) {
+    switch (token_type) {
       case '+': {
         ret = val1 + val2;
         break;
@@ -266,7 +317,15 @@ static word_t eval(word_t p, word_t q) {
         ret = val1 / val2;
         break;
       }
-      default: assert(0);
+      case TK_PTR_DEREF: {
+        if (in_pmem(val2)) {
+          ret = paddr_read(val2, 8);
+        }
+        break;
+      }
+      default: {
+        assert(0);
+      }
     }
 
 #if DEBUG_EXPR_EVAL
@@ -284,6 +343,20 @@ word_t expr(char *e, char *r, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
+  for (int i = 0; i < nr_token; i++) {
+    if (tokens[i].type == '*' &&
+       (i == 0 ||
+        tokens[i - 1].type == '+' ||
+        tokens[i - 1].type == '-' ||
+        tokens[i - 1].type == '-' ||
+        tokens[i - 1].type == '*' ||
+        tokens[i - 1].type == TK_EQ ||
+        tokens[i - 1].type == TK_EQN ||
+        tokens[i - 1].type == TK_AND)) {
+      tokens[i].type = TK_PTR_DEREF;
+    }
+  }
+
   word_t ret = eval(0, nr_token - 1);
   if (r != NULL) {
     if (ret == strtoul(r, NULL, 10)) {
@@ -304,12 +377,12 @@ word_t expr_test() {
   while (fgets(str, BUF_LENGTH, fp) != NULL) {
     char *input_ret = strtok(str, " ");
     char *input_expr = strrpc(strtok(NULL, " "), "\n", "");
-    bool flag = false;
-    word_t ret = expr(input_expr, input_ret, &flag);
+    bool success = false;
+    word_t ret = expr(input_expr, input_ret, &success);
 #if DEBUG_EXPR_EVAL
-    Log("success: %d, ret: %ld\n", flag, ret);
+    Log("success: %d, ret: %ld\n", success, ret);
 #else
-    Log("success: %d, ret: %ld", flag, ret);
+    Log("success: %d, ret: %ld", success, ret);
 #endif
     memset(str, '\0', strlen(str));
   }

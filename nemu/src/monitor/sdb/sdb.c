@@ -85,21 +85,21 @@ static int cmd_x(char *args) {
     expr_test();
   }
   else {
-    char *args_addr = strtok(NULL, " ");
-    strrpc(args_addr, "0x", "");
-    if (args_n != NULL && args_addr != NULL) {
-      uint32_t n = strtoul(args_n, NULL, 10);
-      uint32_t addr = strtoul(args_addr, NULL, 16);
-      for (uint32_t i = 0; i < n; i++) {
-        printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
-               addr,
-               paddr_read(addr, 8));
-        addr = addr + 4;
-      }
-    }
-
-    bool *flag = false;
-    expr(args_addr, NULL, flag);
+    // char *args_addr = strtok(NULL, " ");
+    // if (args_n != NULL && args_addr != NULL) {
+    //   strrpc(args_addr, "0x", "");
+    //   uint32_t n = strtoul(args_n, NULL, 10);
+    //   uint32_t addr = strtoul(args_addr, NULL, 16);
+      // for (uint32_t i = 0; i < n; i++) {
+      //   printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
+      //          addr,
+      //          paddr_read(addr, 8));
+      //   addr = addr + 4;
+      // }
+    // }
+    bool *success = false;
+    word_t ret = expr("1+*(2+3)", NULL, success);
+    printf("%lu", ret);
   }
 
   return 0;
