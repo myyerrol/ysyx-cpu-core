@@ -17,16 +17,16 @@
 #include "local-include/reg.h"
 
 const char *regs[] = {
-  "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
-  "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
-  "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
+  "$0", "ra", "sp",  "gp",  "tp", "t0", "t1", "t2",
+  "s0", "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
+  "a6", "a7", "s2",  "s3",  "s4", "s5", "s6", "s7",
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
 void isa_reg_display() {
   char *space = " ";
   char *flag  = "";
-  for (uint8_t i = 0; i < sizeof(regs) / sizeof(regs[0]); i++) {
+  for (int i = 0; i < ARRLEN(regs); i++) {
     if (strcmp(regs[i], "s10") == 0 || strcmp(regs[i], "s11") == 0) {
       space = "";
     }
@@ -34,18 +34,28 @@ void isa_reg_display() {
       space = " ";
     }
 
-    word_t gpr = cpu.gpr[i];
-    if (gpr != 0) {
+    word_t val = cpu.gpr[i];
+    if (val != 0) {
       flag = ANSI_FMT("[x]", ANSI_FG_GREEN);
     }
     else {
       flag = "";
     }
 
-    printf("%s%s     =     0x%016"PRIx64"%s\n", space, regs[i], gpr, flag);
+  printf("%s%s     =     " FMT_WORD "%s\n", space, regs[i], val, flag);
   }
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
-  return 0;
+  word_t val = 0;
+
+  for (int i = 0; i < ARRLEN(regs); i++) {
+    if (strcmp(regs[i], s) == 0) {
+      val = cpu.gpr[i];
+      *success = true;
+      break;
+    }
+  }
+
+  return val;
 }
