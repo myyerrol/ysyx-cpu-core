@@ -41,8 +41,8 @@ static struct rule {
    * Pay attention to the precedence level of different rules.
    */
   { " +", TK_NOTYPE },
-  { "[0-9]+", TK_NUM_DEC },
-  { "^(0x)[0-9]+", TK_NUM_HEX },
+  { "[1-9][0-9]*", TK_NUM_DEC },
+  { "^(0x)[0-9a-fA-F]+", TK_NUM_HEX },
   { "^(\\$)[\\$a-z][a-z0-9]", TK_REG },
   { "\\(", '(' },
   { "\\)", ')' },
@@ -58,7 +58,7 @@ static struct rule {
 #define NR_REGEX ARRLEN(rules)
 
 #define BUF_LENGTH            65536
-#define DEBUG_EXPR_MAKE_TOKEN 0
+#define DEBUG_EXPR_MAKE_TOKEN 1
 #define DEBUG_EXPR_EVAL       0
 
 static regex_t re[NR_REGEX] = {};
@@ -82,7 +82,7 @@ void init_regex() {
 
 typedef struct token {
   int type;
-  char str[32];
+  char str[256];
 } Token;
 
 static Token tokens[BUF_LENGTH] __attribute__((used)) = {};
@@ -264,7 +264,7 @@ static word_t eval(word_t p, word_t q) {
         }
         case TK_REG: {
           bool success = false;
-          strrpc(token_str, "$", "");
+          token_str = token_str + 1;
           word_t val = isa_reg_str2val(token_str, &success);
           if (success) {
             return val;

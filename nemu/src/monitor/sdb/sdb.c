@@ -98,7 +98,7 @@ static int cmd_x(char *args) {
       // }
     // }
     bool *success = false;
-    word_t ret = expr("1+*(2+3)", NULL, success);
+    word_t ret = expr("1+0xFF+$$0", NULL, success);
     printf("%lu", ret);
   }
 
