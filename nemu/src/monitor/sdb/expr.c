@@ -41,7 +41,7 @@ static struct rule {
    * Pay attention to the precedence level of different rules.
    */
   { " +", TK_NOTYPE },
-  { "[1-9][0-9]*", TK_NUM_DEC },
+  { "[0-9][0-9]*", TK_NUM_DEC },
   { "^(0x)[0-9a-fA-F]+", TK_NUM_HEX },
   { "^(\\$)[\\$a-z][a-z0-9]", TK_REG },
   { "\\(", '(' },
@@ -315,6 +315,33 @@ static word_t eval(word_t p, word_t q) {
       }
       case '/': {
         ret = val1 / val2;
+        break;
+      }
+      case TK_EQ: {
+        if (val1 == val2) {
+          ret = 1;
+        }
+        else {
+          ret = 0;
+        }
+        break;
+      }
+      case TK_EQN: {
+        if (val1 != val2) {
+          ret = 1;
+        }
+        else {
+          ret = 0;
+        }
+        break;
+      }
+      case TK_AND: {
+        if (val1 && val2) {
+          ret = 1;
+        }
+        else {
+          ret = 0;
+        }
         break;
       }
       case TK_PTR_DEREF: {
