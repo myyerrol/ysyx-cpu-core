@@ -90,16 +90,15 @@ static int cmd_x(char *args) {
     //   strrpc(args_addr, "0x", "");
     //   uint32_t n = strtoul(args_n, NULL, 10);
     //   uint32_t addr = strtoul(args_addr, NULL, 16);
-      // for (uint32_t i = 0; i < n; i++) {
-      //   printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
-      //          addr,
-      //          paddr_read(addr, 8));
-      //   addr = addr + 4;
-      // }
+    //   for (uint32_t i = 0; i < n; i++) {
+    //     printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
+    //            addr,
+    //            paddr_read(addr, 8));
+    //     addr = addr + 4;
+    //   }
     // }
-    bool *success = false;
-    word_t ret = expr("1+1==1+2!=2+1&&0", NULL, success);
-    printf("%lu", ret);
+    bool success = false;
+    expr("1+0xFF+$$0+(1==1)+(1!=1)+(1&&0)", NULL, &success);
   }
 
   return 0;

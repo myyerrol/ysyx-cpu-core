@@ -24,8 +24,8 @@
 enum {
   /* TODO: Add more token types */
   TK_NOTYPE = 256,
-  TK_NUM_DEC,
   TK_NUM_HEX,
+  TK_NUM_DEC,
   TK_REG,
   TK_EQ,
   TK_EQN,
@@ -42,8 +42,8 @@ static struct rule {
    * Pay attention to the precedence level of different rules.
    */
   { " +", TK_NOTYPE -1 },
-  { "[0-9][0-9]*", TK_NUM_DEC, -1 },
   { "^(0x)[0-9a-fA-F]+", TK_NUM_HEX, -1 },
+  { "[0-9]+", TK_NUM_DEC, -1 },
   { "^(\\$)[\\$a-z][a-z0-9]", TK_REG, -1 },
   { "\\(", '(', -1 },
   { "\\)", ')', -1 },
@@ -60,7 +60,7 @@ static struct rule {
 
 #define TOKEN_ARR_LENGTH      65536
 #define TOKEN_STR_LENGTH      256
-#define DEBUG_EXPR_MAKE_TOKEN 1
+#define DEBUG_EXPR_MAKE_TOKEN 0
 #define DEBUG_EXPR_EVAL       0
 
 static regex_t re[NR_REGEX] = {};
@@ -206,8 +206,8 @@ static word_t find_op(word_t p, word_t q) {
 
     // 主运算符必须是运算符、关系符或逻辑符
     if (type_curr == TK_NOTYPE ||
-        type_curr == TK_NUM_DEC ||
         type_curr == TK_NUM_HEX ||
+        type_curr == TK_NUM_DEC ||
         type_curr == TK_REG ||
         type_curr == TK_PTR_DEREF) {
       continue;
@@ -256,12 +256,12 @@ static word_t eval(word_t p, word_t q) {
     char *token_str = tokens[p].str;
     if (token_str != NULL) {
       switch (tokens[p].type) {
-        case TK_NUM_DEC: {
-          return strtoul(token_str, NULL, 10);
-        }
         case TK_NUM_HEX: {
           strrpc(token_str, "0x", "");
           return strtoul(token_str, NULL, 16);
+        }
+        case TK_NUM_DEC: {
+          return strtoul(token_str, NULL, 10);
         }
         case TK_REG: {
           bool success = false;
@@ -357,7 +357,7 @@ static word_t eval(word_t p, word_t q) {
     }
 
 #if DEBUG_EXPR_EVAL
-    Log("ret: %lu", ret);
+    Log("ret: %lu\n", ret);
 #endif
 
     return ret;
@@ -394,6 +394,15 @@ word_t expr(char *e, char *r, bool *success) {
       *success = false;
     }
   }
+  else {
+    *success = true;
+  }
+
+#if DEBUG_EXPR_EVAL
+    Log("success: %d, ret: %lu\n", *success, ret);
+#else
+    Log("success: %d, ret: %lu", *success, ret);
+#endif
 
   return ret;
 }
@@ -406,12 +415,7 @@ word_t expr_test() {
     char *input_ret = strtok(str, " ");
     char *input_expr = strrpc(strtok(NULL, " "), "\n", "");
     bool success = false;
-    word_t ret = expr(input_expr, input_ret, &success);
-#if DEBUG_EXPR_EVAL
-    Log("success: %d, ret: %ld\n", success, ret);
-#else
-    Log("success: %d, ret: %ld", success, ret);
-#endif
+    expr(input_expr, input_ret, &success);
     memset(str, '\0', strlen(str));
   }
   fclose(fp);
