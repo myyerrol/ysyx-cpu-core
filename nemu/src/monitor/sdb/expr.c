@@ -42,9 +42,9 @@ static struct rule {
    * Pay attention to the precedence level of different rules.
    */
   { " +", TK_NOTYPE -1 },
-  { "[0-9][0-9]*", TK_NUM_DEC -1 },
-  { "^(0x)[0-9a-fA-F]+", TK_NUM_HEX -1 },
-  { "^(\\$)[\\$a-z][a-z0-9]", TK_REG -1 },
+  { "[0-9][0-9]*", TK_NUM_DEC, -1 },
+  { "^(0x)[0-9a-fA-F]+", TK_NUM_HEX, -1 },
+  { "^(\\$)[\\$a-z][a-z0-9]", TK_REG, -1 },
   { "\\(", '(', -1 },
   { "\\)", ')', -1 },
   { "\\+", '+', 1 },
@@ -235,25 +235,12 @@ static word_t find_op(word_t p, word_t q) {
         op_index = i;
       }
       else {
+        // 主运算符优先级最低，同级别运算符以最后被结合的为准
         if (prior <= prior_curr) {
           type = type_curr;
           prior = prior_curr;
           op_index = i;
         }
-
-        // // 主运算符优先级最低，同级别运算符以最后被结合的为准
-        // if (type == '+' || type == '-') {
-        //   if (type_curr == '+' || type_curr == '-') {
-        //     type = type_curr;
-        //     op_index = i;
-        //   }
-        // }
-        // else if (type == '*' || type == '/') {
-        //   if (type_curr == '+' || type_curr == '-' || type_curr == '*' || type_curr == '/') {
-        //     type = type_curr;
-        //     op_index = i;
-        //   }
-        // }
       }
     }
   }
