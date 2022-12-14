@@ -35,29 +35,31 @@ enum {
 
 static struct rule {
   const char *regex;
-  int token_type;
+  int type;
+  int prior;
 } rules[] = {
   /* TODO: Add more rules.
    * Pay attention to the precedence level of different rules.
    */
-  { " +", TK_NOTYPE },
-  { "[0-9][0-9]*", TK_NUM_DEC },
-  { "^(0x)[0-9a-fA-F]+", TK_NUM_HEX },
-  { "^(\\$)[\\$a-z][a-z0-9]", TK_REG },
-  { "\\(", '(' },
-  { "\\)", ')' },
-  { "\\+", '+' },
-  { "\\-", '-' },
-  { "\\*", '*' },
-  { "\\/", '/' },
-  { "==", TK_EQ },
-  { "!=", TK_EQN },
-  { "&&", TK_AND }
+  { " +", TK_NOTYPE -1 },
+  { "[0-9][0-9]*", TK_NUM_DEC -1 },
+  { "^(0x)[0-9a-fA-F]+", TK_NUM_HEX -1 },
+  { "^(\\$)[\\$a-z][a-z0-9]", TK_REG -1 },
+  { "\\(", '(', -1 },
+  { "\\)", ')', -1 },
+  { "\\+", '+', 1 },
+  { "\\-", '-', 1 },
+  { "\\*", '*', 0 },
+  { "\\/", '/', 0 },
+  { "==", TK_EQ, 2 },
+  { "!=", TK_EQN, 2 },
+  { "&&", TK_AND, 3 }
 };
 
 #define NR_REGEX ARRLEN(rules)
 
-#define BUF_LENGTH            65536
+#define TOKEN_ARR_LENGTH      65536
+#define TOKEN_STR_LENGTH      256
 #define DEBUG_EXPR_MAKE_TOKEN 1
 #define DEBUG_EXPR_EVAL       0
 
@@ -82,10 +84,11 @@ void init_regex() {
 
 typedef struct token {
   int type;
-  char str[256];
+  int prior;
+  char str[TOKEN_STR_LENGTH];
 } Token;
 
-static Token tokens[BUF_LENGTH] __attribute__((used)) = {};
+static Token tokens[TOKEN_ARR_LENGTH] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
 
 static bool make_token(char *e) {
@@ -115,13 +118,15 @@ static bool make_token(char *e) {
 #if DEBUG_EXPR_MAKE_TOKEN
         Log("substr_start: %s", substr_start);
 #endif
-        Token token = { 0, "" };
-        token.type = rules[i].token_type;
+        Token token = { 0, -1, "" };
+        token.type = rules[i].type;
+        token.prior = rules[i].prior;
 #if DEBUG_EXPR_MAKE_TOKEN
         Log("token.type: %d", token.type);
+        Log("token.prior: %d", token.prior);
 #endif
-        if (substr_len > 32) {
-          substr_len = 32;
+        if (substr_len > TOKEN_STR_LENGTH) {
+          substr_len = TOKEN_STR_LENGTH;
         }
         strncpy(token.str, substr_start, substr_len);
 #if DEBUG_EXPR_MAKE_TOKEN
@@ -133,7 +138,7 @@ static bool make_token(char *e) {
         nr_token++;
         break;
 
-        switch (rules[i].token_type) {
+        switch (rules[i].type) {
           // default: TODO();
         }
       }
@@ -185,31 +190,33 @@ bool check_parentheses(word_t p, word_t q) {
 }
 
 static word_t find_op(word_t p, word_t q) {
-  int type_temp = 0;
-  int type_index = 0;
+  int type = 0;
+  int prior = 0;
+  int op_index = 0;
   int parentheses_count = 0;
   bool parentheses_flag = false;
 
   for (int i = p; i <= q; i++) {
     Token token = tokens[i];
-    int type = token.type;
-    if (i == p && type == TK_PTR_DEREF) {
+    int type_curr = token.type;
+    int prior_curr = token.prior;
+    if (i == p && type_curr == TK_PTR_DEREF) {
       return i;
     }
-    // 主运算符必须是运算符
-    if (type != '(' &&
-        type != ')' &&
-        type != '+' &&
-        type != '-' &&
-        type != '*' &&
-        type != '/') {
+
+    // 主运算符必须是运算符、关系符或逻辑符
+    if (type_curr == TK_NOTYPE ||
+        type_curr == TK_NUM_DEC ||
+        type_curr == TK_NUM_HEX ||
+        type_curr == TK_REG ||
+        type_curr == TK_PTR_DEREF) {
       continue;
     }
-    else if (type == '(') {
+    else if (type_curr == '(') {
       parentheses_count++;
       parentheses_flag = true;
     }
-    else if (type == ')') {
+    else if (type_curr == ')') {
       parentheses_count--;
       if (parentheses_count == 0) {
         parentheses_flag = false;
@@ -222,29 +229,36 @@ static word_t find_op(word_t p, word_t q) {
       continue;
     }
     else {
-      if (type_temp == 0) {
-        type_temp = type;
-        type_index = i;
+      if (type == 0) {
+        type = type_curr;
+        prior = prior_curr;
+        op_index = i;
       }
       else {
-        // 主运算符优先级最低，同级别运算符以最后被结合的为准
-        if (type_temp == '+' || type_temp == '-') {
-          if (type == '+' || type == '-') {
-            type_temp = type;
-            type_index = i;
-          }
+        if (prior <= prior_curr) {
+          type = type_curr;
+          prior = prior_curr;
+          op_index = i;
         }
-        else if (type_temp == '*' || type_temp == '/') {
-          if (type == '+' || type == '-' || type == '*' || type == '/') {
-            type_temp = type;
-            type_index = i;
-          }
-        }
+
+        // // 主运算符优先级最低，同级别运算符以最后被结合的为准
+        // if (type == '+' || type == '-') {
+        //   if (type_curr == '+' || type_curr == '-') {
+        //     type = type_curr;
+        //     op_index = i;
+        //   }
+        // }
+        // else if (type == '*' || type == '/') {
+        //   if (type_curr == '+' || type_curr == '-' || type_curr == '*' || type_curr == '/') {
+        //     type = type_curr;
+        //     op_index = i;
+        //   }
+        // }
       }
     }
   }
 
-  return type_index;
+  return op_index;
 }
 
 static word_t eval(word_t p, word_t q) {
@@ -398,10 +412,10 @@ word_t expr(char *e, char *r, bool *success) {
 }
 
 word_t expr_test() {
-  char str[BUF_LENGTH + 1];
+  char str[TOKEN_ARR_LENGTH + 1];
   FILE *fp = fopen("./tools/gen-expr/input.txt", "r");
   assert(fp != NULL);
-  while (fgets(str, BUF_LENGTH, fp) != NULL) {
+  while (fgets(str, TOKEN_ARR_LENGTH, fp) != NULL) {
     char *input_ret = strtok(str, " ");
     char *input_expr = strrpc(strtok(NULL, " "), "\n", "");
     bool success = false;
