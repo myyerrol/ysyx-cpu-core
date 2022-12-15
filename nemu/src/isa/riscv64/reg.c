@@ -42,7 +42,7 @@ void isa_reg_display() {
       flag = "";
     }
 
-  printf("%s%s     =     " FMT_WORD "%s\n", space, regs[i], val, flag);
+    printf("%s%s     =     " FMT_WORD "%s\n", space, regs[i], val, flag);
   }
 }
 
