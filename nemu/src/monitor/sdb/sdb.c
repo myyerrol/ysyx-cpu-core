@@ -74,6 +74,9 @@ static int cmd_info(char *args) {
     if (strcmp(args_t, "r") == 0) {
       isa_reg_display();
     }
+    else if (strcmp(args_t, "w") == 0) {
+
+    }
   }
   return 0;
 }
@@ -85,22 +88,32 @@ static int cmd_x(char *args) {
     expr_test();
   }
   else {
-    // char *args_addr = strtok(NULL, " ");
-    // if (args_n != NULL && args_addr != NULL) {
-    //   strrpc(args_addr, "0x", "");
-    //   uint32_t n = strtoul(args_n, NULL, 10);
-    //   uint32_t addr = strtoul(args_addr, NULL, 16);
-    //   for (uint32_t i = 0; i < n; i++) {
-    //     printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
-    //            addr,
-    //            paddr_read(addr, 8));
-    //     addr = addr + 4;
-    //   }
-    // }
-    bool success = false;
-    expr("1+0xFF+$$0+(1==1)+(1!=1)+(1&&0)", NULL, &success);
+    char *expr_str = strtok(NULL, " ");
+    if (args_n != NULL && expr_str != NULL) {
+      bool success = false;
+      uint32_t n = strtoul(args_n, NULL, 10);
+      uint32_t addr = expr(expr_str, NULL, &success);
+      for (uint32_t i = 0; i < n; i++) {
+        printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
+               addr,
+               paddr_read(addr, 8));
+        addr = addr + 4;
+      }
+    }
   }
 
+  return 0;
+}
+
+static int cmd_p(char *args) {
+  return 0;
+}
+
+static int cmd_w(char *args) {
+  return 0;
+}
+
+static int cmd_d(char *args) {
   return 0;
 }
 
@@ -109,14 +122,17 @@ static struct {
   const char *description;
   int (*handler) (char *);
 } cmd_table [] = {
-  { "help", "Display information about all supported commands", cmd_help },
-  { "c", "Continue the execution of the program", cmd_c },
-  { "q", "Exit NEMU", cmd_q },
+  { "help", "Display information about all supported commands.", cmd_help },
+  { "c", "Continue the execution of the program.", cmd_c },
+  { "q", "Exit NEMU.", cmd_q },
 
   /* TODO: Add more commands */
-  { "si", "Step one instruction exactly", cmd_si },
-  { "info", "Generic command for showing things about the program being debugged", cmd_info },
-  { "x", "Address ", cmd_x }
+  { "si", "Step one instruction exactly.", cmd_si },
+  { "info", "Generic command for showing things about the program being debugged.", cmd_info },
+  { "x", "Address.", cmd_x },
+  { "p", "Print value of expression EXP.", cmd_p },
+  { "w", "Set a watchpoint for an expression.", cmd_w },
+  { "d", "Delete all or some breakpoints.", cmd_d }
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -194,5 +210,5 @@ void init_sdb() {
   init_regex();
 
   /* Initialize the watchpoint pool. */
-  init_wp_pool();
+  // init_wp_pool();
 }
