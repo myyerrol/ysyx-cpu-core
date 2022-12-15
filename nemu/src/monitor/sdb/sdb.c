@@ -76,7 +76,7 @@ static int cmd_info(char *args) {
       isa_reg_display();
     }
     else if (strcmp(args_t, "w") == 0) {
-
+      watch_display();
     }
   }
   return 0;
@@ -85,7 +85,7 @@ static int cmd_info(char *args) {
 static int cmd_x(char *args) {
   char *args_n = strtok(args, " ");
 
-  if (strcmp(args_n, "test") == 0 || strcmp(args_n, "t") == 0) {
+  if (strcmp(args_n, "test") == 0) {
     expr_test();
   }
   else {
@@ -117,10 +117,18 @@ static int cmd_p(char *args) {
 }
 
 static int cmd_w(char *args) {
+  char *args_expr = strtok(args, " ");
+  if (strcmp(args_expr, "test") == 0) {
+    watch_test();
+  }
+  else {
+
+  }
   return 0;
 }
 
 static int cmd_d(char *args) {
+
   return 0;
 }
 
@@ -217,5 +225,5 @@ void init_sdb() {
   init_regex();
 
   /* Initialize the watchpoint pool. */
-  // init_wp_pool();
+  init_wp_pool();
 }

@@ -34,9 +34,9 @@ void init_wp_pool() {
   int i;
   for (i = 0; i < NR_WP; i ++) {
     wp_pool[i].no = i;
-    wp_pool[i].expr[0] = '\0';
-    wp_pool[i].val_old[0] = '\0';
-    wp_pool[i].val_new[0] = '\0';
+    wp_pool[i].expr = '\0';
+    wp_pool[i].val_old = '\0';
+    wp_pool[i].val_new = '\0';
     wp_pool[i].next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
   }
 
@@ -113,11 +113,33 @@ void free_wp(int no) {
       wp_temp = wp_old;
       wp_free = wp_temp;
     }
-    wp_temp->expr[0] = '\0';
-    wp_temp->val_old[0] = '\0';
-    wp_temp->val_new[0] = '\0';
+    wp_temp->expr = '\0';
+    wp_temp->val_old = '\0';
+    wp_temp->val_new = '\0';
   }
   else {
     assert(0);
   }
+}
+
+void watch_display() {
+  if (wp_head != NULL) {
+    printf("Num     Type           Disp Enb Address          What\n");
+    WP *wp_temp = wp_head;
+    while (wp_temp != NULL) {
+      int no = wp_temp->no;
+      char *expr = wp_temp->expr;
+      printf("%-2d      hw watchpoint  keep y                    %s\n", no, expr);
+      wp_temp = wp_temp->next;
+    }
+  }
+  else {
+    printf("No watchpoints.\n");
+  }
+}
+
+void watch_test() {
+  new_wp("1+2", "0", "1");
+  new_wp("0x80000000", "0", "1");
+  watch_display();
 }
