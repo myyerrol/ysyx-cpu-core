@@ -16,28 +16,108 @@
 #include "sdb.h"
 
 #define NR_WP 32
+#define WATCH_ARR_LENGTH 256
 
 typedef struct watchpoint {
-  int NO;
-  struct watchpoint *next;
-
   /* TODO: Add more members if necessary */
-
+  int no;
+  char *expr;
+  char *val_old;
+  char *val_new;
+  struct watchpoint *next;
 } WP;
 
 static WP wp_pool[NR_WP] = {};
-static WP *head = NULL, *free_ = NULL;
+static WP *wp_head = NULL, *wp_free = NULL;
 
 void init_wp_pool() {
   int i;
   for (i = 0; i < NR_WP; i ++) {
-    wp_pool[i].NO = i;
+    wp_pool[i].no = i;
+    wp_pool[i].expr[0] = '\0';
+    wp_pool[i].val_old[0] = '\0';
+    wp_pool[i].val_new[0] = '\0';
     wp_pool[i].next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
   }
 
-  head = NULL;
-  free_ = wp_pool;
+  wp_head = NULL;
+  wp_free = wp_pool;
 }
 
 /* TODO: Implement the functionality of watchpoint */
+WP *new_wp(char *expr, char *val_old, char *val_new) {
+  WP *wp_new = NULL;
 
+  // 获取空闲链表
+  if (wp_free != NULL) {
+    wp_new = wp_free;
+    wp_free = wp_free->next;
+    wp_new->expr = expr;
+    wp_new->val_old = val_old;
+    wp_new->val_new = val_new;
+    wp_new->next = NULL;
+  }
+  else {
+    assert(0);
+  }
+
+  // 将空闲链表添加到监视链表后面
+  if (wp_head != NULL) {
+    WP *wp_temp = wp_head;
+    while (wp_temp->next != NULL) {
+      wp_temp = wp_temp->next;
+    }
+    wp_temp->next = wp_new;
+  }
+  else {
+    wp_head = wp_new;
+  }
+
+  return wp_new;
+}
+
+void free_wp(int no) {
+  WP *wp_old = NULL;
+  WP *wp_prev = wp_head;
+  WP *wp_temp = wp_head;
+
+  // 获取释放链表
+  while (wp_temp != NULL) {
+    if (wp_temp->no == no) {
+      if (wp_temp == wp_head) {
+        wp_head = wp_head->next;
+        wp_temp->next = NULL;
+        wp_old = wp_temp;
+      }
+      else {
+        wp_prev->next = NULL;
+        wp_temp->next = NULL;
+        wp_old = wp_temp;
+      }
+      break;
+    }
+    wp_prev = wp_temp;
+    wp_temp = wp_temp->next;
+  }
+
+  // 将释放链表添加到空闲链表后面并重置链表中的相关数据
+  if (wp_old != NULL) {
+    if (wp_free != NULL) {
+      wp_temp = wp_free;
+      while (wp_temp->next != NULL) {
+        wp_temp = wp_temp->next;
+      }
+      wp_temp->next = wp_old;
+    }
+    else {
+      wp_temp = wp_old;
+      wp_free = wp_temp;
+    }
+    wp_temp->expr[0] = '\0';
+    wp_temp->val_old[0] = '\0';
+    wp_temp->val_new[0] = '\0';
+  }
+  else {
+    assert(0);
+  }
+}
