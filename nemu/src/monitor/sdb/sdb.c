@@ -122,7 +122,7 @@ static int cmd_w(char *args) {
     watch_test();
   }
   else {
-
+    printf("Hardware watchpoint %d: %s\n", watch_new(args_expr), args_expr);
   }
   return 0;
 }
