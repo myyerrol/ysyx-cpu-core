@@ -150,5 +150,6 @@ void watch_display() {
 void watch_test() {
   new_wp("1+2");
   new_wp("0x80000000");
+  new_wp("2*3");
   watch_display();
 }
