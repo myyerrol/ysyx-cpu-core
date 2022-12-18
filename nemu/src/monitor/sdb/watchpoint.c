@@ -193,9 +193,10 @@ void watch_display() {
   }
 }
 
-void watch_trace() {
+int watch_trace() {
   int count = 0;
   WP *wp_temp = wp_head;
+
   while (wp_temp != NULL) {
     int no = wp_temp->no;
     char *expr_str = wp_temp->expr;
@@ -214,6 +215,8 @@ void watch_trace() {
     }
     wp_temp = wp_temp->next;
   }
+
+  return count;
 }
 
 void watch_test() {

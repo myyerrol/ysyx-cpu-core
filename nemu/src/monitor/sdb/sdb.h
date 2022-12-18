@@ -23,7 +23,7 @@ word_t expr_test();
 void watch_new(char *expr);
 void watch_free(int no);
 void watch_display();
-void watch_trace();
+int watch_trace();
 void watch_test();
 
 #endif
