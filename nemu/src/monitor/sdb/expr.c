@@ -61,6 +61,7 @@ static struct rule {
 #define TOKEN_ARR_LENGTH      65536
 #define TOKEN_STR_LENGTH      256
 #define DEBUG_EXPR_MAKE_TOKEN 0
+#define DEBUG_EXPR            0
 #define DEBUG_EXPR_EVAL       0
 
 static regex_t re[NR_REGEX] = {};
@@ -398,10 +399,12 @@ word_t expr(char *e, char *r, bool *success) {
     *success = true;
   }
 
-#if DEBUG_EXPR_EVAL
+#if DEBUG_EXPR
+  #if DEBUG_EXPR_EVAL
     Log("success: %d, ret: %lu\n", *success, ret);
-#else
+  #else
     Log("success: %d, ret: %lu", *success, ret);
+  #endif
 #endif
 
   return ret;
