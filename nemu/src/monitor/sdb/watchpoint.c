@@ -27,8 +27,8 @@ typedef struct watchpoint {
   /* TODO: Add more members if necessary */
   int no;
   char *expr;
-  char *val_old;
-  char *val_new;
+  word_t val_old;
+  word_t val_new;
   struct watchpoint *next;
 } WP;
 
@@ -39,6 +39,8 @@ void init_wp_pool() {
   int i;
   for (i = 0; i < NR_WP; i ++) {
     wp_pool[i].no = i;
+    wp_pool[i].val_old = 0;
+    wp_pool[i].val_new = 0;
     wp_pool[i].next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
   }
 
@@ -117,9 +119,8 @@ static void free_wp(int no) {
       wp_free = wp_temp;
     }
     free(wp_temp->expr);
-    // wp_temp->expr = '\0';
-    // wp_temp->val_old = '\0';
-    // wp_temp->val_new = '\0';
+    wp_temp->val_old = 0;
+    wp_temp->val_new = 0;
   }
   else {
     printf("No breakpoint number %d.\n", no);
