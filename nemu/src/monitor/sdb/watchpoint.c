@@ -93,7 +93,7 @@ static void free_wp(int no) {
         wp_old = wp_temp;
       }
       else {
-        wp_prev->next = NULL;
+        wp_prev->next = wp_temp->next;
         wp_temp->next = NULL;
         wp_old = wp_temp;
       }
@@ -200,54 +200,7 @@ void watch_display() {
 
 void watch_test() {
   new_wp("1+2");
+  new_wp("1*2");
   new_wp("0x80000000");
-  new_wp("111");
   watch_display();
-
-  // printf("wp_head: \n");
-  // WP *wp_temp = wp_head;
-  // char *line = NULL;
-  // char *line_no = NULL;
-  // char *line_arrow = NULL;
-  // char *line_next = NULL;
-
-  // while (wp_temp != NULL) {
-  //   int no = wp_temp->no;
-  //   char *line_no_t = malloc(sizeof(char) * WATCH_TEST_CHAR_LEN);
-  //   sprintf(line_no_t, "|  %02d  |", no);
-  //   if (line == NULL) {
-  //     line = (char *)malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-  //     strcat(line, "--------");
-
-  //     line_no = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-  //     strcat(line_no, line_no_t);
-
-  //     line_arrow = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-  //     strcat(line_arrow, "--------");
-
-  //     line_next = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-  //     strcat(line_next, "| next |");
-  //   }
-  //   else {
-  //     strcat(line, "     --------");
-
-  //     char *line_no_tt = malloc(sizeof(char) * WATCH_TEST_LEN);
-  //     sprintf(line_no_tt, "     %s", line_no_t);
-  //     strcat(line_no, line_no_tt);
-  //     free(line_no_tt);
-
-  //     strcat(line_arrow, " ——> --------");
-
-  //     strcat(line_next, "     | next |");
-  //   }
-  //   free(line_no_t);
-
-  //   wp_temp = wp_temp->next;
-  // }
-
-  // printf("%s\n", line);
-  // printf("%s\n", line_no);
-  // printf("%s\n", line_arrow);
-  // printf("%s\n", line_next);
-  // printf("%s\n", line);
 }
