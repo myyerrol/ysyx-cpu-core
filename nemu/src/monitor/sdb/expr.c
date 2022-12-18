@@ -153,7 +153,7 @@ static bool make_token(char *e) {
   return true;
 }
 
-bool check_parentheses(word_t p, word_t q) {
+static bool check_parentheses(word_t p, word_t q) {
   char arr[100] = "\0";
 
   for (int i = p, j = 0; i <= q; i++) {
