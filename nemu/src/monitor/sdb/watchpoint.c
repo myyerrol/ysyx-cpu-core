@@ -27,8 +27,7 @@ typedef struct watchpoint {
   /* TODO: Add more members if necessary */
   int no;
   char *expr;
-  word_t val_old;
-  word_t val_new;
+  word_t val;
   struct watchpoint *next;
 } WP;
 
@@ -39,8 +38,7 @@ void init_wp_pool() {
   int i;
   for (i = 0; i < NR_WP; i ++) {
     wp_pool[i].no = i;
-    wp_pool[i].val_old = 0;
-    wp_pool[i].val_new = 0;
+    wp_pool[i].val = 0;
     wp_pool[i].next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
   }
 
@@ -58,8 +56,6 @@ static WP *new_wp(char *expr) {
     wp_free = wp_free->next;
     wp_new->expr = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH);
     strcpy(wp_new->expr, expr);
-    // wp_new->val_old = val_old;
-    // wp_new->val_new = val_new;
     wp_new->next = NULL;
   }
   else {
@@ -119,17 +115,16 @@ static void free_wp(int no) {
       wp_free = wp_temp;
     }
     free(wp_temp->expr);
-    wp_temp->val_old = 0;
-    wp_temp->val_new = 0;
+    wp_temp->val = 0;
   }
   else {
     printf("No breakpoint number %d.\n", no);
   }
 }
 
-int watch_new(char *expr) {
+void watch_new(char *expr) {
   WP *wp_new = new_wp(expr);
-  return wp_new->no;
+  printf("Hardware watchpoint %d: %s\n", wp_new->no, wp_new->expr);
 }
 
 void watch_free(int no) {
@@ -138,70 +133,91 @@ void watch_free(int no) {
 
 void watch_display() {
   if (wp_head != NULL) {
-      char *line = NULL;
-      char *line_no = NULL;
-      char *line_arrow = NULL;
-      char *line_next = NULL;
+    char *line = NULL;
+    char *line_no = NULL;
+    char *line_arrow = NULL;
+    char *line_next = NULL;
 
-      printf("Num%5sType%10sDisp Enb Address%10sWhat\n", " ", " ", " ");
+    printf("Num%5sType%10sDisp Enb Address%10sWhat\n", " ", " ", " ");
 
-      WP *wp_temp = wp_head;
-      while (wp_temp != NULL) {
-        int no = wp_temp->no;
-        char *expr = wp_temp->expr;
+    WP *wp_temp = wp_head;
+    while (wp_temp != NULL) {
+      int no = wp_temp->no;
+      char *expr = wp_temp->expr;
 
-        printf("%-2d%6shw watchpoint keep y%20s%s\n", no, " ", " ", expr);
+      printf("%-2d%6shw watchpoint keep y%20s%s\n", no, " ", " ", expr);
 
-        char *line_no_t = malloc(sizeof(char) * WATCH_TEST_CHAR_LEN);
-        sprintf(line_no_t, "|  %02d  |", no);
-        if (line == NULL) {
-          line = (char *)malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-          strcat(line, "--------");
+      char *line_no_t = malloc(sizeof(char) * WATCH_TEST_CHAR_LEN);
+      sprintf(line_no_t, "|  %02d  |", no);
+      if (line == NULL) {
+        line = (char *)malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        strcat(line, "--------");
 
-          line_no = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-          strcat(line_no, line_no_t);
+        line_no = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        strcat(line_no, line_no_t);
 
-          line_arrow = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-          strcat(line_arrow, "--------");
+        line_arrow = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        strcat(line_arrow, "--------");
 
-          line_next = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
-          strcat(line_next, "| next |");
-        }
-        else {
-          strcat(line, "     --------");
-
-          char *line_no_tt = malloc(sizeof(char) * WATCH_TEST_LEN);
-          sprintf(line_no_tt, "     %s", line_no_t);
-          strcat(line_no, line_no_tt);
-          free(line_no_tt);
-
-          strcat(line_arrow, " ——> --------");
-
-          strcat(line_next, "     | next |");
-        }
-        free(line_no_t);
-
-        wp_temp = wp_temp->next;
+        line_next = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        strcat(line_next, "| next |");
       }
+      else {
+        strcat(line, "     --------");
+
+        char *line_no_tt = malloc(sizeof(char) * WATCH_TEST_LEN);
+        sprintf(line_no_tt, "     %s", line_no_t);
+        strcat(line_no, line_no_tt);
+        free(line_no_tt);
+
+        strcat(line_arrow, " ——> --------");
+
+        strcat(line_next, "     | next |");
+      }
+      free(line_no_t);
+
+      wp_temp = wp_temp->next;
+    }
 
 #if INFO_LINKED_LIST
-      printf("wp_head: \n");
-      printf("%s\n", line);
-      printf("%s\n", line_no);
-      printf("%s\n", line_arrow);
-      printf("%s\n", line_next);
-      printf("%s\n", line);
+    printf("wp_head: \n");
+    printf("%s\n", line);
+    printf("%s\n", line_no);
+    printf("%s\n", line_arrow);
+    printf("%s\n", line_next);
+    printf("%s\n", line);
 #endif
-
   }
   else {
     printf("No watchpoints.\n");
   }
 }
 
+void watch_trace() {
+  int count = 0;
+  WP *wp_temp = wp_head;
+  while (wp_temp != NULL) {
+    int no = wp_temp->no;
+    char *expr_str = wp_temp->expr;
+    word_t val_old = wp_temp->val;
+    bool success = false;
+    word_t val_new = expr(expr_str, NULL, &success);
+    if (val_new != val_old) {
+      count++;
+      if (count > 1) {
+        printf("\n");
+      }
+      printf("Hardware watchpoint %d: %s\n", no, expr_str);
+      printf("Value Old = %lu\n", val_old);
+      printf("value New = %lu\n", val_new);
+      wp_temp->val = val_new;
+    }
+    wp_temp = wp_temp->next;
+  }
+}
+
 void watch_test() {
-  new_wp("1+2");
-  new_wp("1*2");
-  new_wp("0x80000000");
+  new_wp("*0x80000000");
+  new_wp("*0x80000004");
   watch_display();
 }
