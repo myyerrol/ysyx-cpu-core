@@ -128,7 +128,11 @@ static int cmd_w(char *args) {
 }
 
 static int cmd_d(char *args) {
-
+  char *args_no = strtok(args, " ");
+  if (args_no != NULL) {
+    int no = strtol(args_no, NULL, 10);
+    watch_free(no);
+  }
   return 0;
 }
 
