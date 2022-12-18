@@ -219,5 +219,6 @@ void watch_trace() {
 void watch_test() {
   new_wp("*0x80000000");
   new_wp("*0x80000004");
+  new_wp("*0x80000008");
   watch_display();
 }
