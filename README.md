@@ -1,9 +1,1 @@
-# 一生一芯工程项目
-
-这是一生一芯的工程项目，通过运行
-```bash
-bash init.sh subproject-name
-```
-进行初始化，具体请参考[实验讲义][lecture note].
-
-[lecture note]: https://docs.ysyx.org/schedule.html
+# ysyx-cpu-core
