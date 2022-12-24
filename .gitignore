@@ -14,8 +14,8 @@
 /nvboard
 /am-kernels
 
-build/
-obj_dir/
-*.out
-*.vcd
-*.swp
+# build/
+# obj_dir/
+# *.out
+# *.vcd
+# *.swp
