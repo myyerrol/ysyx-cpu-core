@@ -18,7 +18,7 @@
 
 #include <common.h>
 
-// ----------- state -----------
+// state
 enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };
 
 typedef struct {
@@ -29,10 +29,10 @@ typedef struct {
 
 extern NEMUState nemu_state;
 
-// ----------- timer -----------
+// timer
 uint64_t get_time();
 
-// ----------- log -----------
+// log
 #define ANSI_FG_BLACK   "\33[1;30m"
 #define ANSI_FG_RED     "\33[1;31m"
 #define ANSI_FG_GREEN   "\33[1;32m"
@@ -71,5 +71,29 @@ uint64_t get_time();
   } while (0)
 #endif
 
-// ----------- utils -----------
+// utils
 char *strrpc(char *str, char *str_old, char *str_new);
+
+#define PRINTF_BIN_PATTERN_INT8 "%c%c%c%c%c%c%c%c "
+#define PRINTF_BIN_PATTERN_INT16 \
+  PRINTF_BIN_PATTERN_INT8 PRINTF_BIN_PATTERN_INT8
+#define PRINTF_BIN_PATTERN_INT32 \
+  PRINTF_BIN_PATTERN_INT16 PRINTF_BIN_PATTERN_INT16
+#define PRINTF_BIN_PATTERN_INT64 \
+  PRINTF_BIN_PATTERN_INT32 PRINTF_BIN_PATTERN_INT32
+
+#define PRINTF_BIN_INT8(i)      \
+  (((i) & 0x80ll) ? '1' : '0'), \
+  (((i) & 0x40ll) ? '1' : '0'), \
+  (((i) & 0x20ll) ? '1' : '0'), \
+  (((i) & 0x10ll) ? '1' : '0'), \
+  (((i) & 0x08ll) ? '1' : '0'), \
+  (((i) & 0x04ll) ? '1' : '0'), \
+  (((i) & 0x02ll) ? '1' : '0'), \
+  (((i) & 0x01ll) ? '1' : '0')
+#define PRINTF_BIN_INT16(i) \
+  PRINTF_BIN_INT8((i) >> 8), PRINTF_BIN_INT8(i)
+#define PRINTF_BIN_INT32(i) \
+  PRINTF_BIN_INT16((i) >> 16), PRINTF_BIN_INT16(i)
+#define PRINTF_BIN_INT64(i) \
+  PRINTF_BIN_INT32((i) >> 32), PRINTF_BIN_INT32(i)
