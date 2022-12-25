@@ -23,17 +23,28 @@
 #define Mw vaddr_write
 
 enum {
-  TYPE_I, TYPE_U, TYPE_S,
-  TYPE_N, // none
+  TYPE_R,
+  TYPE_I,
+  TYPE_S,
+  TYPE_B,
+  TYPE_U,
+  TYPE_J,
+  TYPE_N
 };
 
 #define src1R() do { *src1 = R(rs1); } while (0)
 #define src2R() do { *src2 = R(rs2); } while (0)
-#define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while(0)
-#define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while(0)
-#define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while(0)
+#define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while (0)
+#define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while (0)
+#define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while (0)
+#define immJ() do { *imm = SEXT(BITS(i, 31, 12), 20); } while (0)
 
-static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, word_t *imm, int type) {
+static void decode_operand(Decode *s,
+                           int *dest,
+                           word_t *src1,
+                           word_t *src2,
+                           word_t *imm,
+                           int type) {
   uint32_t i = s->isa.inst.val;
   int rd  = BITS(i, 11, 7);
   int rs1 = BITS(i, 19, 15);
@@ -41,8 +52,9 @@ static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, wor
   *dest = rd;
   switch (type) {
     case TYPE_I: src1R();          immI(); break;
-    case TYPE_U:                   immU(); break;
     case TYPE_S: src1R(); src2R(); immS(); break;
+    case TYPE_U:                   immU(); break;
+    case TYPE_J:                   immJ(); break;
   }
 }
 
@@ -56,11 +68,23 @@ static int decode_exec(Decode *s) {
   decode_operand(s, &dest, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
+  printf("inst: " PRINTF_BIN_PATTERN_INT32 "\n", PRINTF_BIN_INT32(s->isa.inst.val));
+  printf("pc:   " FMT_WORD "\n", s->pc);
+  printf("snpc: " FMT_WORD "\n", s->snpc);
+  printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
 
   INSTPAT_START();
-  INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(dest) = s->pc + imm);
+
+  INSTPAT("??????? ????? ????? 000 ????? 00100 11", addi, I, R(dest) = src1 + imm);
+  INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc, U, R(dest) = s->pc + imm);
+  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal, J, R(dest) = s->pc + 4; s->dnpc = s->pc + imm);
+
+  // INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui, U, R(dest) = imm);
+
+
   INSTPAT("??????? ????? ????? 011 ????? 00000 11", ld     , I, R(dest) = Mr(src1 + imm, 8));
   INSTPAT("??????? ????? ????? 011 ????? 01000 11", sd     , S, Mw(src1 + imm, 8, src2));
+
 
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
