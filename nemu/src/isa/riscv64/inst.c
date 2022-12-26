@@ -37,7 +37,7 @@ enum {
 #define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while (0)
 #define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while (0)
 #define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while (0)
-#define immJ() do { *imm = SEXT(BITS(i, 31, 12), 20); } while (0)
+#define immJ() do { *imm = SEXT(BITS(i, 31, 21), 11) << 1; } while (0)
 
 static void decode_operand(Decode *s,
                            int *dest,
@@ -56,6 +56,7 @@ static void decode_operand(Decode *s,
     case TYPE_U:                   immU(); break;
     case TYPE_J:                   immJ(); break;
   }
+  printf("imm:  " PRINTF_BIN_PATTERN_INT32 "\n\n", PRINTF_BIN_INT32(*imm));
 }
 
 static int decode_exec(Decode *s) {
@@ -65,21 +66,21 @@ static int decode_exec(Decode *s) {
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
+  printf("op:   %s\n", str(name)); \
   decode_operand(s, &dest, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
+
+  INSTPAT_START();
+
   printf("inst: " PRINTF_BIN_PATTERN_INT32 "\n", PRINTF_BIN_INT32(s->isa.inst.val));
   printf("pc:   " FMT_WORD "\n", s->pc);
   printf("snpc: " FMT_WORD "\n", s->snpc);
-  printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
-
-  INSTPAT_START();
+  printf("dnpc: " FMT_WORD "\n", s->dnpc);
 
   INSTPAT("??????? ????? ????? 000 ????? 00100 11", addi, I, R(dest) = src1 + imm);
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc, U, R(dest) = s->pc + imm);
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal, J, R(dest) = s->pc + 4; s->dnpc = s->pc + imm);
-
-  // INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui, U, R(dest) = imm);
 
 
   INSTPAT("??????? ????? ????? 011 ????? 00000 11", ld     , I, R(dest) = Mr(src1 + imm, 8));
