@@ -35,9 +35,14 @@ enum {
 #define src1R() do { *src1 = R(rs1); } while (0)
 #define src2R() do { *src2 = R(rs2); } while (0)
 #define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while (0)
-#define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while (0)
+#define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | \
+                                 BITS(i, 11, 7); } while (0)
 #define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while (0)
-#define immJ() do { *imm = SEXT(BITS(i, 31, 21), 11) << 1; } while (0)
+// #define immJ() do { *imm = SEXT(BITS(i, 31, 21), 11) << 1; } while (0)
+#define immJ() do { *imm = SEXT(((BITS(i, 20, 20) << 19) | \
+                                 (BITS(i, 19, 12) << 11) | \
+                                 (BITS(i, 20, 20) << 10) | \
+                                  BITS(i, 30, 21)), 20) << 1; } while (0)
 
 static void decode_operand(Decode *s,
                            int *dest,
@@ -56,7 +61,10 @@ static void decode_operand(Decode *s,
     case TYPE_U:                   immU(); break;
     case TYPE_J:                   immJ(); break;
   }
-  printf("imm:  " PRINTF_BIN_PATTERN_INT32 "\n\n", PRINTF_BIN_INT32(*imm));
+  printf("dest: %d\n", *dest);
+  printf("src1: " PRINTF_BIN_PATTERN_INT32 "\n", PRINTF_BIN_INT32(*src1));
+  printf("src2: " PRINTF_BIN_PATTERN_INT32 "\n", PRINTF_BIN_INT32(*src1));
+  printf("imm:  " PRINTF_BIN_PATTERN_INT32 "\n", PRINTF_BIN_INT32(*imm));
 }
 
 static int decode_exec(Decode *s) {
@@ -76,7 +84,6 @@ static int decode_exec(Decode *s) {
   printf("inst: " PRINTF_BIN_PATTERN_INST "\n",
          PRINTF_BIN_INST(s->isa.inst.val));
   printf("pc:   " FMT_WORD "\n", s->pc);
-  printf("snpc: " FMT_WORD "\n", s->snpc);
   printf("dnpc: " FMT_WORD "\n", s->dnpc);
 
   INSTPAT("??????? ????? ????? 000 ????? 00100 11",
@@ -92,7 +99,7 @@ static int decode_exec(Decode *s) {
           J,
           R(dest) = s->pc + 4;
           s->dnpc = s->pc + imm);
-  INSTPAT("??????? ????? ????? 010 ????? 11001 11",
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11",
           jalr,
           I,
           R(dest) = s->pc + 4;
@@ -118,6 +125,8 @@ static int decode_exec(Decode *s) {
   INSTPAT_END();
 
   R(0) = 0; // reset $zero to 0
+
+  printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
 
   return 0;
 }
