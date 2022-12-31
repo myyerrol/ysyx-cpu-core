@@ -117,8 +117,6 @@ static int decode_exec(Decode *s) {
           bge,
           B,
           s->dnpc = (src1 >= src2) ? (s->pc + imm) : s->dnpc);
-
-
   INSTPAT("??????? ????? ????? 000 ????? 00000 11",
           lb,
           I,
@@ -211,6 +209,10 @@ static int decode_exec(Decode *s) {
           sllw,
           R,
           R(dest) = SEXT(BITS(BITS(src1, 31, 0) << BITS(src2, 4, 0), 31, 0), 32));
+  INSTPAT("0000001 ????? ????? 100 ????? 01110 11",
+          divw,
+          R,
+          R(dest) = SEXT(BITS(src1, 31, 0) / BITS(src2, 31, 0), 32));
 
 
 
