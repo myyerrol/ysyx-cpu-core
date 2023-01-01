@@ -215,7 +215,6 @@ static int decode_exec(Decode *s) {
           R(dest) = SEXT(BITS(src1, 31, 0) / BITS(src2, 31, 0), 32));
 
 
-
   INSTPAT("0000000 00001 00000 000 00000 11100 11",
           ebreak,
           N,
