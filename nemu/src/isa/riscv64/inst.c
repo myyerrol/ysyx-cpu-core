@@ -47,6 +47,8 @@ enum {
                                  (BITS(i, 20, 20) << 10) | \
                                   BITS(i, 30, 21)), 20) << 1; } while (0);
 
+static int inst_num = 1;
+
 static void decode_operand(Decode *s,
                            int *dest,
                            word_t *src1,
@@ -86,10 +88,12 @@ static int decode_exec(Decode *s) {
 
   INSTPAT_START();
 
+  printf("num:  %d\n", inst_num);
   printf("inst: " PRINTF_BIN_PATTERN_INST "\n",
          PRINTF_BIN_INST(s->isa.inst.val));
   printf("pc:   " FMT_WORD "\n", s->pc);
   printf("dnpc: " FMT_WORD "\n", s->dnpc);
+  inst_num++;
 
   INSTPAT("??????? ????? ????? ??? ????? 00101 11",
           auipc,
