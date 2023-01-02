@@ -128,5 +128,5 @@ char *strrpc(char *str, char *str_old, char *str_new);
 #define PRINTF_BIN_INST(i) \
   PRINTF_BIN_INT7((i) >> 25), PRINTF_BIN_INT5((i) >> 20), \
   PRINTF_BIN_INT5((i) >> 15), PRINTF_BIN_INT3((i) >> 12), \
-  PRINTF_BIN_INT5((i) >> 7),  PRINTF_BIN_INT5((i) >> 5),  \
+  PRINTF_BIN_INT5((i) >> 7),  PRINTF_BIN_INT5((i) >> 2),  \
   PRINTF_BIN_INT2(i)
