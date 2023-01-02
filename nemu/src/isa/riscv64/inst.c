@@ -99,6 +99,10 @@ static int decode_exec(Decode *s) {
           auipc,
           U,
           R(dest) = s->pc + imm);
+  INSTPAT("??????? ????? ????? ??? ????? 01101 11",
+          lui,
+          U,
+          R(dest) = imm);
   INSTPAT("??????? ????? ????? ??? ????? 11011 11",
           jal,
           J,
@@ -121,6 +125,10 @@ static int decode_exec(Decode *s) {
           blt,
           B,
           s->dnpc = ((sword_t)src1 < (sword_t)src2) ? (s->pc + imm) : s->dnpc);
+  INSTPAT("??????? ????? ????? 110 ????? 11000 11",
+          bltu,
+          B,
+          s->dnpc = (src1 < src2) ? (s->pc + imm) : s->dnpc);
   INSTPAT("??????? ????? ????? 101 ????? 11000 11",
           bge,
           B,
@@ -197,6 +205,26 @@ static int decode_exec(Decode *s) {
           srli,
           I,
           R(dest) = src1 >> BITS(imm, 5, 0));
+  INSTPAT("000000 ?????? ????? 101 ????? 00110 11",
+          srliw,
+          I,
+          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(imm, 5, 0), 32));
+  INSTPAT("000000 ?????? ????? 101 ????? 01110 11",
+          srlw,
+          R,
+          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(src2, 4, 0), 32));
+  INSTPAT("0111111 ?????? ????? 101 ????? 01100 11",
+          sra,
+          R,
+          imm = BITS(src2, 5, 0);
+          word_t bit_upper = BITS(src1, 63, 63); \
+          word_t bits = src1; \
+          for (int i = 0; i < imm; i++) { \
+            bits = bits >> 1; \
+            bits = (bit_upper << 63) | bits; \
+          } \
+          printf("bits: " FMT_WORD "\n", bits); \
+          R(dest) = bits);
   INSTPAT("0100000 ????? ????? 101 ????? 00100 11",
           srai,
           I,
@@ -221,10 +249,26 @@ static int decode_exec(Decode *s) {
           } \
           printf("bits: " FMT_WORD "\n", bits); \
           R(dest) = SEXT(bits, 32));
+  INSTPAT("0100000 ????? ????? 101 ????? 01110 11",
+          sraw,
+          R,
+          imm = BITS(src2, 4, 0);
+          word_t bit_upper = BITS(src1, 31, 31); \
+          word_t bits = BITS(src1, 31, 0); \
+          for (int i = 0; i < imm; i++) { \
+            bits = bits >> 1; \
+            bits = (bit_upper << 31) | bits; \
+          } \
+          printf("bits: " FMT_WORD "\n", bits); \
+          R(dest) = SEXT(bits, 32));
   INSTPAT("0000000 ????? ????? 000 ????? 01100 11",
           add,
           R,
           R(dest) = src1 + src2);
+  INSTPAT("0000001 ????? ????? 000 ????? 01100 11",
+          mul,
+          R,
+          R(dest) = src1 * src2);
   INSTPAT("0100000 ????? ????? 000 ????? 01100 11",
           sub,
           R,
