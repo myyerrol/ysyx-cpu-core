@@ -29,6 +29,8 @@ static int cmd_p_index = 1;
 void init_regex();
 void init_wp_pool();
 
+static char *line_last;
+
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
   static char *line_read = NULL;
@@ -42,10 +44,19 @@ static char* rl_gets() {
 
   if (line_read && *line_read) {
     add_history(line_read);
+    line_last = (char *)malloc(sizeof(char) * 256);
+    strcpy(line_last, line_read);
+  }
+
+  if (strcmp(line_read, "") == 0) {
+    line_read = (char *)malloc(sizeof(char) * 256);
+    strcpy(line_read, line_last);
   }
 
   return line_read;
 }
+
+static int cmd_help(char *args);
 
 static int cmd_c(char *args) {
   cpu_exec(-1);
@@ -56,8 +67,6 @@ static int cmd_q(char *args) {
   set_nemu_state(NEMU_QUIT, 0, 0);
   return -1;
 }
-
-static int cmd_help(char *args);
 
 static int cmd_si(char *args) {
   char *args_n = strtok(args, " ");
@@ -144,7 +153,6 @@ static struct {
   { "help", "Display information about all supported commands.", cmd_help },
   { "c", "Continue the execution of the program.", cmd_c },
   { "q", "Exit NEMU.", cmd_q },
-
   /* TODO: Add more commands */
   { "si", "Step one instruction exactly.", cmd_si },
   { "info", "Generic command for showing things about the program being debugged.", cmd_info },
