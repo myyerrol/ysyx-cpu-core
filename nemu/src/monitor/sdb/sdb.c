@@ -72,7 +72,7 @@ static int cmd_si(char *args) {
   char *args_n = strtok(args, " ");
   uint64_t n = 1;
   if (args_n != NULL) {
-    n = atol(args_n);
+    n = strtoul(args_n, NULL, 10);
   }
   cpu_exec(n);
   return 0;
