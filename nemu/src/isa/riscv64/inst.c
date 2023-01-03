@@ -249,20 +249,10 @@ static int decode_exec(Decode *s) {
           and,
           R,
           R(dest) = src1 & src2);
-
-
   INSTPAT("??????? ????? ????? 000 ????? 00110 11",
           addiw,
           I,
           R(dest) = SEXT(BITS(src1 + imm, 31, 0), 32));
-  INSTPAT("000000 ?????? ????? 001 ????? 00110 11",
-          slliw,
-          I,
-          R(dest) = SEXT(BITS(src1 << BITS(imm, 5, 0), 31, 0), 32));
-  INSTPAT("000000 ?????? ????? 101 ????? 00110 11",
-          srliw,
-          I,
-          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(imm, 5, 0), 32));
   INSTPAT("0100000 ????? ????? 101 ????? 00110 11",
           sraiw,
           I,
@@ -275,8 +265,14 @@ static int decode_exec(Decode *s) {
           } \
           printf("bits: " FMT_WORD "\n", bits); \
           R(dest) = SEXT(bits, 32));
-
-
+  INSTPAT("000000 ?????? ????? 001 ????? 00110 11",
+          slliw,
+          I,
+          R(dest) = SEXT(BITS(src1 << BITS(imm, 5, 0), 31, 0), 32));
+  INSTPAT("000000 ?????? ????? 101 ????? 00110 11",
+          srliw,
+          I,
+          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(imm, 5, 0), 32));
   INSTPAT("0000000 ????? ????? 000 ????? 01110 11",
           addw,
           R,
@@ -297,10 +293,6 @@ static int decode_exec(Decode *s) {
           divw,
           R,
           R(dest) = SEXT(BITS(src1, 31, 0) / BITS(src2, 31, 0), 32));
-  INSTPAT("000000 ?????? ????? 101 ????? 01110 11",
-          srlw,
-          R,
-          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(src2, 4, 0), 32));
   INSTPAT("0100000 ????? ????? 101 ????? 01110 11",
           sraw,
           R,
@@ -317,13 +309,14 @@ static int decode_exec(Decode *s) {
           remw,
           R,
           R(dest) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
-
-
+  INSTPAT("000000 ?????? ????? 101 ????? 01110 11",
+          srlw,
+          R,
+          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(src2, 4, 0), 32));
   INSTPAT("0000000 00001 00000 000 00000 11100 11",
           ebreak,
           N,
           NEMUTRAP(s->pc, R(10))); // R(10) is $a0
-
   INSTPAT("??????? ????? ????? ??? ????? ????? ??",
           inv,
           N,
