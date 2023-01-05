@@ -323,7 +323,6 @@ static int decode_exec(Decode *s) {
           INV(s->pc));
   INSTPAT_END();
 
-
   R(0) = 0; // reset $zero to 0
 
   printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
