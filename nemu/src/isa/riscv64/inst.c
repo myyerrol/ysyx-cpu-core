@@ -124,11 +124,13 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 100 ????? 11000 11",
           blt,
           B,
-          s->dnpc = ((sword_t)src1 < (sword_t)src2) ? (s->pc + imm) : s->dnpc);
+          s->dnpc = ((sword_t)src1 < (sword_t)src2) ? \
+                    (s->pc + imm) : s->dnpc);
   INSTPAT("??????? ????? ????? 101 ????? 11000 11",
           bge,
           B,
-          s->dnpc = ((sword_t)src1 >= (sword_t)src2) ? (s->pc + imm) : s->dnpc);
+          s->dnpc = ((sword_t)src1 >= (sword_t)src2) ? \
+                    (s->pc + imm) : s->dnpc);
   INSTPAT("??????? ????? ????? 110 ????? 11000 11",
           bltu,
           B,
@@ -200,7 +202,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("010000 ?????? ????? 101 ????? 00100 11",
           srai,
           I,
-          imm = BITS(imm, 5, 0);
+          imm = BITS(imm, 5, 0); \
           word_t bit_upper = BITS(src1, 63, 63); \
           word_t bits = src1; \
           for (int i = 0; i < imm; i++) { \
@@ -232,7 +234,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0100000 ?????? ????? 101 ????? 01100 11",
           sra,
           R,
-          imm = BITS(src2, 5, 0);
+          imm = BITS(src2, 5, 0); \
           word_t bit_upper = BITS(src1, 63, 63); \
           word_t bits = src1; \
           for (int i = 0; i < imm; i++) { \
@@ -256,7 +258,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0100000 ????? ????? 101 ????? 00110 11",
           sraiw,
           I,
-          imm = BITS(imm, 5, 0);
+          imm = BITS(imm, 5, 0); \
           word_t bit_upper = BITS(src1, 31, 31); \
           word_t bits = BITS(src1, 31, 0); \
           for (int i = 0; i < imm; i++) { \
@@ -288,7 +290,8 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000000 ????? ????? 001 ????? 01110 11",
           sllw,
           R,
-          R(dest) = SEXT(BITS(BITS(src1, 31, 0) << BITS(src2, 4, 0), 31, 0), 32));
+          R(dest) = SEXT(BITS(BITS(src1, 31, 0) << \
+                              BITS(src2, 4, 0), 31, 0), 32));
   INSTPAT("0000001 ????? ????? 100 ????? 01110 11",
           divw,
           R,
@@ -296,7 +299,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0100000 ????? ????? 101 ????? 01110 11",
           sraw,
           R,
-          imm = BITS(src2, 4, 0);
+          imm = BITS(src2, 4, 0); \
           word_t bit_upper = BITS(src1, 31, 31); \
           word_t bits = BITS(src1, 31, 0); \
           for (int i = 0; i < imm; i++) { \
