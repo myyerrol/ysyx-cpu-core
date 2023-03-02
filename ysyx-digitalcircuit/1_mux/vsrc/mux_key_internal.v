@@ -6,9 +6,9 @@ module mux_key_internal #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1, HAS_DEFAULT = 0
 );
 
     localparam PAIR_LEN = KEY_LEN + DATA_LEN;
-    wire [PAIR_LEN - 1 : 0] pair_list[NR_KEY-1 : 0];
-    wire [KEY_LEN - 1 : 0]  key_list[NR_KEY-1 : 0];
-    wire [DATA_LEN - 1 : 0] data_list[NR_KEY-1 : 0];
+    wire [PAIR_LEN - 1 : 0] pair_list[NR_KEY - 1 : 0];
+    wire [KEY_LEN - 1 : 0]  key_list[NR_KEY - 1 : 0];
+    wire [DATA_LEN - 1 : 0] data_list[NR_KEY - 1 : 0];
 
     generate
         for (genvar n = 0; n < NR_KEY; n = n + 1) begin
