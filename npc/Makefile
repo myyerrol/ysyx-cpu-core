@@ -8,10 +8,10 @@ test:
 verilog:
 	$(call git_commit, "generate verilog")
 	mkdir -p $(BUILD_DIR)
-	mill -i __.test.runMain Elaborate -td $(BUILD_DIR)
+	mill -i __.test.runMain TopMain -td $(BUILD_DIR)
 
 help:
-	mill -i __.test.runMain Elaborate --help
+	mill -i __.test.runMain TopMain --help
 
 compile:
 	mill -i __.compile
@@ -26,7 +26,9 @@ checkformat:
 	mill -i __.checkFormat
 
 clean:
-	-rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
+	rm -rf out
+	rm -rf test_run_dir
 
 .PHONY: test verilog help compile bsp reformat checkformat clean
 
