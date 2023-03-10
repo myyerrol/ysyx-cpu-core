@@ -10,7 +10,7 @@ class IDU extends Module {
         val oInstRS1  = Output(UInt( 5.W))
         val oInstRS2  = Output(UInt( 5.W))
         val oInstRD   = Output(UInt( 5.W))
-        val oInstImm  = Output(SInt( 64.W))
+        val oInstImm  = Output(UInt( 64.W))
     })
 
     val InstTypeI = new Bundle {
@@ -23,16 +23,14 @@ class IDU extends Module {
     def extSign(imm11_0: UInt) = Cat(Fill(52, imm11_0(11)), imm11_0)
 
     val inst = io.iInst.asTypeOf(InstTypeI)
-    // val isAddi = (inst.opcode === "b0010011".U) && (inst.funct3 === "b000".U)
-    // val isEbreak = inst.asUInt === "x00100073".U
-    // assert(isAddi || isEbreak, "Invalid instruction 0x%x", inst.asUInt)
 
     when ((inst.opcode === "b0010011".U) && (inst.funct3 === "b000".U)) {
         io.oInstType := ADDI.U
     }.elsewhen (inst.asUInt === "x00100073".U) {
         io.oInstType := EBREAK.U
     }.otherwise {
-        assert("Invalid instruction 0x%x", inst.asUInt)
+        io.oInstType := EBREAK.U
+        assert(false.B, "Invalid instruction 0x%x", inst.asUInt)
     }
 
     io.oInstRS1  := Mux((io.oInstType === EBREAK.U), 10.U(5.W), inst.rs1)

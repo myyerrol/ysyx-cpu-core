@@ -19,7 +19,7 @@ class Top extends Module {
     exu.io.iInstType := idu.io.oInstType
     exu.io.iInstRS1  := idu.io.oInstRS1
     exu.io.iInstRS2  := idu.io.oInstRS2
-    exu.io.iInstRd   := idu.io.oInstRD
+    exu.io.iInstRD   := idu.io.oInstRD
     exu.io.iInstImm  := idu.io.oInstImm
 
     pc := pc + 4.U
