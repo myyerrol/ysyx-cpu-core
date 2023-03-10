@@ -5,12 +5,13 @@ import utils.Base._
 
 class EXU extends Module {
     val io = IO(new Bundle {
-        val iInstType =  Input(UInt(32.W))
-        val iInstRS1  =  Input(UInt( 5.W))
-        val iInstRS2  =  Input(UInt( 5.W))
-        val iInstRD   =  Input(UInt( 5.W))
-        val iInstImm  =  Input(UInt(64.W))
-        val oHalt     = Output(Bool())
+        val iInstType  =  Input(UInt(32.W))
+        val iInstRS1   =  Input(UInt( 5.W))
+        val iInstRS2   =  Input(UInt( 5.W))
+        val iInstRD    =  Input(UInt( 5.W))
+        val iInstImm   =  Input(UInt(64.W))
+        val oInstRDVal = Output(UInt(64.W))
+        val oHalt      = Output(Bool())
     })
 
     val RegFile = Mem(32, UInt(64.W))
@@ -20,11 +21,13 @@ class EXU extends Module {
     val iInstRS1Val = readReg(io.iInstRS1)
     val iInstRS2Val = readReg(io.iInstRS2)
 
+    io.oInstRDVal := 0.U
     io.oHalt := (iInstType === EBREAK.U) && (iInstRS1Val === 1.U)
 
     switch (iInstType) {
         is (ADDI.U) {
-            RegFile(io.iInstRD) := iInstRS1Val + io.iInstImm
+            io.oInstRDVal := iInstRS1Val + io.iInstImm
+            RegFile(io.iInstRD) := io.oInstRDVal
         }
         is (EBREAK.U) {
             when (iInstRS1Val === 0.U) {
