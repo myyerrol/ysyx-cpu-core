@@ -27,5 +27,10 @@ class Top extends Module {
     io.oInstRDVal := exu.io.oInstRDVal
     io.oHalt      := exu.io.oHalt
 
+    printf("pc:   0x%x\n", io.oPC)
+    printf("inst: 0x00000000%x\n", io.iInst)
+    printf("res:  0x%x\n", io.oInstRDVal)
+    printf("halt: %x\n\n", io.oHalt)
+
     pc := pc + 4.U
 }
