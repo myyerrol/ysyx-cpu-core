@@ -31,7 +31,7 @@ class EXU extends Module {
         }
         is (EBREAK.U) {
             when (iInstRS1Val === 0.U) {
-                printf("%c", iInstRS2Val(7,0))
+                printf("%c", iInstRS2Val(7, 0))
             }
         }
     }
