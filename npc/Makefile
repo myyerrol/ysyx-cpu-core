@@ -40,32 +40,36 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf out
 	rm -rf test_run_dir
-	rm -rf obj_dir
 
 # Verilator
-ifneq ($(words $(CURDIR)), 1)
-    $(error Unsupported: GNU Make cannot build in directories containing spaces, build elsewhere: '$(CURDIR)')
-endif
+TOPNAME = Top
+INC_PATH += $(NEMU_HOME)/include
 
-ifeq ($(VERILATOR_ROOT),)
-    VERILATOR = verilator
-else
-    export VERILATOR_ROOT
-    VERILATOR = $(VERILATOR_ROOT)/bin/verilator
-endif
+VERILATOR = verilator
+VERILATOR_CFLAGS += -MMD --build -cc  \
+                    -O3 --x-assign fast --x-initial fast --noassert
 
-# VSRCS = $(shell find $(abspath ./build/cpu_single_cycle}) -name "*.v")
+# BUILD_DIR = $(BUILD_DIR_CPU_SINGLE_CYCLE)
+OBJ_DIR = $(BUILD_DIR_CPU_SINGLE_CYCLE)/obj_dir
+BIN = $(BUILD_DIR_CPU_SINGLE_CYCLE)/$(TOPNAME)
 
-build_cpu_single_cycle:
-	$(VERILATOR) -cc --exe --build -j ${BUILD_DIR_CPU_SINGLE_CYCLE}/Top.v \
-	cpu_single_cycle/cpp/Top.cpp -o Top
-run_cpu_single_cycle:
-	obj_dir/Top
+$(shell mkdir -p $(BUILD_DIR_CPU_SINGLE_CYCLE))
+
+VSRCS += $(shell find $(abspath ./) -name "*.v")
+CSRCS += $(shell find $(abspath ./) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+
+INCFLAGS = $(addprefix -I, $(INC_PATH))
+CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+
+111: $(VSRCS) $(CSRCS)
+	@rm -rf $(OBJ_DIR)
+	$(VERILATOR) $(VERILATOR_CFLAGS) \
+		--top-module $(TOPNAME) $^ \
+		$(addprefix -CFLAGS , $(CFLAGS)) \
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
 
 sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by yourself."
-
-
 
 include ../Makefile
