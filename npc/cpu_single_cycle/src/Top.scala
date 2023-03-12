@@ -3,8 +3,10 @@ import chisel3.util._
 
 class Top extends Module {
     val io = IO(new Bundle {
-        val iInst =  Input(UInt(32.W))
-        val oPC   = Output(UInt(64.W))
+        val iInst      =  Input(UInt(32.W))
+        val oPC        = Output(UInt(64.W))
+        val oInstRDVal = Output(UInt(64.W))
+        val oHalt      = Output(Bool())
     });
 
     val ifu = Module(new IFU())
@@ -21,6 +23,9 @@ class Top extends Module {
     exu.io.iInstRS2  := idu.io.oInstRS2
     exu.io.iInstRD   := idu.io.oInstRD
     exu.io.iInstImm  := idu.io.oInstImm
+
+    io.oInstRDVal := exu.io.oInstRDVal
+    io.oHalt      := exu.io.oHalt
 
     pc := pc + 4.U
 }
