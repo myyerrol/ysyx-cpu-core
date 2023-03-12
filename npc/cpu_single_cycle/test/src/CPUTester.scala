@@ -61,5 +61,18 @@ object CPUTester extends ChiselUtestTester {
                 dut.io.oHalt.expect(false.B)
             }
         }
+        test("Top") {
+            testCircuit(new Top()) { dut =>
+                // // rd[1] = rs1[0] + 1
+                dut.io.iInst.poke(0x00100093.U)
+                dut.clock.step(1)
+                // rd[3] = rs1[0] + 10
+                dut.io.iInst.poke(0x00A00193.U)
+                dut.clock.step(1)
+                // ebreak
+                dut.io.iInst.poke(0x00100073.U)
+                dut.clock.step(1)
+            }
+        }
     }
 }
