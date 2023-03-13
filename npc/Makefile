@@ -18,10 +18,11 @@ BIN_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/$(TOPNAME)
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 
+SSRCS_CPU_SINGLE_CYCLE = $(shell find $(abspath "./cpu_single_cycle/src") -name "*.scala")
 VSRCS_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/Top.v
-CSRCS_CPU_SINGLE_CYCLE += $(shell find $(abspath "./cpu_single_cycle/cpp") -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+CSRCS_CPU_SINGLE_CYCLE = $(shell find $(abspath "./cpu_single_cycle/cpp") -name "*.cpp")
 
-$(VSRCS_CPU_SINGLE_CYCLE):
+$(VSRCS_CPU_SINGLE_CYCLE): $(SSRCS_CPU_SINGLE_CYCLE)
 	$(call git_commit, "generate verilog")
 	mkdir -p $(BUILD_DIR_CPU_SINGLE_CYCLE)
 	mill -i cpu_single_cycle.test.runMain TopMain -td $(BUILD_DIR_CPU_SINGLE_CYCLE)
