@@ -6,9 +6,8 @@
 #include <memory/paddr.h>
 
 #include <verilated.h>
-
 #include "VTop.h"
-
+#include "VTop__Dpi.h"
 
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 
@@ -58,6 +57,12 @@ static void reset(VTop* top, int n) {
     top->reset = 0;
 }
 
+int add(int a, int b) { return a+b; }
+
+int judgeEbreak(int flag) {
+
+}
+
 int main(int argc, char** argv, char** env) {
     if (false && argc && argv && env) {
     }
@@ -72,7 +77,8 @@ int main(int argc, char** argv, char** env) {
     VTop* top = new VTop;
     reset(top, 10);
 
-    while (!Verilated::gotFinish()) {
+    // while (!Verilated::gotFinish()) {
+    while (!top->io_oHalt) {
         top->io_iInst = pmem_read(top->io_oPC, 8);
         single_cycle(top);
     }
