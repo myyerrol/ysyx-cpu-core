@@ -23,24 +23,11 @@ static inline word_t host_read(void *addr, int len) {
     }
 }
 
-static inline void host_write(void *addr, int len, word_t data) {
-    switch (len) {
-        case 1: *(uint8_t  *)addr = data; return;
-        case 2: *(uint16_t *)addr = data; return;
-        case 4: *(uint32_t *)addr = data; return;
-        IFDEF(CONFIG_ISA64, case 8: *(uint64_t *)addr = data; return);
-        IFDEF(CONFIG_RT_CHECK, default: assert(0));
-    }
-}
-
 static word_t pmem_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host(addr), len);
   return ret;
 }
 
-static void pmem_write(paddr_t addr, int len, word_t data) {
-  host_write(guest_to_host(addr), len, data);
-}
 
 static void single_cycle(VTop* top) {
     top->clock = 0;
@@ -57,10 +44,10 @@ static void reset(VTop* top, int n) {
     top->reset = 0;
 }
 
-int add(int a, int b) { return a+b; }
+int ebreakFlag = 0;
 
-int judgeEbreak(int flag) {
-
+void judgeEbreak(int flag) {
+    ebreakFlag = flag;
 }
 
 int main(int argc, char** argv, char** env) {
@@ -77,8 +64,7 @@ int main(int argc, char** argv, char** env) {
     VTop* top = new VTop;
     reset(top, 10);
 
-    // while (!Verilated::gotFinish()) {
-    while (!top->io_oHalt) {
+    while (!ebreakFlag) {
         top->io_iInst = pmem_read(top->io_oPC, 8);
         single_cycle(top);
     }

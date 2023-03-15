@@ -1,6 +1,8 @@
 import chisel3._
 import chisel3.util._
 
+import utils.Base._
+
 class Top extends Module {
     val io = IO(new Bundle {
         val iInst      =  Input(UInt(32.W))
@@ -26,6 +28,9 @@ class Top extends Module {
 
     io.oInstRDVal := exu.io.oInstRDVal
     io.oHalt      := exu.io.oHalt
+
+    val dpi = Module(new DPI())
+    dpi.io.i_ebreak_flag := Mux(idu.io.oInstType === EBREAK.U, 1.U, 0.U)
 
     printf("pc:   0x%x\n", io.oPC)
     printf("inst: 0x00000000%x\n", io.iInst)
