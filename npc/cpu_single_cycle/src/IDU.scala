@@ -29,7 +29,7 @@ class IDU extends Module {
     }.elsewhen (inst.asUInt === "x00100073".U) {
         io.oInstType := EBREAK.U
     }.otherwise {
-        io.oInstType := EBREAK.U
+        io.oInstType := INV.U
         assert(false.B, "Invalid instruction 0x%x", inst.asUInt)
     }
 
