@@ -18,15 +18,16 @@ BIN_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/$(TOPNAME)
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 
-SSRCS_CPU_SINGLE_CYCLE = $(shell find $(abspath "./cpu_single_cycle/src") -name "*.scala")
-VSRCS_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/Top.v
-CSRCS_CPU_SINGLE_CYCLE = $(shell find $(abspath "./cpu_single_cycle/cpp") -name "*.cpp")
+SRCSS_CPU_SINGLE_CYCLE     = $(shell find $(abspath "./cpu_single_cycle/src") -name "*.scala")
+SRCVS_CPU_SINGLE_CYCLE_GEN = $(BUILD_DIR_CPU_SINGLE_CYCLE)/Top.v
+SRCVS_CPU_SINGLE_CYCLE     = $(shell find $(abspath "./cpu_single_cycle/srcv") -name "*.v")
+SRCCS_CPU_SINGLE_CYCLE     = $(shell find $(abspath "./cpu_single_cycle/srcc") -name "*.cpp")
 
-$(VSRCS_CPU_SINGLE_CYCLE): $(SSRCS_CPU_SINGLE_CYCLE)
+$(SRCVS_CPU_SINGLE_CYCLE_GEN): $(SRCSS_CPU_SINGLE_CYCLE)
 	$(call git_commit, "generate verilog")
 	mkdir -p $(BUILD_DIR_CPU_SINGLE_CYCLE)
 	mill -i cpu_single_cycle.test.runMain TopMain -td $(BUILD_DIR_CPU_SINGLE_CYCLE)
-$(BIN_CPU_SINGLE_CYCLE): $(VSRCS_CPU_SINGLE_CYCLE) $(CSRCS_CPU_SINGLE_CYCLE)
+$(BIN_CPU_SINGLE_CYCLE): $(SRCVS_CPU_SINGLE_CYCLE_GEN) $(SRCVS_CPU_SINGLE_CYCLE) $(SRCCS_CPU_SINGLE_CYCLE)
 	@rm -rf $(OBJ_DIR_CPU_SINGLE_CYCLE)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 	--top-module $(TOPNAME) $^ \
@@ -51,7 +52,7 @@ gen_cpu_yemu:
 	$(call git_commit, "generate verilog")
 	mkdir -p $(BUILD_DIR_CPU_YEMU)
 	mill -i cpu_yemu.test.runMain TopMain -td $(BUILD_DIR_CPU_YEMU)
-gen_cpu_single_cycle:  $(VSRCS_CPU_SINGLE_CYCLE)
+gen_cpu_single_cycle:  $(SRCVS_CPU_SINGLE_CYCLE)
 	@echo "success"
 gen_cpu_pipeline:
 	$(call git_commit, "generate verilog")
