@@ -6,14 +6,27 @@
 #include <memory/paddr.h>
 
 #include <verilated.h>
+#include <verilated_vcd_c.h>
 #include "VTop.h"
 #include "VTop__Dpi.h"
 
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
+// 存储器函数
+static uint8_t host_mem[CONFIG_MSIZE] PG_ALIGN = {};
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
+static uint8_t *convertGuestToHost(paddr_t paddr) {
+    return host_mem + paddr - CONFIG_MBASE;
+}
 
-static inline word_t host_read(void *addr, int len) {
+static void initGuestMemory() {
+    static const uint32_t inst[] = {
+        0x00100093,
+        0x00A00193,
+        0x00100073
+    };
+    memcpy(convertGuestToHost(RESET_VECTOR), inst, sizeof(inst));
+}
+
+static word_t readHost(void *addr, int len) {
     switch (len) {
         case 1: return *(uint8_t  *)addr;
         case 2: return *(uint16_t *)addr;
@@ -23,52 +36,74 @@ static inline word_t host_read(void *addr, int len) {
     }
 }
 
-static word_t pmem_read(paddr_t addr, int len) {
-  word_t ret = host_read(guest_to_host(addr), len);
+static word_t readHostMemory(paddr_t addr, int len) {
+  word_t ret = readHost(convertGuestToHost(addr), len);
   return ret;
 }
 
+// 仿真测试函数
+VerilatedContext *contextp = NULL;
+VerilatedVcdC *tfp = NULL;
+static VTop *top;
 
-static void single_cycle(VTop* top) {
-    top->clock = 0;
+static void runSimStep(){
     top->eval();
-    top->clock = 1;
-    top->eval();
+    contextp->timeInc(1);
+    tfp->dump(contextp->time());
 }
 
-static void reset(VTop* top, int n) {
+static void exitSim() {
+    runSimStep();
+    tfp->close();
+    delete top;
+}
+
+static void initSim() {
+    contextp = new VerilatedContext;
+    tfp = new VerilatedVcdC;
+    top = new VTop;
+    contextp->traceEverOn(true);
+    top->trace(tfp, 0);
+    tfp->open("build/cpu_single_cycle/Wave.vcd");
+}
+
+static void runSimModuleCycle(VTop *top) {
+    top->clock = 0;
+    runSimStep();
+    top->clock = 1;
+    runSimStep();
+}
+
+static void resetSimModule(VTop *top, int n) {
     top->reset = 1;
     while (n-- > 0) {
-        single_cycle(top);
+        runSimModuleCycle(top);
     }
     top->reset = 0;
 }
 
-int ebreakFlag = 0;
+// DPI-C函数
+int ebreak_flag = 0;
 
-void judgeEbreak(int flag) {
-    ebreakFlag = flag;
+void judgeIsEbreak(int flag) {
+    ebreak_flag = flag;
 }
 
-int main(int argc, char** argv, char** env) {
+int main(int argc, char **argv, char **env) {
     if (false && argc && argv && env) {
     }
 
-    static const uint32_t inst[] = {
-        0x00100093,
-        0x00A00193,
-        0x00100073
-    };
-    memcpy(guest_to_host(RESET_VECTOR), inst, sizeof(inst));
+    initGuestMemory();
+    initSim();
 
-    VTop* top = new VTop;
-    reset(top, 10);
+    resetSimModule(top, 1);
 
-    while (!ebreakFlag) {
-        top->io_iInst = pmem_read(top->io_oPC, 8);
-        single_cycle(top);
+    while (!ebreak_flag) {
+        top->io_iInst = readHostMemory(top->io_oPC, 8);
+        runSimModuleCycle(top);
     }
 
-    delete top;
+    exitSim();
+
     return 0;
 }
