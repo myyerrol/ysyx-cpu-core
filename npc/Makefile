@@ -10,7 +10,7 @@ INC_PATH += $(NEMU_HOME)/include
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
-                    -O3 --x-assign fast --x-initial fast --noassert
+                    -O3 --x-assign fast --x-initial fast --noassert --trace
 
 OBJ_DIR_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/obj_dir
 BIN_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/$(TOPNAME)
@@ -61,9 +61,11 @@ gen_cpu_pipeline:
 build_cpu_single_cycle: $(BIN_CPU_SINGLE_CYCLE)
 	@echo "success"
 run_cpu_single_cycle: $(BIN_CPU_SINGLE_CYCLE)
+	rm -rf $(BUILD_DIR_CPU_SINGLE_CYCLE)/Wave.vcd
 	$<
-sim:
+sim_cpu_single_cycle: $(BIN_CPU_SINGLE_CYCLE)
 	$(call git_commit, "sim RTL")
+	gtkwave $(BUILD_DIR_CPU_SINGLE_CYCLE)/Wave.vcd
 	@echo "success"
 
 install_bsp:
