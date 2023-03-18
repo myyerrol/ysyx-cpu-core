@@ -43,7 +43,7 @@ case $1 in
     init NJU-ProjectN/nemu ysyx2204 nemu true NEMU_HOME
     ;;
   abstract-machine)
-    init NJU-ProjectN/abstract-machine ysyx2204 abstract-machine true AM_HOME
+    # init NJU-ProjectN/abstract-machine ysyx2204 abstract-machine true AM_HOME
     init NJU-ProjectN/fceux-am ics2021 fceux-am false
     ;;
   am-kernels)
