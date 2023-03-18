@@ -43,7 +43,7 @@ case $1 in
     init NJU-ProjectN/nemu ysyx2204 nemu true NEMU_HOME
     ;;
   abstract-machine)
-    # init NJU-ProjectN/abstract-machine ysyx2204 abstract-machine true AM_HOME
+    init NJU-ProjectN/abstract-machine ysyx2204 abstract-machine true AM_HOME
     init NJU-ProjectN/fceux-am ics2021 fceux-am false
     ;;
   am-kernels)
@@ -59,7 +59,7 @@ case $1 in
     init NJU-ProjectN/nvboard master nvboard false NVBOARD_HOME
     ;;
   npc-chisel)
-    if [ -d npc/playground ]; then
+    if [ -d npc/cpu_yemu ]; then
       echo "chisel repo is already initialized, skipping..."
     else
       rm -rf npc
