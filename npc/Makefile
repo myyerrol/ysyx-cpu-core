@@ -52,7 +52,7 @@ gen_cpu_yemu:
 	$(call git_commit, "generate verilog")
 	mkdir -p $(BUILD_DIR_CPU_YEMU)
 	mill -i cpu_yemu.test.runMain TopMain -td $(BUILD_DIR_CPU_YEMU)
-gen_cpu_single_cycle:  $(SRCVS_CPU_SINGLE_CYCLE)
+gen_cpu_single_cycle:  $(SRCVS_CPU_SINGLE_CYCLE_GEN)
 	@echo "success"
 gen_cpu_pipeline:
 	$(call git_commit, "generate verilog")

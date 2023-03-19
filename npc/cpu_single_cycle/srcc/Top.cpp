@@ -37,8 +37,8 @@ static word_t readHost(void *addr, int len) {
 }
 
 static word_t readHostMemory(paddr_t addr, int len) {
-  word_t ret = readHost(convertGuestToHost(addr), len);
-  return ret;
+    word_t ret = readHost(convertGuestToHost(addr), len);
+    return ret;
 }
 
 // 仿真测试函数
