@@ -38,6 +38,7 @@ void device_update();
 char  *iringbuf[IRING_BUF_LEN];
 char **iringbuf_head = NULL;
 char **iringbuf_tail = iringbuf + IRING_BUF_LEN;
+char **iringbuf_curr = NULL;
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
@@ -60,6 +61,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
       *iringbuf_head = (char *)malloc(128 * sizeof(char));
     }
     strcpy(*iringbuf_head, _this->logbuf);
+    iringbuf_curr = iringbuf_head;
   }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
@@ -108,7 +110,12 @@ static void execute(uint64_t n) {
     if (nemu_state.state != NEMU_RUNNING) {
       iringbuf_head = iringbuf;
       while (*iringbuf_head != NULL) {
-        printf("%s\n", *iringbuf_head);
+        if (iringbuf_head == iringbuf_curr) {
+          printf("itrace --> %s\n", *iringbuf_head);
+        }
+        else {
+          printf("itrace     %s\n", *iringbuf_head);
+        }
         iringbuf_head++;
       }
       break;
