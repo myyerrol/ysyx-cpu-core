@@ -98,7 +98,18 @@ extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int
   gIP->printInst(&inst, pc, "", *gSTI, os);
 
   int skip = s.find_first_not_of('\t');
-  const char *p = s.c_str() + skip;
   assert((int)s.length() - skip < size);
-  strcpy(str, p);
+
+  std::string s_temp = s.substr(skip, s.length() - 1);
+  int inst_len = s_temp.find('\t');
+  if (inst_len != -1) {
+    s_temp.replace(inst_len, 1, "");
+  }
+  else {
+    inst_len = 3;
+  }
+  int space_len = (5 - inst_len) + 4;
+  s_temp.insert(inst_len, space_len, ' ');
+
+  strcpy(str, s_temp.c_str());
 }
