@@ -48,6 +48,9 @@ enum {
                                   BITS(i, 30, 21)), 20) << 1; } while (0);
 
 static int inst_num = 1;
+static char *inst_op = NULL;
+
+#define DEBUG_INST FALSE
 
 static void decode_operand(Decode *s,
                            int *dest,
@@ -68,10 +71,12 @@ static void decode_operand(Decode *s,
     case TYPE_U:                   immU(); break;
     case TYPE_J:                   immJ(); break;
   }
+#if DEBUG_INST
   printf("dest: %d\n", *dest);
   printf("src1: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src1));
   printf("src2: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src2));
   printf("imm:  " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*imm));
+#endif
 }
 
 static int decode_exec(Decode *s) {
@@ -81,18 +86,21 @@ static int decode_exec(Decode *s) {
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
-  printf("op:   %s\n", str(name)); \
+  inst_op = str(name); \
   decode_operand(s, &dest, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
   INSTPAT_START();
 
+#if DEBUG_INST
   printf("num:  %d\n", inst_num);
   printf("inst: " PRINTF_BIN_PATTERN_INST "\n",
          PRINTF_BIN_INST(s->isa.inst.val));
   printf("pc:   " FMT_WORD "\n", s->pc);
   printf("dnpc: " FMT_WORD "\n", s->dnpc);
+  printf("op:   %s\n", inst_op);
+#endif
   inst_num++;
 
   INSTPAT("??????? ????? ????? ??? ????? 01101 11",
@@ -213,7 +221,6 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 63) | bits; \
           } \
-          printf("bits: " FMT_WORD "\n", bits); \
           R(dest) = bits);
   INSTPAT("0000000 ????? ????? 000 ????? 01100 11",
           add,
@@ -245,7 +252,6 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 63) | bits; \
           } \
-          printf("bits: " FMT_WORD "\n", bits); \
           R(dest) = bits);
   INSTPAT("0000000 ????? ????? 110 ????? 01100 11",
           or,
@@ -269,7 +275,6 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 31) | bits; \
           } \
-          printf("bits: " FMT_WORD "\n", bits); \
           R(dest) = SEXT(bits, 32));
   INSTPAT("000000 ?????? ????? 001 ????? 00110 11",
           slliw,
@@ -310,16 +315,19 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 31) | bits; \
           } \
-          printf("bits: " FMT_WORD "\n", bits); \
           R(dest) = SEXT(bits, 32));
-  INSTPAT("0000001 ????? ????? 110 ????? 01110 11",
-          remw,
-          R,
-          R(dest) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
   INSTPAT("000000 ?????? ????? 101 ????? 01110 11",
           srlw,
           R,
           R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(src2, 4, 0), 32));
+  INSTPAT("0000001 ????? ????? 110 ????? 01110 11",
+          remw,
+          R,
+          R(dest) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
+  INSTPAT("0000001 ????? ????? 111 ????? 01110 11",
+          remuw,
+          R,
+          R(dest) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
   INSTPAT("0000000 00001 00000 000 00000 11100 11",
           ebreak,
           N,
@@ -332,7 +340,9 @@ static int decode_exec(Decode *s) {
 
   R(0) = 0;
 
+#if DEBUG_INST
   printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
+#endif
 
   return 0;
 }
