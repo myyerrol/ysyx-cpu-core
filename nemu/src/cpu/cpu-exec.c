@@ -67,7 +67,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
-#ifdef CONFIG_WATCHPOINT
+#ifdef CONFIG_WATCH
   if (watch_trace() > 0) {
     nemu_state.state = NEMU_STOP;
   }
@@ -108,16 +108,20 @@ static void execute(uint64_t n) {
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
     if (nemu_state.state != NEMU_RUNNING) {
+#ifdef CONFIG_ITRACE_COND
       iringbuf_head = iringbuf;
       while (*iringbuf_head != NULL) {
         if (iringbuf_head == iringbuf_curr) {
-          printf("itrace --> %s\n", *iringbuf_head);
+          printf("itrace: --> %s\n", *iringbuf_head);
         }
         else {
-          printf("itrace     %s\n", *iringbuf_head);
+          printf("itrace:     %s\n", *iringbuf_head);
         }
+        char *iringbuf_temp = *iringbuf_head;
+        free(iringbuf_temp);
         iringbuf_head++;
       }
+#endif
       break;
     }
     IFDEF(CONFIG_DEVICE, device_update());
