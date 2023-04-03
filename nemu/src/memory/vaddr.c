@@ -17,13 +17,24 @@
 #include <memory/paddr.h>
 
 word_t vaddr_ifetch(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
+  word_t data = paddr_read(addr, len);
+#ifdef CONFIG_MTRACE_COND
+  printf("mtrace read inst: [" FMT_WORD "]" FMT_WORD "\n", addr, data);
+#endif
+  return data;
 }
 
 word_t vaddr_read(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
+  word_t data = paddr_read(addr, len);
+#ifdef CONFIG_MTRACE_COND
+  printf("mtrace read regs: [" FMT_WORD "]" FMT_WORD "\n", addr, data);
+#endif
+  return data;
 }
 
 void vaddr_write(vaddr_t addr, int len, word_t data) {
+#ifdef CONFIG_MTRACE_COND
+  printf("mtrace wrte regs: [" FMT_WORD "]" FMT_WORD "\n", addr, data);
+#endif
   paddr_write(addr, len, data);
 }

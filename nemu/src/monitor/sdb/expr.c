@@ -60,9 +60,6 @@ static struct rule {
 
 #define TOKEN_ARR_LENGTH      65536
 #define TOKEN_STR_LENGTH      256
-#define DEBUG_EXPR_MAKE_TOKEN 0
-#define DEBUG_EXPR            0
-#define DEBUG_EXPR_EVAL       0
 
 static regex_t re[NR_REGEX] = {};
 
@@ -106,7 +103,7 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-#if DEBUG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_MAKE_TOKEN
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
             i, rules[i].regex, position, substr_len, substr_len, substr_start);
 #endif
@@ -116,13 +113,13 @@ static bool make_token(char *e) {
          * to record the token in the array `tokens'. For certain types
          * of tokens, some extra actions should be performed.
          */
-#if DEBUG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_MAKE_TOKEN
         Log("substr_start: %s", substr_start);
 #endif
         Token token = { 0, -1, "" };
         token.type = rules[i].type;
         token.prior = rules[i].prior;
-#if DEBUG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_MAKE_TOKEN
         Log("token.type: %d", token.type);
         Log("token.prior: %d", token.prior);
 #endif
@@ -130,7 +127,7 @@ static bool make_token(char *e) {
           substr_len = TOKEN_STR_LENGTH;
         }
         strncpy(token.str, substr_start, substr_len);
-#if DEBUG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_MAKE_TOKEN
         Log("token.str: %s\n", token.str);
 #endif
         if (nr_token < ARRLEN(tokens)) {
@@ -295,7 +292,7 @@ static word_t eval(word_t p, word_t q) {
     }
     word_t val2 = eval(op + 1, q);
 
-#if DEBUG_EXPR_EVAL
+#ifdef CONFIG_EXPR_EVAL
     Log("op: %s", tokens[op].str);
     Log("val1: %lu", val1);
     Log("val2: %lu", val2);
@@ -357,7 +354,7 @@ static word_t eval(word_t p, word_t q) {
       }
     }
 
-#if DEBUG_EXPR_EVAL
+#ifdef CONFIG_EXPR_EVAL
     Log("ret: %lu\n", ret);
 #endif
 
@@ -399,8 +396,8 @@ word_t expr(char *e, char *r, bool *success) {
     *success = true;
   }
 
-#if DEBUG_EXPR
-  #if DEBUG_EXPR_EVAL
+#ifdef CONFIG_EXPR
+  #ifdef CONFIG_EXPR_EVAL
     Log("success: %d, ret: %lu\n", *success, ret);
   #else
     Log("success: %d, ret: %lu", *success, ret);

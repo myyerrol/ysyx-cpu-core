@@ -107,6 +107,21 @@ mainmenu "NEMU Configuration Menu"
   endmenu
 
   menu "Testing and Debugging"
+    config CMD_ARGS
+    bool "Enable cmd args"
+    default n
+    config EXPR
+    bool "Enable expression formal"
+    default n
+    config EXPR_MAKE_TOKEN
+    bool "Enable expression token"
+    default n
+    config EXPR_EVAL
+    bool "Enable expression eval"
+    default n
+    config WATCH
+    bool "Enable watchpoint"
+    default y
     config TRACE
       bool "Enable tracer"
       default y
@@ -124,6 +139,22 @@ mainmenu "NEMU Configuration Menu"
       default y
     config ITRACE_COND
       depends on ITRACE
+      string "Only trace instructions when the condition is true"
+      default "true"
+    config MTRACE
+      depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+      bool "Enable memory tracer"
+      default y
+    config MTRACE_COND
+      depends on MTRACE
+      string "Only trace instructions when the condition is true"
+      default "true"
+    config FTRACE
+      depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+      bool "Enable function tracer"
+      default y
+    config FTRACE_COND
+      depends on FTRACE
       string "Only trace instructions when the condition is true"
       default "true"
     config DIFFTEST
@@ -162,9 +193,6 @@ mainmenu "NEMU Configuration Menu"
       default "kvm" if DIFFTEST_REF_KVM
       default "spike" if DIFFTEST_REF_SPIKE
       default "none"
-    config WATCHPOINT
-    bool "Enable watchpoint"
-    default y
   endmenu
 
   if MODE_SYSTEM

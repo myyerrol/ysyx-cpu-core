@@ -21,8 +21,6 @@
 
 #include <memory/paddr.h>
 
-#define DEBUG_CMD_ARGS 0
-
 static int is_batch_mode = false;
 static int cmd_p_index = 1;
 
@@ -202,7 +200,7 @@ void sdb_mainloop() {
     if (args >= str_end) {
       args = NULL;
     }
-#if DEBUG_CMD_ARGS
+#ifdef CONFIG_CMD_ARGS
     Log("command args: %s", args);
 #endif
 
