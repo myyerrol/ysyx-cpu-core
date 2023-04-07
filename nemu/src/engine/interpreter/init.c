@@ -14,7 +14,6 @@
 ***************************************************************************************/
 
 #include <cpu/cpu.h>
-#include <elf-def.h>
 
 void sdb_mainloop();
 
@@ -24,6 +23,5 @@ void engine_start() {
 #else
   /* Receive commands from user. */
   sdb_mainloop();
-  elf_free();
 #endif
 }

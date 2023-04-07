@@ -1,8 +1,6 @@
 #include <common.h>
 #include <elf-def.h>
 
-#define ARR_LEN 4096
-
 char *func_name_arr[ARR_LEN];
 
 static int is_elf_64(FILE *fp) {
@@ -108,8 +106,6 @@ char *elf_get_func(Elf64_Addr addr) {
 
 void elf_free() {
     for (int i = 0; i < ARR_LEN; i++) {
-        if (func_name_arr[i] != NULL) {
-            free(func_name_arr[i]);
-        }
+        free(func_name_arr[i]);
     }
 }
