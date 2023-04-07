@@ -33,8 +33,8 @@ enum {
   TYPE_N
 };
 
-#define src1R() do { *src1 = R(rs1); } while (0);
-#define src2R() do { *src2 = R(rs2); } while (0);
+#define src1R() do { *src1 = R(*rs1); } while (0);
+#define src2R() do { *src2 = R(*rs2); } while (0);
 #define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while (0);
 #define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | \
                                  BITS(i, 11, 7); } while (0);
@@ -52,19 +52,27 @@ static int   inst_num = 1;
 static char *inst_op = NULL;
 static bool  inst_func_call = false;
 static bool  inst_func_ret = false;
-static char *inst_func_name = NULL;
+static char *inst_func_name_arr[1024];
+static char **inst_func_name_head = inst_func_name_arr;
+static int inst_func_call_depth = -1;
 
 static void decode_operand(Decode *s,
-                           int *dest,
+                           int *rd,
+                           int *rs1,
+                           int *rs2,
                            word_t *src1,
                            word_t *src2,
                            word_t *imm,
                            int type) {
   uint32_t i = s->isa.inst.val;
-  int rd  = BITS(i, 11, 7);
-  int rs1 = BITS(i, 19, 15);
-  int rs2 = BITS(i, 24, 20);
-  *dest = rd;
+  int rd_t = BITS(i, 11, 7);
+  int rs1_t = BITS(i, 19, 15);
+  int rs2_t = BITS(i, 24, 20);
+
+  *rd = rd_t;
+  *rs1 = rs1_t;
+  *rs2 = rs2_t;
+
   switch (type) {
     case TYPE_R: src1R(); src2R();         break;
     case TYPE_I: src1R();          immI(); break;
@@ -74,7 +82,9 @@ static void decode_operand(Decode *s,
     case TYPE_J:                   immJ(); break;
   }
 #ifdef CONFIG_INST
-  printf("dest: %d\n", *dest);
+  printf("rd:   %d\n", *rd);
+  printf("rs1:  %d\n", *rs1);
+  printf("rs2:  %d\n", *rs2);
   printf("src1: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src1));
   printf("src2: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src2));
   printf("imm:  " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*imm));
@@ -82,14 +92,16 @@ static void decode_operand(Decode *s,
 }
 
 static int decode_exec(Decode *s) {
-  int dest = 0;
+  int rd = 0;
+  int rs1 = 0;
+  int rs2 = 0;
   word_t src1 = 0, src2 = 0, imm = 0;
   s->dnpc = s->snpc;
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
   inst_op = str(name); \
-  decode_operand(s, &dest, &src1, &src2, &imm, concat(TYPE_, type)); \
+  decode_operand(s, &rd, &rs1, &rs2, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
@@ -105,38 +117,31 @@ static int decode_exec(Decode *s) {
 #endif
   inst_num++;
 
-#ifdef CONFIG_FTRACE_COND
-  if (inst_func_call) {
-    inst_func_name = elf_get_func(s->pc);
-    printf(" call [%s@" FMT_WORD "]\n", inst_func_name, s->pc);
-    inst_func_call = false;
-  }
-  if (inst_func_ret) {
-    printf(" ret  [%s]\n", inst_func_name);
-    inst_func_ret = false;
-  }
-#endif
-
   INSTPAT("??????? ????? ????? ??? ????? 01101 11",
           lui,
           U,
-          R(dest) = imm);
+          R(rd) = imm);
   INSTPAT("??????? ????? ????? ??? ????? 00101 11",
           auipc,
           U,
-          R(dest) = s->pc + imm);
+          R(rd) = s->pc + imm);
   INSTPAT("??????? ????? ????? ??? ????? 11011 11",
           jal,
           J,
-          R(dest) = s->pc + 4; \
+          R(rd) = s->pc + 4; \
           s->dnpc = s->pc + imm; \
           inst_func_call = true);
   INSTPAT("??????? ????? ????? 000 ????? 11001 11",
           jalr,
           I,
-          R(dest) = s->pc + 4; \
+          R(rd) = s->pc + 4; \
           s->dnpc = ((src1 + imm) & -1); \
-          inst_func_ret = true);
+          if (rd == 0 && rs1 == 1 && imm == 0) { \
+            inst_func_ret = true;
+          }
+          else {
+            inst_func_call = true;
+          });
   INSTPAT("??????? ????? ????? 000 ????? 11000 11",
           beq,
           B,
@@ -166,27 +171,27 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 00000 11",
           lb,
           I,
-          R(dest) = SEXT(Mr(src1 + imm, 1), 8));
+          R(rd) = SEXT(Mr(src1 + imm, 1), 8));
   INSTPAT("??????? ????? ????? 001 ????? 00000 11",
           lh,
           I,
-          R(dest) = SEXT(Mr(src1 + imm, 2), 16));
+          R(rd) = SEXT(Mr(src1 + imm, 2), 16));
   INSTPAT("??????? ????? ????? 010 ????? 00000 11",
           lw,
           I,
-          R(dest) = SEXT(Mr(src1 + imm, 4), 32));
+          R(rd) = SEXT(Mr(src1 + imm, 4), 32));
   INSTPAT("??????? ????? ????? 011 ????? 00000 11",
           ld,
           I,
-          R(dest) = Mr(src1 + imm, 8));
+          R(rd) = Mr(src1 + imm, 8));
   INSTPAT("??????? ????? ????? 100 ????? 00000 11",
           lbu,
           I,
-          R(dest) = Mr(src1 + imm, 1));
+          R(rd) = Mr(src1 + imm, 1));
   INSTPAT("??????? ????? ????? 101 ????? 00000 11",
           lhu,
           I,
-          R(dest) = Mr(src1 + imm, 2));
+          R(rd) = Mr(src1 + imm, 2));
   INSTPAT("??????? ????? ????? 000 ????? 01000 11",
           sb,
           S,
@@ -206,27 +211,27 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 00100 11",
           addi,
           I,
-          R(dest) = src1 + imm);
+          R(rd) = src1 + imm);
   INSTPAT("??????? ????? ????? 011 ????? 00100 11",
           sltiu,
           I,
-          R(dest) = (src1 < imm) ? 1 : 0);
+          R(rd) = (src1 < imm) ? 1 : 0);
   INSTPAT("??????? ????? ????? 100 ????? 00100 11",
           xori,
           I,
-          R(dest) = src1 ^ imm);
+          R(rd) = src1 ^ imm);
   INSTPAT("??????? ????? ????? 111 ????? 00100 11",
           andi,
           I,
-          R(dest) = src1 & imm);
+          R(rd) = src1 & imm);
   INSTPAT("000000 ?????? ????? 001 ????? 00100 11",
           slli,
           I,
-          R(dest) = src1 << BITS(imm, 5, 0));
+          R(rd) = src1 << BITS(imm, 5, 0));
   INSTPAT("000000 ?????? ????? 101 ????? 00100 11",
           srli,
           I,
-          R(dest) = src1 >> BITS(imm, 5, 0));
+          R(rd) = src1 >> BITS(imm, 5, 0));
   INSTPAT("010000 ?????? ????? 101 ????? 00100 11",
           srai,
           I,
@@ -237,27 +242,27 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 63) | bits; \
           } \
-          R(dest) = bits);
+          R(rd) = bits);
   INSTPAT("0000000 ????? ????? 000 ????? 01100 11",
           add,
           R,
-          R(dest) = src1 + src2);
+          R(rd) = src1 + src2);
   INSTPAT("0000001 ????? ????? 000 ????? 01100 11",
           mul,
           R,
-          R(dest) = src1 * src2);
+          R(rd) = src1 * src2);
   INSTPAT("0100000 ????? ????? 000 ????? 01100 11",
           sub,
           R,
-          R(dest) = src1 - src2);
+          R(rd) = src1 - src2);
   INSTPAT("0000000 ????? ????? 010 ????? 01100 11",
           slt,
           R,
-          R(dest) = ((sword_t)src1 < (sword_t)src2) ? 1 : 0);
+          R(rd) = ((sword_t)src1 < (sword_t)src2) ? 1 : 0);
   INSTPAT("0000000 ????? ????? 011 ????? 01100 11",
           sltu,
           R,
-          R(dest) = (src1 < src2) ? 1 : 0);
+          R(rd) = (src1 < src2) ? 1 : 0);
   INSTPAT("0100000 ?????? ????? 101 ????? 01100 11",
           sra,
           R,
@@ -268,19 +273,19 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 63) | bits; \
           } \
-          R(dest) = bits);
+          R(rd) = bits);
   INSTPAT("0000000 ????? ????? 110 ????? 01100 11",
           or,
           R,
-          R(dest) = src1 | src2);
+          R(rd) = src1 | src2);
   INSTPAT("0000000 ????? ????? 111 ????? 01100 11",
           and,
           R,
-          R(dest) = src1 & src2);
+          R(rd) = src1 & src2);
   INSTPAT("??????? ????? ????? 000 ????? 00110 11",
           addiw,
           I,
-          R(dest) = SEXT(BITS(src1 + imm, 31, 0), 32));
+          R(rd) = SEXT(BITS(src1 + imm, 31, 0), 32));
   INSTPAT("0100000 ????? ????? 101 ????? 00110 11",
           sraiw,
           I,
@@ -291,36 +296,36 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 31) | bits; \
           } \
-          R(dest) = SEXT(bits, 32));
+          R(rd) = SEXT(bits, 32));
   INSTPAT("000000 ?????? ????? 001 ????? 00110 11",
           slliw,
           I,
-          R(dest) = SEXT(BITS(src1 << BITS(imm, 5, 0), 31, 0), 32));
+          R(rd) = SEXT(BITS(src1 << BITS(imm, 5, 0), 31, 0), 32));
   INSTPAT("000000 ?????? ????? 101 ????? 00110 11",
           srliw,
           I,
-          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(imm, 5, 0), 32));
+          R(rd) = SEXT(BITS(src1, 31, 0) >> BITS(imm, 5, 0), 32));
   INSTPAT("0000000 ????? ????? 000 ????? 01110 11",
           addw,
           R,
-          R(dest) = SEXT(BITS(src1 + src2, 31, 0), 32));
+          R(rd) = SEXT(BITS(src1 + src2, 31, 0), 32));
   INSTPAT("0000001 ????? ????? 000 ????? 01110 11",
           mulw,
           R,
-          R(dest) = SEXT(BITS(src1 * src2, 31, 0), 32));
+          R(rd) = SEXT(BITS(src1 * src2, 31, 0), 32));
   INSTPAT("0100000 ????? ????? 000 ????? 01110 11",
           subw,
           R,
-          R(dest) = SEXT(BITS(src1 - src2, 31, 0), 32));
+          R(rd) = SEXT(BITS(src1 - src2, 31, 0), 32));
   INSTPAT("0000000 ????? ????? 001 ????? 01110 11",
           sllw,
           R,
-          R(dest) = SEXT(BITS(BITS(src1, 31, 0) << \
+          R(rd) = SEXT(BITS(BITS(src1, 31, 0) << \
                               BITS(src2, 4, 0), 31, 0), 32));
   INSTPAT("0000001 ????? ????? 100 ????? 01110 11",
           divw,
           R,
-          R(dest) = SEXT(BITS(src1, 31, 0) / BITS(src2, 31, 0), 32));
+          R(rd) = SEXT(BITS(src1, 31, 0) / BITS(src2, 31, 0), 32));
   INSTPAT("0100000 ????? ????? 101 ????? 01110 11",
           sraw,
           R,
@@ -331,19 +336,19 @@ static int decode_exec(Decode *s) {
             bits = bits >> 1; \
             bits = (bit_upper << 31) | bits; \
           } \
-          R(dest) = SEXT(bits, 32));
+          R(rd) = SEXT(bits, 32));
   INSTPAT("000000 ?????? ????? 101 ????? 01110 11",
           srlw,
           R,
-          R(dest) = SEXT(BITS(src1, 31, 0) >> BITS(src2, 4, 0), 32));
+          R(rd) = SEXT(BITS(src1, 31, 0) >> BITS(src2, 4, 0), 32));
   INSTPAT("0000001 ????? ????? 110 ????? 01110 11",
           remw,
           R,
-          R(dest) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
+          R(rd) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
   INSTPAT("0000001 ????? ????? 111 ????? 01110 11",
           remuw,
           R,
-          R(dest) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
+          R(rd) = SEXT(BITS(src1, 31, 0) % BITS(src2, 31, 0), 32));
   INSTPAT("0000000 00001 00000 000 00000 11100 11",
           ebreak,
           N,
@@ -357,12 +362,51 @@ static int decode_exec(Decode *s) {
   R(0) = 0;
 
 #ifdef CONFIG_INST
+#ifdef CONFIG_FTRACE_COND
+  printf("dnpc: " FMT_WORD "\n", s->dnpc);
+#else
   printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
+#endif
 #endif
 
 #ifdef CONFIG_FTRACE_COND
   if (inst_func_call || inst_func_ret) {
-    printf("ftrace address: " FMT_WORD, s->pc);
+    printf("ftrace address: " "0x%08"PRIx32, (uint32_t)s->pc);
+  }
+#ifdef CONFIG_INST
+  else {
+    printf("\n");
+  }
+#endif
+
+  if (inst_func_call) {
+    inst_func_name_head++;
+    inst_func_call_depth++;
+    if (*inst_func_name_head == NULL) {
+      *inst_func_name_head = (char *)malloc(sizeof(char *) * 256);
+    }
+    strcpy(*inst_func_name_head, elf_get_func(s->dnpc));
+
+    char printf_format[256] = " call %*s[%s@" "0x%08"PRIx32 "]\n";
+#ifdef CONFIG_INST
+    strcat(printf_format, "\n");
+#endif
+
+    printf(printf_format, inst_func_call_depth * 2, "", *inst_func_name_head, (uint32_t)s->dnpc);
+    inst_func_call = false;
+  }
+
+  if (inst_func_ret) {
+    inst_func_name_head--;
+    inst_func_call_depth--;
+
+    char printf_format[256] = " ret  %*s[%s]\n";
+#ifdef CONFIG_INST
+    strcat(printf_format, "\n");
+#endif
+
+    printf(printf_format, inst_func_call_depth * 2, "", *inst_func_name_head);
+    inst_func_ret = false;
   }
 #endif
 
