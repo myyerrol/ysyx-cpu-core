@@ -50,9 +50,9 @@ enum {
 
 static int   inst_num = 1;
 static char *inst_op = NULL;
-static bool  inst_func_flag = false;
-
-#define DEBUG_INST FALSE
+static bool  inst_func_call = false;
+static bool  inst_func_ret = false;
+static char *inst_func_name = NULL;
 
 static void decode_operand(Decode *s,
                            int *dest,
@@ -73,7 +73,7 @@ static void decode_operand(Decode *s,
     case TYPE_U:                   immU(); break;
     case TYPE_J:                   immJ(); break;
   }
-#if DEBUG_INST
+#ifdef CONFIG_INST
   printf("dest: %d\n", *dest);
   printf("src1: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src1));
   printf("src2: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src2));
@@ -95,7 +95,7 @@ static int decode_exec(Decode *s) {
 
   INSTPAT_START();
 
-#if DEBUG_INST
+#ifdef CONFIG_INST
   printf("num:  %d\n", inst_num);
   printf("inst: " PRINTF_BIN_PATTERN_INST "\n",
          PRINTF_BIN_INST(s->isa.inst.val));
@@ -105,11 +105,17 @@ static int decode_exec(Decode *s) {
 #endif
   inst_num++;
 
-  if (inst_func_flag) {
-    char *func_name = elf_get_func(s->pc);
-    printf(" call [%s@" FMT_WORD "]\n", func_name, s->pc);
-    inst_func_flag = false;
+#ifdef CONFIG_FTRACE_COND
+  if (inst_func_call) {
+    inst_func_name = elf_get_func(s->pc);
+    printf(" call [%s@" FMT_WORD "]\n", inst_func_name, s->pc);
+    inst_func_call = false;
   }
+  if (inst_func_ret) {
+    printf(" ret  [%s]\n", inst_func_name);
+    inst_func_ret = false;
+  }
+#endif
 
   INSTPAT("??????? ????? ????? ??? ????? 01101 11",
           lui,
@@ -124,16 +130,13 @@ static int decode_exec(Decode *s) {
           J,
           R(dest) = s->pc + 4; \
           s->dnpc = s->pc + imm; \
-// #ifdef CONFIG_FTRACE_COND
-          inst_func_flag = true; \
-          printf("ftrace address: " FMT_WORD, s->pc);
-// #endif
-          );
+          inst_func_call = true);
   INSTPAT("??????? ????? ????? 000 ????? 11001 11",
           jalr,
           I,
-          R(dest) = s->pc + 4;
-          s->dnpc = ((src1 + imm) & -1));
+          R(dest) = s->pc + 4; \
+          s->dnpc = ((src1 + imm) & -1); \
+          inst_func_ret = true);
   INSTPAT("??????? ????? ????? 000 ????? 11000 11",
           beq,
           B,
@@ -353,8 +356,14 @@ static int decode_exec(Decode *s) {
 
   R(0) = 0;
 
-#if DEBUG_INST
+#ifdef CONFIG_INST
   printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
+#endif
+
+#ifdef CONFIG_FTRACE_COND
+  if (inst_func_call || inst_func_ret) {
+    printf("ftrace address: " FMT_WORD, s->pc);
+  }
 #endif
 
   return 0;
