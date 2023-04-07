@@ -84,8 +84,10 @@ void init_elf(const char *elf_file) {
                     func_name_arr[offset] = (char *)malloc(sizeof(char) * 256);
                 }
                 strcpy(func_name_arr[offset], func_name);
+#ifdef CONFIG_ELF
                 printf("Symbol Address: " FMT_WORD "\n", st_value);
                 printf("Function Name:  %s\n\n", func_name);
+#endif
             }
         }
 

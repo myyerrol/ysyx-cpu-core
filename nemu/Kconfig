@@ -121,9 +121,13 @@ mainmenu "NEMU Configuration Menu"
     default n
     config WATCH
     bool "Enable print watchpoint"
-    default y
+    default n
     config INST
-    bool "Enable printf instruction"
+    bool "Enable print instruction"
+    default n
+    config ELF
+    bool "Enable print ELF"
+    default n
     config TRACE
       bool "Enable tracer"
       default y
