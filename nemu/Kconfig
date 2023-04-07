@@ -108,20 +108,22 @@ mainmenu "NEMU Configuration Menu"
 
   menu "Testing and Debugging"
     config CMD_ARGS
-    bool "Enable cmd args"
+    bool "Enable print cmd args"
     default n
     config EXPR
-    bool "Enable expression formal"
+    bool "Enable print expression"
     default n
     config EXPR_MAKE_TOKEN
-    bool "Enable expression token"
+    bool "Enable print expression token"
     default n
     config EXPR_EVAL
-    bool "Enable expression eval"
+    bool "Enable print expression eval"
     default n
     config WATCH
-    bool "Enable watchpoint"
+    bool "Enable print watchpoint"
     default y
+    config INST
+    bool "Enable printf instruction"
     config TRACE
       bool "Enable tracer"
       default y
