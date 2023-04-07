@@ -17,6 +17,7 @@
 #include <cpu/cpu.h>
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
+#include <elf-def.h>
 
 #define R(i) gpr(i)
 #define Mr vaddr_read
@@ -47,8 +48,9 @@ enum {
                                  (BITS(i, 20, 20) << 10) | \
                                   BITS(i, 30, 21)), 20) << 1; } while (0);
 
-static int inst_num = 1;
+static int   inst_num = 1;
 static char *inst_op = NULL;
+static bool  inst_func_flag = false;
 
 #define DEBUG_INST FALSE
 
@@ -103,6 +105,12 @@ static int decode_exec(Decode *s) {
 #endif
   inst_num++;
 
+  if (inst_func_flag) {
+    char *func_name = elf_get_func(s->pc);
+    printf(" call [%s@" FMT_WORD "]\n", func_name, s->pc);
+    inst_func_flag = false;
+  }
+
   INSTPAT("??????? ????? ????? ??? ????? 01101 11",
           lui,
           U,
@@ -114,8 +122,13 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? ??? ????? 11011 11",
           jal,
           J,
-          R(dest) = s->pc + 4;
-          s->dnpc = s->pc + imm);
+          R(dest) = s->pc + 4; \
+          s->dnpc = s->pc + imm; \
+// #ifdef CONFIG_FTRACE_COND
+          inst_func_flag = true; \
+          printf("ftrace address: " FMT_WORD, s->pc);
+// #endif
+          );
   INSTPAT("??????? ????? ????? 000 ????? 11001 11",
           jalr,
           I,

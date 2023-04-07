@@ -1,13 +1,11 @@
-
-#include <elf.h>
-
 #include <common.h>
+#include <elf-def.h>
 
 #define ARR_LEN 4096
 
 char *func_name_arr[ARR_LEN];
 
-int is_elf_64(FILE *fp) {
+static int is_elf_64(FILE *fp) {
     char buf[16];
     int  nread = fread(buf, 1, 16, fp);
     fseek(fp, 0, SEEK_SET);
@@ -82,7 +80,10 @@ void init_elf(const char *elf_file) {
                 char *func_name = elf_string_name_arr + st_name;
                 Elf64_Addr offset = st_value - elf_header.e_entry;
                 Assert(offset < ARR_LEN, "Out of bounds");
-                func_name_arr[offset] = func_name;
+                if (func_name_arr[offset] == NULL) {
+                    func_name_arr[offset] = (char *)malloc(sizeof(char) * 256);
+                }
+                strcpy(func_name_arr[offset], func_name);
                 printf("Symbol Address: " FMT_WORD "\n", st_value);
                 printf("Function Name:  %s\n\n", func_name);
             }
@@ -95,5 +96,18 @@ void init_elf(const char *elf_file) {
 char *elf_get_func(Elf64_Addr addr) {
     Elf64_Addr offset = addr - CONFIG_MBASE;
     Assert(offset < ARR_LEN, "Out of bounds");
-    return func_name_arr[offset];
+    if (func_name_arr[offset] != NULL) {
+        return func_name_arr[offset];
+    }
+    else {
+        return "";
+    }
+}
+
+void elf_free() {
+    for (int i = 0; i < ARR_LEN; i++) {
+        if (func_name_arr[i] != NULL) {
+            free(func_name_arr[i]);
+        }
+    }
 }
