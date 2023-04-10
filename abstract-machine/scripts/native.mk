@@ -12,7 +12,8 @@ AM_SRCS := native/trm.c \
            native/ioe/disk.c \
 
 CFLAGS  += -fpie
-ASFLAGS += -fpie -pie
+CFLAGS  += -g
+ASFLAGS += -fpie -pieqq
 
 image:
 	@echo + LD "->" $(IMAGE_REL)
