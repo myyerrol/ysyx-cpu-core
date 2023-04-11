@@ -5,13 +5,121 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-int printf(const char *fmt, ...) {
-  panic("Not implemented");
+void printfChar(char ch) {
+  putch(ch);
 }
 
-int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
+void printfStr(char *str) {
+  putstr(str);
 }
+
+void printfNum(uint64_t num, int base) {
+  if (num == 0) {
+    return;
+  }
+  else {
+    printfNum(num / base, base);
+    putch("0123456789abcdef"[num % base]);
+  }
+}
+
+void printfDec(int dec) {
+  if (dec < 0) {
+    putch('-');
+    dec = -dec;
+  }
+  if (dec != 0) {
+    printfNum(dec, 10);
+  }
+  else {
+    putch('0');
+    return;
+  }
+}
+
+void printfOct(uint32_t oct) {
+  if (oct != 0) {
+    printfNum(oct, 8);
+  }
+  else {
+    putch('0');
+    return;
+  }
+}
+
+void printfHex(uint32_t hex) {
+  if (hex != 0) {
+    printfNum(hex, 16);
+  }
+  else {
+    putch('0');
+    return;
+  }
+}
+
+void printfAddr(uint64_t addr) {
+  putch('0');
+  putch('x');
+  printfNum(addr, 16);
+}
+
+void printfFloat(double num) {
+  int num_int;
+
+  num_int = (int)num;
+  printfNum(num_int, 10);
+
+  putch('.');
+
+  num -= num_int;
+  if (num != 0) {
+    num_int = (int)(num * 1000000);
+    printfNum(num_int, 10);
+  }
+  else {
+    for (num_int = 0; num_int < 6; num_int++) {
+      putch('0');
+    }
+  }
+}
+
+int printf(const char *fmt, ...) {
+  va_list va_ptr;
+  va_start(va_ptr, fmt);
+
+  while (*fmt != '\0') {
+    if (*fmt == '%') {
+      fmt++;
+      switch (*fmt) {
+        case 'c': printfChar(va_arg(va_ptr, int)); break;
+        case 's': printfStr(va_arg(va_ptr, char*)); break;
+        case 'd': printfDec(va_arg(va_ptr, int)); break;
+        case 'o': printfOct(va_arg(va_ptr, uint32_t)); break;
+        case 'x': printfHex(va_arg(va_ptr, uint32_t)); break;
+        case 'p': printfAddr(va_arg(va_ptr, uint64_t)); break;
+        case 'f': printfFloat(va_arg(va_ptr, double)); break;
+        default: break;
+      }
+    }
+    else {
+      putch(*fmt);
+    }
+    fmt++;
+  }
+
+  va_end(va_ptr);
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
 
 void itoa(unsigned int n, char *buf) {
   int i;
@@ -26,6 +134,16 @@ void itoa(unsigned int n, char *buf) {
 
   buf[i] = (n % 10) + '0';
   buf[i + 1] = '\0';
+}
+
+
+
+
+
+
+
+int vsprintf(char *out, const char *fmt, va_list ap) {
+  panic("Not implemented");
 }
 
 int sprintf(char *out, const char *fmt, ...) {
@@ -56,9 +174,6 @@ int sprintf(char *out, const char *fmt, ...) {
               arg_num = -arg_num;
           }
           itoa(arg_num, buf);
-          // buf[0] = '1';
-          // buf[1] = '0';
-          // buf[2] = '\0';
           memcpy(out, buf, strlen(buf));
           out += strlen(buf);
           break;
