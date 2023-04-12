@@ -77,7 +77,7 @@ void init_elf(const char *elf_file) {
                 Elf32_Word st_name = elf_symbol_arr[i].st_name;
                 char *func_name = elf_string_name_arr + st_name;
                 Elf64_Addr offset = st_value - elf_header.e_entry;
-                Assert(offset < ARR_LEN, "Out of bounds");
+                Assert(offset < ARR_LEN, "Out of bounds: %ld", offset);
                 if (func_name_arr[offset] == NULL) {
                     func_name_arr[offset] = (char *)malloc(sizeof(char) * 256);
                 }
@@ -95,7 +95,7 @@ void init_elf(const char *elf_file) {
 
 char *elf_get_func(Elf64_Addr addr) {
     Elf64_Addr offset = addr - CONFIG_MBASE;
-    Assert(offset < ARR_LEN, "Out of bounds");
+    Assert(offset < ARR_LEN, "Out of bounds: %ld", offset);
     if (func_name_arr[offset] != NULL) {
         return func_name_arr[offset];
     }
