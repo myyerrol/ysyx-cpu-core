@@ -110,7 +110,6 @@ int printf(const char *fmt, ...) {
   return 0;
 }
 
-
 char *out_g = NULL;
 char  num_arr[256];
 char *num_arr_p = NULL;
@@ -127,7 +126,7 @@ void printfNumS(uint64_t num, int base) {
   else {
     printfNumS(num / base, base);
     char num_ch = "0123456789abcdef"[num % base];
-    printf("num_ch: %c\n", num_ch);
+    // printf("num_ch: %c\n", num_ch);
     *num_arr_p = num_ch;
     num_arr_p++;
   }
@@ -176,58 +175,8 @@ int sprintf(char *out, const char *fmt, ...) {
 
   *out_g = '\0';
   va_end(va_ptr);
-  printf("out: %s\n", out);
+  // printf("out: %s\n", out);
   return 0;
-
-
-
-  // int arg_num;
-  // char *arg_str;
-
-  // char buf[128];
-  // memset(buf, 0, sizeof(buf));
-
-  // va_list va_ptr;
-  // va_start(va_ptr, fmt);
-
-  // while (*fmt != '\0') {
-  //   if (*fmt == '%') {
-  //     fmt++;
-  //     switch (*fmt) {
-  //       case 's': {
-  //         arg_str = va_arg(va_ptr, char*);
-  //         memcpy(out, arg_str, strlen(arg_str));
-  //         out += strlen(arg_str);
-  //         break;
-  //       }
-  //       case 'd': {
-  //         arg_num = va_arg(va_ptr, int);
-  //         if (arg_num < 0) {
-  //             *out = '-';
-  //             out++;
-  //             arg_num = -arg_num;
-  //         }
-  //         itoa(arg_num, buf);
-  //         memcpy(out, buf, strlen(buf));
-  //         out += strlen(buf);
-  //         break;
-  //       }
-  //       default: {
-  //         break;
-  //       }
-  //     }
-  //   }
-  //   else {
-  //     *out = *fmt;
-  //     out++;
-  //   }
-  //   fmt++;
-  // }
-
-  // *out = '\0';
-  // va_end(va_ptr);
-
-  // return 0;
 }
 
 int vsprintf(char *out, const char *fmt, va_list va_ptr) {
