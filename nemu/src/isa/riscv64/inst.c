@@ -329,7 +329,7 @@ static int decode_exec(Decode *s) {
           sllw,
           R,
           R(rd) = SEXT(BITS(BITS(src1, 31, 0) << \
-                              BITS(src2, 4, 0), 31, 0), 32));
+                            BITS(src2, 4, 0), 31, 0), 32));
   INSTPAT("0000001 ????? ????? 100 ????? 01110 11",
           divw,
           R,
