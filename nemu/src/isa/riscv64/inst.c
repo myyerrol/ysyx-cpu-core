@@ -43,20 +43,22 @@ enum {
                                  (BITS(i, 30, 25) << 4) | \
                                   BITS(i, 11, 8)), 12) << 1; } while (0);
 #define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while (0);
-#define immJ() do { *imm = SEXT(((BITS(i, 20, 20) << 19) | \
+#define immJ() do { *imm = SEXT(((BITS(i, 31, 31) << 19) | \
                                  (BITS(i, 19, 12) << 11) | \
                                  (BITS(i, 20, 20) << 10) | \
                                   BITS(i, 30, 21)), 20) << 1; } while (0);
 
 static int   inst_num = 1;
-static char *inst_op = NULL;
 static bool  inst_func_call = false;
 static bool  inst_func_ret = false;
+#ifdef CONFIG_FTRACE_COND
 static char *inst_func_name_arr[1024];
 static char **inst_func_name_head = inst_func_name_arr;
 static int inst_func_call_depth = -1;
+#endif
 
-static void decode_operand(Decode *s,
+static void decode_operand(char *op,
+                           Decode *s,
                            int *rd,
                            int *rs1,
                            int *rs2,
@@ -82,6 +84,7 @@ static void decode_operand(Decode *s,
     case TYPE_J:                   immJ(); break;
   }
 #ifdef CONFIG_INST
+  printf("op:   %s\n", op);
   printf("rd:   %d\n", *rd);
   printf("rs1:  %d\n", *rs1);
   printf("rs2:  %d\n", *rs2);
@@ -100,8 +103,7 @@ static int decode_exec(Decode *s) {
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
-  inst_op = str(name); \
-  decode_operand(s, &rd, &rs1, &rs2, &src1, &src2, &imm, concat(TYPE_, type)); \
+  decode_operand(str(name), s, &rd, &rs1, &rs2, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
@@ -113,7 +115,6 @@ static int decode_exec(Decode *s) {
          PRINTF_BIN_INST(s->isa.inst.val));
   printf("pc:   " FMT_WORD "\n", s->pc);
   printf("dnpc: " FMT_WORD "\n", s->dnpc);
-  printf("op:   %s\n", inst_op);
 #endif
   inst_num++;
 
