@@ -1,7 +1,11 @@
+# 检查传递的类型是否在支持列表中
+PROJECTS = cpu_single_cycle cpu_yemu
+ifeq ($(filter $(PROJECTS), $(PROJECT)), )
+  $(error Expected $$PROJECT in {$(PROJECTS)}, Got "$(PROJECT)")
+endif
+
 BUILD_DIR = ./build
-BUILD_DIR_CPU_YEMU = $(BUILD_DIR)/cpu_yemu
-BUILD_DIR_CPU_SINGLE_CYCLE = $(BUILD_DIR)/cpu_single_cycle
-BUILD_DIR_CPU_PIPELINE = $(BUILD_DIR)/cpu_pipeline
+BUILD_DIR_PROJECT =$(BUILD_DIR)/$(PROJECT)
 
 export PATH := $(PATH):$(abspath ./utils)
 
@@ -12,62 +16,46 @@ VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
                     -O3 --x-assign fast --x-initial fast --noassert --trace
 
-OBJ_DIR_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/obj_dir
-BIN_CPU_SINGLE_CYCLE = $(BUILD_DIR_CPU_SINGLE_CYCLE)/$(TOPNAME)
+OBJ_DIR_PROJECT = $(BUILD_DIR_PROJECT)/obj_dir
+BIN_PROJECT = $(BUILD_DIR_PROJECT)/$(TOPNAME)
 
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 
-SRCSS_CPU_SINGLE_CYCLE     = $(shell find $(abspath "./cpu_single_cycle/src") -name "*.scala")
-SRCVS_CPU_SINGLE_CYCLE_GEN = $(BUILD_DIR_CPU_SINGLE_CYCLE)/Top.v
-SRCVS_CPU_SINGLE_CYCLE     = $(shell find $(abspath "./cpu_single_cycle/srcv") -name "*.v")
-SRCCS_CPU_SINGLE_CYCLE     = $(shell find $(abspath "./cpu_single_cycle/srcc") -name "*.cpp")
+SRCS_DIR = /src
+SRCV_DIR = /srcv
+SRCC_DIR = /srcc
 
-$(SRCVS_CPU_SINGLE_CYCLE_GEN): $(SRCSS_CPU_SINGLE_CYCLE)
+SRCSS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCS_DIR)) -name "*.scala")
+SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
+SRCVS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCV_DIR)) -name "*.v")
+SRCCS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCC_DIR)) -name "*.cpp")
+
+$(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
 	$(call git_commit, "generate verilog")
-	mkdir -p $(BUILD_DIR_CPU_SINGLE_CYCLE)
-	mill -i cpu_single_cycle.test.runMain TopMain -td $(BUILD_DIR_CPU_SINGLE_CYCLE)
-$(BIN_CPU_SINGLE_CYCLE): $(SRCVS_CPU_SINGLE_CYCLE_GEN) $(SRCVS_CPU_SINGLE_CYCLE) $(SRCCS_CPU_SINGLE_CYCLE)
-	@rm -rf $(OBJ_DIR_CPU_SINGLE_CYCLE)
+	mkdir -p $(BUILD_DIR_PROJECT)
+	mill -i $(PROJECT).test.runMain TopMain -td $(BUILD_DIR_PROJECT)
+$(BIN_PROJECT): $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
+	@rm -rf $(OBJ_DIR_PROJECT)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 	--top-module $(TOPNAME) $^ \
 	$(addprefix -CFLAGS , $(CFLAGS)) \
-	--Mdir $(OBJ_DIR_CPU_SINGLE_CYCLE) --exe -o \
-	$(abspath $(BIN_CPU_SINGLE_CYCLE))
+	--Mdir $(OBJ_DIR_PROJECT) --exe -o \
+	$(abspath $(BIN_PROJECT))
 
-.PHONY: test_cpu_yemu test_cpu_single_cycle test_cpu_pipeline \
-		gen_cpu_yemu gen_cpu_single_cycle gen_cpu_pipeline \
-		build_cpu_single_cycle \
-		run_cpu_single_cycle \
-		sim \
-	    install_bsp reformat check_format clean
+.PHONY: test gen build run sim install_bsp reformat check_format clean
 
-test_cpu_yemu:
-	mill -i cpu_yemu.test
-test_cpu_single_cycle:
-	mill -i cpu_single_cycle.test
-test_cpu_pipeline:
-	mill -i cpu_pipeline.test
-gen_cpu_yemu:
-	$(call git_commit, "generate verilog")
-	mkdir -p $(BUILD_DIR_CPU_YEMU)
-	mill -i cpu_yemu.test.runMain TopMain -td $(BUILD_DIR_CPU_YEMU)
-gen_cpu_single_cycle:  $(SRCVS_CPU_SINGLE_CYCLE_GEN)
+test:
+	mill -i $(PROJECT).test
+gen:  $(SRCVS_PROJECT_GEN)
 	@echo "success"
-gen_cpu_pipeline:
-	$(call git_commit, "generate verilog")
-	mkdir -p $(BUILD_DIR_CPU_PIPELINE)
-	mill -i cpu_pipeline.test.runMain TopMain -td $(BUILD_DIR_CPU_PIPELINE)
-build_cpu_single_cycle: $(BIN_CPU_SINGLE_CYCLE)
-	@echo "success"
-run_cpu_single_cycle: $(BIN_CPU_SINGLE_CYCLE)
-	rm -rf $(BUILD_DIR_CPU_SINGLE_CYCLE)/Wave.vcd
+run: $(BIN_PROJECT)
+	rm -rf $(BUILD_DIR_PROJECT)/Wave.vcd
 	$<
-sim_cpu_single_cycle: $(BIN_CPU_SINGLE_CYCLE)
+sim: $(BIN_PROJECT)
 	$(call git_commit, "sim RTL")
-	gtkwave $(BUILD_DIR_CPU_SINGLE_CYCLE)/Wave.vcd
+	gtkwave $(BUILD_DIR_PROJECT)/Wave.vcd
 	@echo "success"
-
 install_bsp:
 	mill -i mill.bsp.BSP/install
 reformat:
@@ -75,7 +63,7 @@ reformat:
 check_format:
 	mill -i __.checkFormat
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR_PROJECT)
 	rm -rf out
 	rm -rf test_run_dir
 
