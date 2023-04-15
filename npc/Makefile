@@ -1,7 +1,9 @@
 # 检查传递的类型是否在支持列表中
-PROJECTS = cpu_single_cycle cpu_yemu
-ifeq ($(filter $(PROJECTS), $(PROJECT)), )
-  $(error Expected $$PROJECT in {$(PROJECTS)}, Got "$(PROJECT)")
+ifneq ($(MAKECMDGOALS), clean)
+	PROJECTS = cpu_single_cycle cpu_yemu
+	ifeq ($(filter $(PROJECTS), $(PROJECT)), )
+	$(error Expected $$PROJECT in {$(PROJECTS)}, Got "$(PROJECT)")
+	endif
 endif
 
 TOPNAME = Top
