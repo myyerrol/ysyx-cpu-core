@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <getopt.h>
 
 #include <common.h>
 #include <memory/paddr.h>
@@ -10,45 +8,91 @@
 #include "VTop.h"
 #include "VTop__Dpi.h"
 
-// 存储器函数
-// static uint8_t host_mem[CONFIG_MSIZE] PG_ALIGN = {};
+static char *log_file = NULL;
+static char *img_file = NULL;
 
-// static uint8_t *convertGuestToHost(paddr_t paddr) {
-//     return host_mem + paddr - CONFIG_MBASE;
-// }
+// 兼容执行函数
+void init_log(const char *log_file);
 
-// static void initGuestMemory() {
-//     static const uint32_t inst[] = {
-//         0x00100093,
-//         0x00A00193,
-//         0x00100073
-//     };
-//     memcpy(convertGuestToHost(RESET_VECTOR), inst, sizeof(inst));
-// }
-
-// static word_t readHost(void *addr, int len) {
-//     switch (len) {
-//         case 1: return *(uint8_t  *)addr;
-//         case 2: return *(uint16_t *)addr;
-//         case 4: return *(uint32_t *)addr;
-//         IFDEF(CONFIG_ISA64, case 8: return *(uint64_t *)addr);
-//         default: MUXDEF(CONFIG_RT_CHECK, assert(0), return 0);
-//     }
-// }
-
-// static word_t readHostMemory(paddr_t addr, int len) {
-//     word_t ret = readHost(convertGuestToHost(addr), len);
-//     return ret;
-// }
-
-
-void initMem() {
-    static const uint32_t inst[] = {
-        0x00100093,
-        0x00A00193,
-        0x00100073
+// 初始执行函数
+static int parseArgs(int argc, char **argv) {
+    const struct option table[] = {
+        {"batch"    , no_argument      , NULL, 'b'},
+        {"log"      , required_argument, NULL, 'l'},
+        {"diff"     , required_argument, NULL, 'd'},
+        {"port"     , required_argument, NULL, 'p'},
+        {"help"     , no_argument      , NULL, 'h'},
+        {"elf"      , required_argument, NULL, 'e'},
+        {0          , 0                , NULL,  0 },
     };
-    memcpy(guest_to_host(RESET_VECTOR), inst, sizeof(inst));
+    int o;
+    printf("argc: %d\n", argc);
+    printf("argv: %s\n", argv[1]);
+    printf("argv: %s\n", argv[2]);
+    printf("argv: %s\n", argv[3]);
+    while ((o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
+        switch (o) {
+        // case 'b': sdb_set_batch_mode(); break;
+        // case 'p': sscanf(optarg, "%d", &difftest_port); break;
+        case 'l': log_file = optarg; break;
+        // case 'd': diff_so_file = optarg; break;
+        // case 'e': elf_file = optarg; break;
+        case 1: img_file = optarg; return 0;
+        default:
+            printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
+            printf("\t-b,--batch              run with batch mode\n");
+            printf("\t-l,--log=FILE           output log to FILE\n");
+            printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
+            printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+            printf("\t-e,--elf=FILE           read symbol and string table from FILE\n");
+            printf("\n");
+            exit(0);
+        }
+    }
+    return 0;
+}
+
+static void initLog() {
+    init_log(log_file);
+}
+
+static void initISA() {
+    static const uint32_t img[] = {
+        0x00100093, // addi r1 r0 1
+        0x00A00193, // addi r3 r0 10
+        0x00100073  // ebreak
+    };
+    memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
+}
+
+static long initImg() {
+    if (img_file == NULL) {
+        Log("No image is given. Use the default build-in image.");
+        return 4096;
+    }
+
+    FILE *fp = fopen(img_file, "rb");
+    Assert(fp, "Can not open '%s'", img_file);
+
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+
+    Log("The image is %s, size = %ld", img_file, size);
+
+    fseek(fp, 0, SEEK_SET);
+    int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
+    assert(ret == 1);
+
+    fclose(fp);
+    return size;
+}
+
+static void initMonitor(int argc, char **argv) {
+    parseArgs(argc, argv);
+
+    initLog();
+    initISA();
+    initImg();
 }
 
 // 仿真测试函数
@@ -92,25 +136,24 @@ static void resetSimModule(VTop *top, int n) {
     top->reset = 0;
 }
 
-// DPI-C函数
+// 硬件通信函数
 int ebreak_flag = 0;
 
 void judgeIsEbreak(int flag) {
     ebreak_flag = flag;
 }
 
+// 主要执行函数
 int main(int argc, char **argv, char **env) {
     if (false && argc && argv && env) {
     }
 
-    // initGuestMemory();
-    initMem();
+    initMonitor(argc, argv);
     initSim();
 
     resetSimModule(top, 1);
 
     while (!ebreak_flag) {
-        // top->io_iInst = readHostMemory(top->io_oPC, 8);
         top->io_iInst = paddr_read(top->io_oPC, 8);
         runSimModuleCycle(top);
     }

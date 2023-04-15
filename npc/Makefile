@@ -55,6 +55,9 @@ $(BIN_PROJECT): $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
 	--Mdir $(OBJ_DIR_PROJECT) --exe -o \
 	$(abspath $(BIN_PROJECT))
 
+override ARGS ?= --log=$(BUILD_DIR)/npc-log.txt
+IMG ?=
+
 .PHONY: test gen build run sim install_bsp reformat check_format clean
 
 test:
@@ -63,7 +66,7 @@ gen:  $(SRCVS_PROJECT_GEN)
 	@echo "success"
 run: $(BIN_PROJECT)
 	rm -rf $(BUILD_DIR_PROJECT)/Wave.vcd
-	$<
+	$(BIN_PROJECT) $(ARGS) $(IMG)
 sim: $(BIN_PROJECT)
 	$(call git_commit, "sim RTL")
 	gtkwave $(BUILD_DIR_PROJECT)/Wave.vcd
