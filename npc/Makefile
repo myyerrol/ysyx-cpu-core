@@ -4,23 +4,29 @@ ifeq ($(filter $(PROJECTS), $(PROJECT)), )
   $(error Expected $$PROJECT in {$(PROJECTS)}, Got "$(PROJECT)")
 endif
 
+TOPNAME = Top
+
 BUILD_DIR = ./build
 BUILD_DIR_PROJECT =$(BUILD_DIR)/$(PROJECT)
+OBJ_DIR_PROJECT = $(BUILD_DIR_PROJECT)/obj_dir
+BIN_PROJECT = $(BUILD_DIR_PROJECT)/$(TOPNAME)
 
 export PATH := $(PATH):$(abspath ./utils)
-
-TOPNAME = Top
-INC_PATH += $(NEMU_HOME)/include
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
                     -O3 --x-assign fast --x-initial fast --noassert --trace
 
-OBJ_DIR_PROJECT = $(BUILD_DIR_PROJECT)/obj_dir
-BIN_PROJECT = $(BUILD_DIR_PROJECT)/$(TOPNAME)
+-include $(NEMU_HOME)/include/config/auto.conf
+-include $(NEMU_HOME)/include/config/auto.conf.cmd
 
+INC_PATH += $(NEMU_HOME)/include
+INC_PATH += $(NEMU_HOME)/include/memory
+INC_PATH += $(NEMU_HOME)/src/isa/riscv64/include
 INCFLAGS = $(addprefix -I, $(INC_PATH))
+
 CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+CFLAGS += -D__GUEST_ISA__=riscv64
 
 SRCS_DIR = /src
 SRCV_DIR = /srcv
@@ -29,7 +35,11 @@ SRCC_DIR = /srcc
 SRCSS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCS_DIR)) -name "*.scala")
 SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
 SRCVS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCV_DIR)) -name "*.v")
-SRCCS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCC_DIR)) -name "*.cpp")
+SRCCS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCC_DIR)) -name "*.c")
+
+SRCCS_LIB += $(NEMU_HOME)/src/memory
+SRCCS_LIB += $(NEMU_HOME)/src/utils
+SRCCS_PROJECT += $(shell find $(SRCCS_LIB) -name "*.c")
 
 $(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
 	$(call git_commit, "generate verilog")
