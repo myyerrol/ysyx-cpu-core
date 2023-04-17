@@ -26,10 +26,6 @@ static int parseArgs(int argc, char **argv) {
         {0          , 0                , NULL,  0 },
     };
     int o;
-    printf("argc: %d\n", argc);
-    printf("argv: %s\n", argv[1]);
-    printf("argv: %s\n", argv[2]);
-    printf("argv: %s\n", argv[3]);
     while ((o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
         switch (o) {
         // case 'b': sdb_set_batch_mode(); break;
