@@ -1,24 +1,39 @@
+package cpu.stage
+
 import chisel3._
 import chisel3.util._
 
-import utils.Base._
+import cpu.util.Base._
 
 class EXU extends Module {
     val io = IO(new Bundle {
-        val iInstRS1 =  Input(UInt(5.W))
-        val iInstRS2 =  Input(UInt(5.W))
-        val iInstRD  =  Input(UInt(5.W))
-        val iALUType =  Input(UInt(5.W))
-        val iALURS1  =  Input(UInt(5.W))
-        val iALURS2  =  Input(UInt(5.W))
+        val iInstRS1Addr = Input(UInt(5.W))
+        val iInstRS2Addr = Input(UInt(5.W))
+        val iInstRDAddr  = Input(UInt(5.W))
+        val iALUType     = Input(UInt(5.W))
+        val iALURS1Val   = Input(UInt(DATA_WIDTH.W))
+        val iALURS2Val   = Input(UInt(DATA_WIDTH.W))
+        val iMemWrEn     = Input(Bool())
+        val iRegWrEn     = Input(Bool())
+        val iCsrWrEn     = Input(Bool())
+
+        val oRegWrEn     = Input(Bool())
+        val oRegWrAddr   = Input(UInt(DATA_WIDTH.W))
+        val oRegWrData   = Input(UInt(DATA_WIDTH.W))
     })
 
     val aluOut = MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(
-            (io.iALUType === ALU_TYPE_ADD) -> ()
+            (io.iALUType === ALU_TYPE_ADD) -> (io.iALURS1Val + io.iALURS2Val)
         )
     )
+
+    when (io.iRegWrEn) {
+        io.oRegWrEn   := true.B
+        io.oRegWrAddr := io.iInstRDAddr
+        io.oRegWrData := aluOut
+    }
 
     // val io = IO(new Bundle {
     //     val iInstType  =  Input(UInt(32.W))

@@ -1,48 +1,64 @@
-package stage
+package cpu.stage
 
 import chisel3._
 import chisel3.util._
-import chisel3.util.experimental.decode
 
-import utils.Base._
-import utils.Inst._
+import cpu.util.Base._
+import cpu.util.Inst._
 
 class IDU extends Module {
     val io = IO(new Bundle {
-        val iInst    =  Input(UInt(DATA_WIDTH.W))
-        val oInstRS1 = Output(UInt(5.W))
-        val oInstRS2 = Output(UInt(5.W))
-        val oInstRD  = Output(UInt(5.W))
-        val oALUType = Output(UInt(5.W))
-        val oALURS1  = Output(UInt(5.W))
-        val oALURS2  = Output(UInt(5.W))
+        val iInst        =  Input(UInt(DATA_WIDTH.W))
+        val iALURS1Val   =  Input(UInt(DATA_WIDTH.W))
+        val iALURS2Val   =  Input(UInt(DATA_WIDTH.W))
+
+        val oInstRS1Addr = Output(UInt(5.W))
+        val oInstRS2Addr = Output(UInt(5.W))
+        val oInstRDAddr  = Output(UInt(5.W))
+        val oALUType     = Output(UInt(5.W))
+        val oALURS1Val   = Output(UInt(DATA_WIDTH.W))
+        val oALURS2Val   = Output(UInt(DATA_WIDTH.W))
+        val oMemWrEn     = Output(Bool())
+        val oRegWrEn     = Output(Bool())
+        val oCsrWrEn     = Output(Bool())
     })
 
     val inst = io.iInst;
-    val aluType::aluRS1::aluRS2::memW::regW::crsW::Nil = signals
-    val signals =  ListLookup(
+    val aluType::aluRS1::aluRS2::memWr::regWr::csrWr::Nil = signals
+    val signals = ListLookup(
         inst,
-        List(ALU_TYPE_X, ALU_RS1_X, ALU_RS2_X, MEM_W_X, REG_W_X, CSR_W_X),
+        List(ALU_TYPE_X, ALU_RS1_X, ALU_RS2_X, MEM_WR_F, REG_WR_F, CSR_WR_F),
         Array(
-            ADDI -> List(ALU_TYPE_ADD, ALU_RS1_R ALU_RS2_I, MEM_W_F, REG_W_T, CSR_W_F)
+            ADDI -> List(ALU_TYPE_ADD, ALU_RS1_R, ALU_RS2_IMM_I, MEM_WR_F, REG_WR_T, CSR_WR_F)
         )
     )
 
-    val rs1 = inst(19, 15)
-    val rs2 = inst(24, 20)
-    val rd  = inst(11, 7)
-    val immI = inst(31, 20)
-    val immISext = Cat(Fill(52, immI(11)), immI)
+    val instRS1Addr  = inst(19, 15)
+    val instRS2Addr  = inst(24, 20)
+    val instRDAddr   = inst(11, 7)
+    val instImmI     = inst(31, 20)
+    val instImmISext = Cat(Fill(52, instImmI(11)), instImmI)
 
+    io.oInstRS1Addr := instRS1Addr
+    io.oInstRS2Addr := instRS2Addr
+    io.oInstRDAddr  := instRDAddr
+    io.oALUType     := aluType
+    io.oALURS1Val   := aluRS1Val
+    io.oALURS2Val   := aluRS2Val
 
-
-    io.oInstRS1  := rs1
-    io.oInstRS2  := rs2
-    io.oInstRD   := rd
-    io.oInstImm  := imm
-    io.oALUType  := aluType
-    io.oALURS1   := aluRS1
-    io.oALURS2   := aluRS2
+    val aluRS1Val = MuxCase(
+        0.U(DATA_WIDTH.W),
+        Seq(
+            (aluRS1 === ALU_RS1_R) -> io.iALURS1Val
+        )
+    )
+    val aluRS2Val = MuxCase(
+        0.U(DATA_WIDTH.W),
+        Seq(
+            (aluRS2 === ALU_RS2_R) -> io.iALURS2Val,
+            (aluRS2 === ALU_RS2_IMM_I) -> instImmISext
+        )
+    )
 
 
 
@@ -50,8 +66,8 @@ class IDU extends Module {
     // when (inst_type === INST_TYPE_R) {
     //     imm = 0.U
     // }.elsewhen (inst_type === INST_TYPE_I) {
-    //     val immI = inst(31, 20)
-    //     imm = Cat(Fill(52, immI(11)), immI)
+    //     val instImmI = inst(31, 20)
+    //     imm = Cat(Fill(52, instImmI(11)), instImmI)
     // }.elsewhen (inst_type === INST_TYPE_S) {
     //     val immS = Cat(inst(31, 25), inst(11, 7))
     //     imm = Cat(Fill(52, immS(11)), immS)
@@ -71,9 +87,9 @@ class IDU extends Module {
     // val io = IO(new Bundle {
     //     val iInst     =  Input(UInt(32.W))
     //     val oInstType = Output(UInt(32.W))
-    //     val oInstRS1  = Output(UInt( 5.W))
-    //     val oInstRS2  = Output(UInt( 5.W))
-    //     val oInstRD   = Output(UInt( 5.W))
+    //     val oInstRS1Addr  = Output(UInt( 5.W))
+    //     val oInstRS2Addr  = Output(UInt( 5.W))
+    //     val oInstRDAddr   = Output(UInt( 5.W))
     //     val oInstImm  = Output(UInt( 64.W))
     // })
 
@@ -99,8 +115,8 @@ class IDU extends Module {
     //     assert(false.B, "Invalid instruction 0x%x", inst.asUInt)
     // }
 
-    // io.oInstRS1  := Mux((io.oInstType === EBREAK.U), 10.U(5.W), inst.rs1)
-    // io.oInstRS2  := Mux((io.oInstType === EBREAK.U), 11.U(5.W), 0.U(5.W))
-    // io.oInstRD   := inst.rd
+    // io.oInstRS1Addr  := Mux((io.oInstType === EBREAK.U), 10.U(5.W), inst.rs1)
+    // io.oInstRS2Addr  := Mux((io.oInstType === EBREAK.U), 11.U(5.W), 0.U(5.W))
+    // io.oInstRDAddr   := inst.rd
     // io.oInstImm  := extSign(inst.imm11_0)
 }

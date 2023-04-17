@@ -1,4 +1,4 @@
-package dpi
+package cpu.dpi
 
 import chisel3._;
 import chisel3.util._

@@ -1,4 +1,4 @@
-package util
+package cpu.util
 
 import chisel3._
 import chisel3.util._
