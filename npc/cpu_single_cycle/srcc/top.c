@@ -150,7 +150,7 @@ int main(int argc, char **argv, char **env) {
     resetSimModule(top, 1);
 
     while (!ebreak_flag) {
-        top->io_iInst = paddr_read(top->io_oPC, 8);
+        top->io_iInst = paddr_read(top->io_oPC, 4);
         runSimModuleCycle(top);
     }
 

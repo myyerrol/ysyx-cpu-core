@@ -24,14 +24,20 @@ class IDU extends Module {
     })
 
     val inst = io.iInst;
-    val aluType::aluRS1::aluRS2::memWr::regWr::csrWr::Nil = signals
-    val signals = ListLookup(
+    // val aluType::aluRS1::aluRS2::memWr::regWr::csrWr::Nil = signals
+    var signals = ListLookup(
         inst,
         List(ALU_TYPE_X, ALU_RS1_X, ALU_RS2_X, MEM_WR_F, REG_WR_F, CSR_WR_F),
         Array(
-            ADDI -> List(ALU_TYPE_ADD, ALU_RS1_R, ALU_RS2_IMM_I, MEM_WR_F, REG_WR_T, CSR_WR_F)
-        )
+            ADDI   -> List(ALU_TYPE_ADD, ALU_RS1_R, ALU_RS2_IMM_I, MEM_WR_F, REG_WR_T, CSR_WR_F),
+            EBREAK -> List(ALU_TYPE_EBREAK, ALU_RS1_X, ALU_RS2_X, MEM_WR_F, REG_WR_F, CSR_WR_F))
     )
+    val aluType = signals(0)
+    val aluRS1  = signals(1)
+    val aluRS2  = signals(2)
+    val memWr   = signals(3)
+    val regWr   = signals(4)
+    val csrWr   = signals(5)
 
     val instRS1Addr  = inst(19, 15)
     val instRS2Addr  = inst(24, 20)
@@ -41,10 +47,6 @@ class IDU extends Module {
 
     io.oInstRS1Addr := instRS1Addr
     io.oInstRS2Addr := instRS2Addr
-    io.oInstRDAddr  := instRDAddr
-    io.oALUType     := aluType
-    io.oALURS1Val   := aluRS1Val
-    io.oALURS2Val   := aluRS2Val
 
     val aluRS1Val = MuxCase(
         0.U(DATA_WIDTH.W),
@@ -60,6 +62,13 @@ class IDU extends Module {
         )
     )
 
+    io.oInstRDAddr := instRDAddr
+    io.oALUType    := aluType
+    io.oALURS1Val  := aluRS1Val
+    io.oALURS2Val  := aluRS2Val
+    io.oMemWrEn    := memWr
+    io.oRegWrEn    := regWr
+    io.oCsrWrEn    := csrWr
 
 
 

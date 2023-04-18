@@ -17,9 +17,9 @@ class EXU extends Module {
         val iRegWrEn     = Input(Bool())
         val iCsrWrEn     = Input(Bool())
 
-        val oRegWrEn     = Input(Bool())
-        val oRegWrAddr   = Input(UInt(DATA_WIDTH.W))
-        val oRegWrData   = Input(UInt(DATA_WIDTH.W))
+        val oRegWrEn     = Output(Bool())
+        val oRegWrAddr   = Output(UInt(DATA_WIDTH.W))
+        val oRegWrData   = Output(UInt(DATA_WIDTH.W))
     })
 
     val aluOut = MuxCase(
@@ -33,6 +33,10 @@ class EXU extends Module {
         io.oRegWrEn   := true.B
         io.oRegWrAddr := io.iInstRDAddr
         io.oRegWrData := aluOut
+    }.otherwise {
+        io.oRegWrEn   := false.B
+        io.oRegWrAddr := 0.U(DATA_WIDTH.W)
+        io.oRegWrData := 0.U(DATA_WIDTH.W)
     }
 
     // val io = IO(new Bundle {

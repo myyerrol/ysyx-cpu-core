@@ -11,6 +11,7 @@ object Base {
     val ALU_TYPE_WIDTH = 5
     val ALU_TYPE_X = 0.U(ALU_TYPE_WIDTH.W)
     val ALU_TYPE_ADD = 1.U(ALU_TYPE_WIDTH.W)
+    val ALU_TYPE_EBREAK = 2.U(ALU_TYPE_WIDTH.W)
 
     val ALU_RS1_WIDTH = 5
     val ALU_RS1_X = 0.U(ALU_RS1_WIDTH.W)
