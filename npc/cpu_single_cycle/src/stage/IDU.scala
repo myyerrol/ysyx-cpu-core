@@ -8,14 +8,16 @@ import cpu.util.Inst._
 
 class IDU extends Module {
     val io = IO(new Bundle {
-        val iInst        =  Input(UInt(DATA_WIDTH.W))
-        val iALURS1Val   =  Input(UInt(DATA_WIDTH.W))
-        val iALURS2Val   =  Input(UInt(DATA_WIDTH.W))
+        val iInst        = Input(UInt(DATA_WIDTH.W))
+        val iALURS1Val   = Input(UInt(DATA_WIDTH.W))
+        val iALURS2Val   = Input(UInt(DATA_WIDTH.W))
+        val iPC          = Input(UInt(DATA_WIDTH.W))
 
         val oInstRS1Addr = Output(UInt(5.W))
         val oInstRS2Addr = Output(UInt(5.W))
         val oInstRDAddr  = Output(UInt(5.W))
-        val oALUType     = Output(UInt(5.W))
+
+        val oALUType     = Output(UInt(10.W))
         val oALURS1Val   = Output(UInt(DATA_WIDTH.W))
         val oALURS2Val   = Output(UInt(DATA_WIDTH.W))
         val oMemWrEn     = Output(Bool())
@@ -29,6 +31,8 @@ class IDU extends Module {
         inst,
         List(ALU_TYPE_X, ALU_RS1_X, ALU_RS2_X, MEM_WR_F, REG_WR_F, CSR_WR_F),
         Array(
+            LUI    -> List(ALU_TYPE_ADD, ALU_RS1_X, ALU_RS2_IMM_U, MEM_WR_F, REG_WR_T, CSR_WR_F),
+            AUIPC  -> List(ALU_TYPE_ADD, ALU_RS1_PC, ALU_RS2_IMM_U, MEM_WR_F, REG_WR_T, CSR_WR_F),
             ADDI   -> List(ALU_TYPE_ADD, ALU_RS1_R, ALU_RS2_IMM_I, MEM_WR_F, REG_WR_T, CSR_WR_F),
             EBREAK -> List(ALU_TYPE_EBREAK, ALU_RS1_X, ALU_RS2_X, MEM_WR_F, REG_WR_F, CSR_WR_F))
     )
@@ -39,11 +43,17 @@ class IDU extends Module {
     val regWr   = signals(4)
     val csrWr   = signals(5)
 
+    when (aluType === ALU_TYPE_X) {
+        assert(false.B, "Invalid instruction 0x%x", inst)
+    }
+
     val instRS1Addr  = inst(19, 15)
     val instRS2Addr  = inst(24, 20)
     val instRDAddr   = inst(11, 7)
     val instImmI     = inst(31, 20)
     val instImmISext = Cat(Fill(52, instImmI(11)), instImmI)
+    val instImmU     = inst(31, 12)
+    val instImmUSext = Cat(instImmU, Fill(12, 0.U))
 
     io.oInstRS1Addr := instRS1Addr
     io.oInstRS2Addr := instRS2Addr
@@ -51,14 +61,18 @@ class IDU extends Module {
     val aluRS1Val = MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(
-            (aluRS1 === ALU_RS1_R) -> io.iALURS1Val
+            (aluRS1 === ALU_RS1_X) -> 0.U(DATA_WIDTH.W),
+            (aluRS1 === ALU_RS1_R) -> io.iALURS1Val,
+            (aluRS1 === ALU_RS1_PC) -> io.iPC
         )
     )
     val aluRS2Val = MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(
+            (aluRS2 === ALU_RS2_X) -> 0.U(DATA_WIDTH.W),
             (aluRS2 === ALU_RS2_R) -> io.iALURS2Val,
-            (aluRS2 === ALU_RS2_IMM_I) -> instImmISext
+            (aluRS2 === ALU_RS2_IMM_I) -> instImmISext,
+            (aluRS2 === ALU_RS2_IMM_U) -> instImmUSext
         )
     )
 

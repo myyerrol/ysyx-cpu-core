@@ -10,7 +10,7 @@ class EXU extends Module {
         val iInstRS1Addr = Input(UInt(5.W))
         val iInstRS2Addr = Input(UInt(5.W))
         val iInstRDAddr  = Input(UInt(5.W))
-        val iALUType     = Input(UInt(5.W))
+        val iALUType     = Input(UInt(10.W))
         val iALURS1Val   = Input(UInt(DATA_WIDTH.W))
         val iALURS2Val   = Input(UInt(DATA_WIDTH.W))
         val iMemWrEn     = Input(Bool())
