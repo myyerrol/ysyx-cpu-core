@@ -2,7 +2,7 @@
 ifneq ($(MAKECMDGOALS), clean)
 	PROJECTS = cpu_single_cycle cpu_yemu
 	ifeq ($(filter $(PROJECTS), $(PROJECT)), )
-	$(error Expected $$PROJECT in {$(PROJECTS)}, Got "$(PROJECT)")
+		$(error Expected $$PROJECT in {$(PROJECTS)}, Got "$(PROJECT)")
 	endif
 endif
 
@@ -17,7 +17,8 @@ export PATH := $(PATH):$(abspath ./utils)
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
-                    -O3 --x-assign fast --x-initial fast --noassert --trace
+                    -O3 --x-assign fast --x-initial fast --noassert --trace \
+                    -Wno-WIDTHEXPAND
 
 -include $(NEMU_HOME)/include/config/auto.conf
 -include $(NEMU_HOME)/include/config/auto.conf.cmd
@@ -30,14 +31,16 @@ INCFLAGS = $(addprefix -I, $(INC_PATH))
 CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 CFLAGS += -D__GUEST_ISA__=riscv64
 
-SRCS_DIR = /src
-SRCV_DIR = /srcv
-SRCC_DIR = /srcc
+ifneq ($(MAKECMDGOALS), clean)
+	PROJECT_SRCS_DIR = $(PROJECT)/src
+	PROJECT_SRCV_DIR = $(PROJECT)/srcv
+	PROJECT_SRCC_DIR = $(PROJECT)/srcc
 
-SRCSS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCS_DIR)) -name "*.scala")
-SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
-SRCVS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCV_DIR)) -name "*.v")
-SRCCS_PROJECT     = $(shell find $(abspath $(PROJECT)$(SRCC_DIR)) -name "*.c")
+	SRCSS_PROJECT     = $(shell find $(abspath $(PROJECT_SRCS_DIR)) -name "*.scala")
+	SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
+	SRCVS_PROJECT     = $(shell find $(abspath $(PROJECT_SRCV_DIR)) -name "*.v")
+	SRCCS_PROJECT     = $(shell find $(abspath $(PROJECT_SRCC_DIR)) -name "*.c")
+endif
 
 SRCCS_LIB += $(NEMU_HOME)/src/memory
 SRCCS_LIB += $(NEMU_HOME)/src/utils
