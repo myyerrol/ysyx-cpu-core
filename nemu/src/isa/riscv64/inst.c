@@ -85,9 +85,9 @@ static void decode_operand(char *op,
   }
 #ifdef CONFIG_INST
   printf("op:   %s\n", op);
-  printf("rd:   %d\n", *rd);
   printf("rs1:  %d\n", *rs1);
   printf("rs2:  %d\n", *rs2);
+  printf("rd:   %d\n", *rd);
   printf("src1: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src1));
   printf("src2: " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*src2));
   printf("imm:  " PRINTF_BIN_PATTERN_INT64 "\n", PRINTF_BIN_INT64(*imm));
@@ -111,10 +111,10 @@ static int decode_exec(Decode *s) {
 
 #ifdef CONFIG_INST
   printf("num:  %d\n", inst_num);
-  printf("inst: " PRINTF_BIN_PATTERN_INST "\n",
-         PRINTF_BIN_INST(s->isa.inst.val));
   printf("pc:   " FMT_WORD "\n", s->pc);
   printf("dnpc: " FMT_WORD "\n", s->dnpc);
+  printf("inst: " PRINTF_BIN_PATTERN_INST "\n",
+         PRINTF_BIN_INST(s->isa.inst.val));
 #endif
   inst_num++;
 
