@@ -23,6 +23,7 @@ class Top extends Module {
     idu.io.iInst := io.iInst
     idu.io.iALURS1Val := reg.io.oRegRdData
     idu.io.iALURS2Val := reg.io.oRegRdData
+    idu.io.iPC := ifu.io.oPC
 
     reg.io.iRegRdAddr := idu.io.oInstRS1Addr
     reg.io.iRegRdAddr := idu.io.oInstRS2Addr
@@ -43,16 +44,22 @@ class Top extends Module {
     reg.io.iRegWrData := exu.io.oRegWrData
 
     val dpi = Module(new DPI())
-    dpi.io.i_ebreak_flag := Mux(idu.io.oALUType === ALU_TYPE_EBREAK, 1.U, 0.U)
+    dpi.io.iEbreakFlag := Mux(idu.io.oALUType === ALU_TYPE_EBREAK, 1.U, 0.U)
 
-    when (io.oPC === "x80000000".U ||
-          io.oPC === "x80000004".U ||
-          io.oPC === "x80000008".U ||
-          io.oPC === "x8000000c".U) {
-        printf("pc:   0x%x\n", io.oPC)
-        printf("inst: 0x%x\n", io.iInst)
-        printf("rd:   0x%x\n\n", exu.io.oRegWrData)
-    }
+    printf("pc:          0x%x\n", io.oPC)
+    printf("inst:        0x%x\n", io.iInst)
+    printf("rs1 addr:   %d\n", idu.io.oInstRS1Addr)
+    printf("rs2 addr:   %d\n", idu.io.oInstRS2Addr)
+    printf("rd  addr:   %d\n", idu.io.oInstRDAddr)
+    printf("rs1 val :    0x%x\n", idu.io.iALURS1Val)
+    printf("rs2 val :    0x%x\n", idu.io.iALURS2Val)
+    printf("rd  val :    0x%x\n", exu.io.oRegWrData)
+    printf("alu type: %d\n", idu.io.oALUType)
+    printf("alu rs1 val: 0x%x\n", idu.io.oALURS1Val)
+    printf("alu rs2 val: 0x%x\n", idu.io.oALURS2Val)
+    printf("mem wr en:   %d\n", idu.io.oMemWrEn)
+    printf("reg wr en:   %d\n", idu.io.oRegWrEn)
+    printf("csr wr en:   %d\n\n", idu.io.oCsrWrEn)
 
     pc := pc + 4.U
 
@@ -84,7 +91,7 @@ class Top extends Module {
     // io.oHalt      := exu.io.oHalt
 
     // val dpi = Module(new DPI())
-    // dpi.io.i_ebreak_flag := Mux(idu.io.oInstType === EBREAK.U, 1.U, 0.U)
+    // dpi.io.iEbreakFlag := Mux(idu.io.oInstType === EBREAK.U, 1.U, 0.U)
 
     // printf("pc:   0x%x\n", io.oPC)
     // printf("inst: 0x00000000%x\n", io.iInst)
