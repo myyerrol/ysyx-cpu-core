@@ -5,7 +5,7 @@ import chisel3.util._
 
 import cpu.util.Base._
 
-class Mem extends Module {
+class MemM extends Module {
     val io = IO(new Bundle {
         val iMemWrEn   =  Input(Bool())
         val iMemRdAddr =  Input(UInt(DATA_WIDTH.W))
