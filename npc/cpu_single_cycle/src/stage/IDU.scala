@@ -62,7 +62,7 @@ class IDU extends Module {
     val instImmS     = Cat(inst(31, 25), inst(11, 7))
     val instImmSSext = Cat(Fill(52, instImmS(11)), instImmS)
     val instImmU     = inst(31, 12)
-    val instImmUSext = Cat(instImmU, Fill(12, 0.U))
+    val instImmUSext = Cat(Fill(32, instImmU(19)), instImmU, 0.U(12.U))
     val instImmJ     = Cat(inst(31), inst(19, 12), inst(20), inst(30, 21))
     val instImmJSext = Cat(Fill(43, instImmJ(19)), instImmJ, 0.U(1.U))
 
@@ -100,63 +100,4 @@ class IDU extends Module {
     io.oRegWrEn    := regWr
     io.oRegWrSrc   := regWrSrc
     io.oCsrWrEn    := csrWr
-
-
-
-    // when (inst_type === INST_TYPE_R) {
-    //     imm = 0.U
-    // }.elsewhen (inst_type === INST_TYPE_I) {
-    //     val instImmI = inst(31, 20)
-    //     imm = Cat(Fill(52, instImmI(11)), instImmI)
-    // }.elsewhen (inst_type === INST_TYPE_S) {
-    //     val immS = Cat(inst(31, 25), inst(11, 7))
-    //     imm = Cat(Fill(52, immS(11)), immS)
-    // }.elsewhen (inst_type === INST_TYPE_B) {
-    //     val immB = Cat(inst(31), inst(7), inst(30, 25), inst(11, 8)) << 1
-    //     imm = Cat(Fill(52, immB(11)), immB)
-    // }.elsewhen (inst_type === INST_TYPE_U) {
-    //     val immU = Cat(inst(31, 12))
-    //     imm = Cat(Fill(44, immU(19)), immU)
-    // }.elsewhen (inst_type === INST_TYPE_J) {
-    //     val immJ = Cat(inst(31), inst(19, 12), inst(20), inst(30, 21)) << 1
-    //     imm = Cat(Fill(44, immJ(19)), immJ)
-    // }.otherwise {
-    //     assert(false.B, "Invalid instruction 0x%x", inst)
-    // }
-
-    // val io = IO(new Bundle {
-    //     val iInst     =  Input(UInt(32.W))
-    //     val oInstType = Output(UInt(32.W))
-    //     val oInstRS1Addr  = Output(UInt( 5.W))
-    //     val oInstRS2Addr  = Output(UInt( 5.W))
-    //     val oInstRDAddr   = Output(UInt( 5.W))
-    //     val oInstImm  = Output(UInt( 64.W))
-    // })
-
-    // val InstTypeI = new Bundle {
-    //     val imm11_0 = UInt(12.W)
-    //     val rs1     = UInt( 5.W)
-    //     val funct3  = UInt( 3.W)
-    //     val rd      = UInt( 5.W)
-    //     val opcode  = UInt( 7.W)
-    // }
-    // def extSign(imm11_0: UInt) = Cat(Fill(52, imm11_0(11)), imm11_0)
-
-    // val inst = io.iInst.asTypeOf(InstTypeI)
-
-    // when ((inst.opcode === "b0010011".U) && (inst.funct3 === "b000".U)) {
-    //     io.oInstType := ADDI.U
-    // }.elsewhen(inst.opcode === "b0010111") {
-    //     io.oInstType := AUIPC.U
-    // }.elsewhen (inst.asUInt === "x00100073".U) {
-    //     io.oInstType := EBREAK.U
-    // }.otherwise {
-    //     io.oInstType := INV.U
-    //     assert(false.B, "Invalid instruction 0x%x", inst.asUInt)
-    // }
-
-    // io.oInstRS1Addr  := Mux((io.oInstType === EBREAK.U), 10.U(5.W), inst.rs1)
-    // io.oInstRS2Addr  := Mux((io.oInstType === EBREAK.U), 11.U(5.W), 0.U(5.W))
-    // io.oInstRDAddr   := inst.rd
-    // io.oInstImm  := extSign(inst.imm11_0)
 }
