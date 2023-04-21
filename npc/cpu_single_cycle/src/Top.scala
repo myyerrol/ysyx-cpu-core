@@ -11,6 +11,7 @@ class Top extends Module {
     val io = IO(new Bundle {
         val iInst =  Input(UInt(DATA_WIDTH.W))
         val oPC   = Output(UInt(DATA_WIDTH.W))
+        val oReg  = Output(UInt(DATA_WIDTH.W))
     });
 
     val ifu = Module(new IFU())
@@ -82,7 +83,6 @@ class Top extends Module {
         is (INST_NAME_ADDI)   { printf(p"inst name:   ADDI\n") }
         is (INST_NAME_EBREAK) { printf(p"inst name:   EBREAK\n") }
     }
-
     printf("rs1 addr:   %d\n", idu.io.oInstRS1Addr)
     printf("rs2 addr:   %d\n", idu.io.oInstRS2Addr)
     printf("rd  addr:   %d\n", idu.io.oInstRDAddr)
@@ -96,5 +96,9 @@ class Top extends Module {
     printf("jmp en:      %d\n", idu.io.oJmpEn)
     printf("mem wr en:   %d\n", idu.io.oMemWrEn)
     printf("reg wr en:   %d\n", idu.io.oRegWrEn)
-    printf("csr wr en:   %d\n\n", idu.io.oCsrWrEn)
+    printf("csr wr en:   %d\n", idu.io.oCsrWrEn)
+
+    reg.io.iRegRd1Addr := 10.U(REG_WIDTH.W)
+    io.oReg := reg.io.oRegRd1Data
+    printf("reg(10):     0x%x\n\n", io.oReg)
 }
