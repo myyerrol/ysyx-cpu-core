@@ -18,6 +18,7 @@ class IDU extends Module {
         val oInstRDAddr  = Output(UInt(REG_WIDTH.W))
         val oInstRS1Val  = Output(UInt(DATA_WIDTH.W))
         val oInstRS2Val  = Output(UInt(DATA_WIDTH.W))
+        val oInstName    = Output(UInt(SIGNAL_WIDTH.W))
         val oALUType     = Output(UInt(SIGNAL_WIDTH.W))
         val oALURS1Val   = Output(UInt(DATA_WIDTH.W))
         val oALURS2Val   = Output(UInt(DATA_WIDTH.W))
@@ -31,24 +32,25 @@ class IDU extends Module {
     val inst = io.iInst;
     var signals = ListLookup(
         inst,
-        List(ALU_TYPE_X, ALU_RS1_X, ALU_RS2_X, JMP_F, MEM_WR_F, REG_WR_F, REG_WR_SRC_X, CSR_WR_F),
+        List(INST_NAME_X, ALU_TYPE_X, ALU_RS1_X, ALU_RS2_X, JMP_F, MEM_WR_F, REG_WR_F, REG_WR_SRC_X, CSR_WR_F),
         Array(
-            LUI    -> List(ALU_TYPE_ADD,    ALU_RS1_X,  ALU_RS2_IMM_U, JMP_F, MEM_WR_F, REG_WR_T, REG_WR_SRC_ALU, CSR_WR_F),
-            AUIPC  -> List(ALU_TYPE_ADD,    ALU_RS1_PC, ALU_RS2_IMM_U, JMP_F, MEM_WR_F, REG_WR_T, REG_WR_SRC_ALU, CSR_WR_F),
-            JAL    -> List(ALU_TYPE_ADD,    ALU_RS1_PC, ALU_RS2_IMM_J, JMP_T, MEM_WR_F, REG_WR_T, REG_WR_SRC_PC,  CSR_WR_F),
-            JALR   -> List(ALU_TYPE_JALR,   ALU_RS1_R,  ALU_RS2_IMM_I, JMP_T, MEM_WR_F, REG_WR_T, REG_WR_SRC_PC,  CSR_WR_F),
-            SD     -> List(ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, REG_WR_F, REG_WR_SRC_X,   CSR_WR_F),
-            ADDI   -> List(ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, REG_WR_T, REG_WR_SRC_ALU, CSR_WR_F),
-            EBREAK -> List(ALU_TYPE_EBREAK, ALU_RS1_X,  ALU_RS2_X,     JMP_F, MEM_WR_F, REG_WR_F, REG_WR_SRC_X,   CSR_WR_F))
+            LUI    -> List(INST_NAME_LUI, ALU_TYPE_ADD,    ALU_RS1_X,  ALU_RS2_IMM_U, JMP_F, MEM_WR_F, REG_WR_T, REG_WR_SRC_ALU, CSR_WR_F),
+            AUIPC  -> List(INST_NAME_AUIPC, ALU_TYPE_ADD,    ALU_RS1_PC, ALU_RS2_IMM_U, JMP_F, MEM_WR_F, REG_WR_T, REG_WR_SRC_ALU, CSR_WR_F),
+            JAL    -> List(INST_NAME_JAL, ALU_TYPE_ADD,    ALU_RS1_PC, ALU_RS2_IMM_J, JMP_T, MEM_WR_F, REG_WR_T, REG_WR_SRC_PC,  CSR_WR_F),
+            JALR   -> List(INST_NAME_JALR, ALU_TYPE_JALR,   ALU_RS1_R,  ALU_RS2_IMM_I, JMP_T, MEM_WR_F, REG_WR_T, REG_WR_SRC_PC,  CSR_WR_F),
+            SD     -> List(INST_NAME_SD, ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, REG_WR_F, REG_WR_SRC_X,   CSR_WR_F),
+            ADDI   -> List(INST_NAME_ADDI, ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, REG_WR_T, REG_WR_SRC_ALU, CSR_WR_F),
+            EBREAK -> List(INST_NAME_EBREAK, ALU_TYPE_EBREAK, ALU_RS1_X,  ALU_RS2_X,     JMP_F, MEM_WR_F, REG_WR_F, REG_WR_SRC_X,   CSR_WR_F))
     )
-    val aluType  = signals(0)
-    val aluRS1   = signals(1)
-    val aluRS2   = signals(2)
-    val jmp      = signals(3)
-    val memWr    = signals(4)
-    val regWr    = signals(5)
-    val regWrSrc = signals(6)
-    val csrWr    = signals(7)
+    val instName = signals(0)
+    val aluType  = signals(1)
+    val aluRS1   = signals(2)
+    val aluRS2   = signals(3)
+    val jmp      = signals(4)
+    val memWr    = signals(5)
+    val regWr    = signals(6)
+    val regWrSrc = signals(7)
+    val csrWr    = signals(8)
 
     when (aluType === ALU_TYPE_X) {
         assert(false.B, "Invalid instruction at 0x%x", io.iPC)
@@ -92,6 +94,7 @@ class IDU extends Module {
     io.oInstRDAddr := instRDAddr
     io.oInstRS1Val := io.iInstRS1Val
     io.oInstRS2Val := io.iInstRS2Val
+    io.oInstName   := instName
     io.oALUType    := aluType
     io.oALURS1Val  := aluRS1Val
     io.oALURS2Val  := aluRS2Val

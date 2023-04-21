@@ -11,6 +11,15 @@ object Base {
     val DATA_WIDTH   = 64
     val SIGNAL_WIDTH = 10
 
+    val INST_NAME_X      = 0.U
+    val INST_NAME_LUI    = 1.U
+    val INST_NAME_AUIPC  = 2.U
+    val INST_NAME_JAL    = 3.U
+    val INST_NAME_JALR   = 4.U
+    val INST_NAME_SD     = 5.U
+    val INST_NAME_ADDI   = 6.U
+    val INST_NAME_EBREAK = 100.U
+
     val ALU_TYPE_X      =  0.U(SIGNAL_WIDTH.W)
     val ALU_TYPE_ADD    =  1.U(SIGNAL_WIDTH.W)
     val ALU_TYPE_JALR   =  9.U(SIGNAL_WIDTH.W)
