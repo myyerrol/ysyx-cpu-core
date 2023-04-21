@@ -5,6 +5,7 @@ import cpu.comp._
 import cpu.dpi._
 import cpu.stage._
 import cpu.util.Base._
+import cpu.util.Inst._
 
 class Top extends Module {
     val io = IO(new Bundle {
@@ -70,6 +71,18 @@ class Top extends Module {
 
     printf("pc:          0x%x\n", io.oPC)
     printf("inst:        0x%x\n", io.iInst)
+
+    val instName = idu.io.oInstName
+    switch (instName) {
+        is (INST_NAME_LUI)    { printf(p"inst name:   LUI\n") }
+        is (INST_NAME_AUIPC)  { printf(p"inst name:   AUIPC\n") }
+        is (INST_NAME_JAL)    { printf(p"inst name:   JAL\n") }
+        is (INST_NAME_JALR)   { printf(p"inst name:   JALR\n") }
+        is (INST_NAME_SD)     { printf(p"inst name:   SD\n")}
+        is (INST_NAME_ADDI)   { printf(p"inst name:   ADDI\n") }
+        is (INST_NAME_EBREAK) { printf(p"inst name:   EBREAK\n") }
+    }
+
     printf("rs1 addr:   %d\n", idu.io.oInstRS1Addr)
     printf("rs2 addr:   %d\n", idu.io.oInstRS2Addr)
     printf("rd  addr:   %d\n", idu.io.oInstRDAddr)
