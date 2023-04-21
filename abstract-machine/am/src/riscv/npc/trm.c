@@ -14,13 +14,13 @@ Area heap = RANGE(&_heap_start, PMEM_END);
 #endif
 static const char mainargs[] = MAINARGS;
 
-# define npc_trap(code) asm volatile("mv a0, %0; ebreak" : :"r"(code))
+# define NPC_TRAP(code) asm volatile("mv a0, %0; ebreak" : :"r"(code))
 
 void putch(char ch) {
 }
 
 void halt(int code) {
-  npc_trap(code);
+  NPC_TRAP(code);
 
   while (1);
 }
