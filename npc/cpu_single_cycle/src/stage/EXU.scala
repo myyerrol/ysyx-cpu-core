@@ -24,7 +24,7 @@ class EXU extends Module {
 
         val oALUOut      = Output(UInt(DATA_WIDTH.W))
         val oJmpEn       = Output(Bool())
-        val oPC          = Output(UInt(DATA_WIDTH.W))
+        val oJmpPC       = Output(UInt(DATA_WIDTH.W))
         val oMemWrEn     = Output(Bool())
         val oMemWrAddr   = Output(UInt(DATA_WIDTH.W))
         val oMemWrData   = Output(UInt(DATA_WIDTH.W))
@@ -46,10 +46,10 @@ class EXU extends Module {
 
     when (io.iJmpEn === true.B) {
         io.oJmpEn := true.B
-        io.oPC := aluOut
+        io.oJmpPC := aluOut
     }.otherwise {
         io.oJmpEn := false.B
-        io.oPC := io.iPC
+        io.oJmpPC := io.iPC
     }
 
     val memWrData = io.iInstRS2Val

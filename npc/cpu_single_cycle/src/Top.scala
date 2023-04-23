@@ -16,6 +16,7 @@ class Top extends Module {
 
     val ifu = Module(new IFU())
     io.oPC := ifu.io.oPC
+    // io.oPC := ifu.io.oPCNext
 
     val mem = Module(new MemM())
     mem.io.iMemRdAddr := 0.U(DATA_WIDTH.W)
@@ -58,7 +59,7 @@ class Top extends Module {
 
     val wbu = Module(new WBU())
     ifu.io.iJmpEn     := exu.io.oJmpEn
-    ifu.io.iPC        := exu.io.oPC
+    ifu.io.iJmpPC     := exu.io.oJmpPC
     wbu.io.iRegWrEn   := exu.io.oRegWrEn
     wbu.io.iRegWrAddr := exu.io.oRegWrAddr
     wbu.io.iRegWrData := exu.io.oRegWrData
@@ -69,6 +70,10 @@ class Top extends Module {
 
     val dpi = Module(new DPI())
     dpi.io.iEbreakFlag := Mux(idu.io.oALUType === ALU_TYPE_EBREAK, 1.U, 0.U)
+    dpi.io.iRegVal := 11.U
+    printf("reg addr: %d\n", dpi.io.oRegAddr)
+    reg.io.iRegRdEAddr := 10.U(REG_WIDTH.W)
+    io.oReg := reg.io.oRegRdEData
 
     printf("pc:          0x%x\n", io.oPC)
     printf("inst:        0x%x\n", io.iInst)
@@ -97,8 +102,5 @@ class Top extends Module {
     printf("mem wr en:   %d\n", idu.io.oMemWrEn)
     printf("reg wr en:   %d\n", idu.io.oRegWrEn)
     printf("csr wr en:   %d\n", idu.io.oCsrWrEn)
-
-    reg.io.iRegRd1Addr := 10.U(REG_WIDTH.W)
-    io.oReg := reg.io.oRegRd1Data
     printf("reg(10):     0x%x\n\n", io.oReg)
 }
