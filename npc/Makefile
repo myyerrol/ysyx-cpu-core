@@ -32,6 +32,8 @@ CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 CFLAGS += -D__GUEST_ISA__=riscv64
 CFLAGS += -g
 
+LDFLAGS += -lreadline -ldl -pie
+
 ifneq ($(MAKECMDGOALS), clean)
     PROJECT_SRCS_DIR = $(abspath $(PROJECT)/src)
     PROJECT_SRCV_DIR = $(abspath $(PROJECT)/srcv)
@@ -61,6 +63,7 @@ $(BIN_PROJECT): $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 	--top-module $(TOPNAME) $^ \
 	$(addprefix -CFLAGS , $(CFLAGS)) \
+    $(addprefix -LDFLAGS , $(LDFLAGS)) \
 	--Mdir $(OBJ_DIR_PROJECT) --exe -o \
 	$(abspath $(BIN_PROJECT))
 
