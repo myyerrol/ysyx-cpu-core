@@ -44,9 +44,9 @@ class Top extends Module {
     exu.io.iALURS2Val   := idu.io.oALURS2Val
     exu.io.iJmpEn       := idu.io.oJmpEn
     exu.io.iMemWrEn     := idu.io.oMemWrEn
+    exu.io.iMemByt      := idu.io.oMemByt
     exu.io.iRegWrEn     := idu.io.oRegWrEn
     exu.io.iRegWrSrc    := idu.io.oRegWrSrc
-    exu.io.iCsrWrEn     := idu.io.oCsrWrEn
 
     val amu = Module(new AMU())
     amu.io.iMemWrEn   := exu.io.oMemWrEn
@@ -101,6 +101,5 @@ class Top extends Module {
     printf("jmp en:      %d\n", idu.io.oJmpEn)
     printf("mem wr en:   %d\n", idu.io.oMemWrEn)
     printf("reg wr en:   %d\n", idu.io.oRegWrEn)
-    printf("csr wr en:   %d\n", idu.io.oCsrWrEn)
     printf("reg(10):     0x%x\n\n", io.oReg)
 }

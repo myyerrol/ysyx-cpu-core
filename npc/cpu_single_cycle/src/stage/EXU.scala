@@ -18,9 +18,9 @@ class EXU extends Module {
         val iALURS2Val   = Input(UInt(DATA_WIDTH.W))
         val iJmpEn       = Input(Bool())
         val iMemWrEn     = Input(Bool())
+        val iMemByt      = Input(UInt(SIGNAL_WIDTH.W))
         val iRegWrEn     = Input(Bool())
         var iRegWrSrc    = Input(UInt(DATA_WIDTH.W))
-        val iCsrWrEn     = Input(Bool())
 
         val oALUOut      = Output(UInt(DATA_WIDTH.W))
         val oJmpEn       = Output(Bool())
@@ -55,7 +55,15 @@ class EXU extends Module {
     val memWrData = io.iInstRS2Val
     when (io.iMemWrEn) {
         io.oMemWrEn   := true.B
-        io.oMemWrAddr := aluOut
+        io.oMemWrAddr := MuxCase(
+            aluOut,
+            Seq(
+                (io.iMemByt === MEM_BYT_1) -> aluOut(7, 0),
+                (io.iMemByt === MEM_BYT_2) -> aluOut(15, 0),
+                (io.iMemByt === MEM_BYT_4) -> aluOut(31, 0),
+                (io.iMemByt === MEM_BYT_8) -> aluOut(63, 0)
+            )
+        )
         io.oMemWrData := memWrData
     }.otherwise {
         io.oMemWrEn   := false.B
