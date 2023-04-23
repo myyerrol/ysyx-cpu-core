@@ -8,6 +8,7 @@ object Base {
     val MEM_NUM      = 128
 
     val REG_WIDTH    = 5
+    val ADDR_WIDTH   = 32
     val DATA_WIDTH   = 64
     val SIGNAL_WIDTH = 10
 
