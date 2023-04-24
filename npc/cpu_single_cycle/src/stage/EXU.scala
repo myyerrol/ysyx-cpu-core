@@ -14,6 +14,8 @@ class EXU extends Module {
         val iInstRS2Val  = Input(UInt(DATA_WIDTH.W))
         val iPC          = Input(UInt(DATA_WIDTH.W))
         val iMemRdData   = Input(UInt(DATA_WIDTH.W))
+
+        val iInstName    = Input(UInt(SIGNAL_WIDTH.W))
         val iALUType     = Input(UInt(SIGNAL_WIDTH.W))
         val iALURS1Val   = Input(UInt(DATA_WIDTH.W))
         val iALURS2Val   = Input(UInt(DATA_WIDTH.W))
@@ -35,12 +37,16 @@ class EXU extends Module {
         val oRegWrData   = Output(UInt(DATA_WIDTH.W))
     })
 
-    // 处理算术逻辑
+    // 处理算术操作
     val jalrMask = Cat(Fill(DATA_WIDTH - 1, 1.U(1.W)), 0.U(1.U))
     val aluOut = MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(
             (io.iALUType === ALU_TYPE_ADD)  ->  (io.iALURS1Val + io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_SUB)  ->  (io.iALURS1Val - io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_AND)  ->  (io.iALURS1Val & io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_OR)   ->  (io.iALURS1Val | io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_XOR)  ->  (io.iALURS1Val ^ io.iALURS2Val),
             (io.iALUType === ALU_TYPE_JALR) -> ((io.iALURS1Val + io.iALURS2Val) & jalrMask)
         )
     )
@@ -94,10 +100,19 @@ class EXU extends Module {
     )
 
     // 处理写回操作
+    val aluOutByt4 = aluOut(31, 0)
+    val aluOutData = MuxCase(
+        aluOut,
+        Seq(
+            (io.iInstName === INST_NAME_ADDW  ||
+             io.iInstName === INST_NAME_ADDIW ||
+             io.iInstName === INST_NAME_SUBW) -> Cat(Fill(32, aluOutByt4(31)), aluOutByt4)
+        )
+    )
     val regWrData = MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(
-            (io.iRegWrSrc === REG_WR_SRC_ALU) -> aluOut,
+            (io.iRegWrSrc === REG_WR_SRC_ALU) -> aluOutData,
             (io.iRegWrSrc === REG_WR_SRC_MEM) -> memRdData,
             (io.iRegWrSrc === REG_WR_SRC_PC)  -> (io.iPC + 4.U(DATA_WIDTH.W))
         )

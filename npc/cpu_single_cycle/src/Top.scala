@@ -40,6 +40,7 @@ class Top extends Module {
     exu.io.iInstRS2Val  := idu.io.oInstRS2Val
     exu.io.iPC          := ifu.io.oPC
     exu.io.iMemRdData   := mem.io.oMemRdData
+    exu.io.iInstName    := idu.io.oInstName
     exu.io.iALUType     := idu.io.oALUType
     exu.io.iALURS1Val   := idu.io.oALURS1Val
     exu.io.iALURS2Val   := idu.io.oALURS2Val
@@ -72,7 +73,7 @@ class Top extends Module {
     reg.io.iRegWrData := wbu.io.oRegWrData
 
     val dpi = Module(new DPI())
-    dpi.io.iEbreakFlag := Mux(idu.io.oALUType === ALU_TYPE_EBREAK, 1.U, 0.U)
+    dpi.io.iEbreakFlag := Mux(idu.io.oInstName === INST_NAME_EBREAK, 1.U, 0.U)
     dpi.io.iRegVal := 11.U
     printf("reg addr: %d\n", dpi.io.oRegAddr)
     reg.io.iRegRdEAddr := 10.U(REG_WIDTH.W)

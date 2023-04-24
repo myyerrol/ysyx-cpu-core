@@ -18,6 +18,7 @@ class IDU extends Module {
         val oInstRDAddr  = Output(UInt(REG_WIDTH.W))
         val oInstRS1Val  = Output(UInt(DATA_WIDTH.W))
         val oInstRS2Val  = Output(UInt(DATA_WIDTH.W))
+
         val oInstName    = Output(UInt(SIGNAL_WIDTH.W))
         val oALUType     = Output(UInt(SIGNAL_WIDTH.W))
         val oALURS1Val   = Output(UInt(DATA_WIDTH.W))
@@ -34,26 +35,39 @@ class IDU extends Module {
         inst,
         List(INST_NAME_X, ALU_TYPE_X, ALU_RS1_X, ALU_RS2_X, JMP_F, MEM_WR_F, MEM_BYT_X, REG_WR_F, REG_WR_SRC_X),
         Array(
-            ADDI   -> List(INST_NAME_ADDI,   ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_X, REG_WR_T, REG_WR_SRC_ALU),
-            LUI    -> List(INST_NAME_LUI,    ALU_TYPE_ADD,    ALU_RS1_X,  ALU_RS2_IMM_U, JMP_F, MEM_WR_F, MEM_BYT_X, REG_WR_T, REG_WR_SRC_ALU),
-            AUIPC  -> List(INST_NAME_AUIPC,  ALU_TYPE_ADD,    ALU_RS1_PC, ALU_RS2_IMM_U, JMP_F, MEM_WR_F, MEM_BYT_X, REG_WR_T, REG_WR_SRC_ALU),
 
-            JAL    -> List(INST_NAME_JAL,    ALU_TYPE_ADD,    ALU_RS1_PC, ALU_RS2_IMM_J, JMP_T, MEM_WR_F, MEM_BYT_X, REG_WR_T, REG_WR_SRC_PC),
-            JALR   -> List(INST_NAME_JALR,   ALU_TYPE_JALR,   ALU_RS1_R,  ALU_RS2_IMM_I, JMP_T, MEM_WR_F, MEM_BYT_X, REG_WR_T, REG_WR_SRC_PC),
 
-            LB     -> List(INST_NAME_LB,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_1_S, REG_WR_T, REG_WR_SRC_MEM),
-            LH     -> List(INST_NAME_LH,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_2_S, REG_WR_T, REG_WR_SRC_MEM),
-            LBU    -> List(INST_NAME_LBU,    ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_1_U, REG_WR_T, REG_WR_SRC_MEM),
-            LHU    -> List(INST_NAME_LHU,    ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_2_U, REG_WR_T, REG_WR_SRC_MEM),
-            LW     -> List(INST_NAME_LW,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_4_S, REG_WR_T, REG_WR_SRC_MEM),
-            LD     -> List(INST_NAME_LD,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_8_S, REG_WR_T, REG_WR_SRC_MEM),
 
-            SB     -> List(INST_NAME_SB,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_1_U, REG_WR_F, REG_WR_SRC_X),
-            SH     -> List(INST_NAME_SH,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_2_U, REG_WR_F, REG_WR_SRC_X),
-            SW     -> List(INST_NAME_SW,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_4_U, REG_WR_F, REG_WR_SRC_X),
-            SD     -> List(INST_NAME_SD,     ALU_TYPE_ADD,    ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_8_U, REG_WR_F, REG_WR_SRC_X),
+            ADD    -> List(INST_NAME_ADD,    ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            ADDI   -> List(INST_NAME_ADDI,   ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            SUB    -> List(INST_NAME_SUB,    ALU_TYPE_SUB,  ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            LUI    -> List(INST_NAME_LUI,    ALU_TYPE_ADD,  ALU_RS1_X,  ALU_RS2_IMM_U, JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            AUIPC  -> List(INST_NAME_AUIPC,  ALU_TYPE_ADD,  ALU_RS1_PC, ALU_RS2_IMM_U, JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            ADDW   -> List(INST_NAME_ADDW,   ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            ADDIW  -> List(INST_NAME_ADDIW,  ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            SUBW   -> List(INST_NAME_SUBW,   ALU_TYPE_SUB,  ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
 
-            EBREAK -> List(INST_NAME_EBREAK, ALU_TYPE_EBREAK, ALU_RS1_X,  ALU_RS2_X,     JMP_F, MEM_WR_F, MEM_BYT_X, REG_WR_F, REG_WR_SRC_X))
+            XORI   -> List(INST_NAME_XORI,   ALU_TYPE_XOR,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            OR     -> List(INST_NAME_OR,     ALU_TYPE_OR,   ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            AND    -> List(INST_NAME_AND,    ALU_TYPE_AND,  ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+            ANDI   -> List(INST_NAME_ANDI,   ALU_TYPE_AND,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
+
+            JAL    -> List(INST_NAME_JAL,    ALU_TYPE_ADD,  ALU_RS1_PC, ALU_RS2_IMM_J, JMP_T, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_PC),
+            JALR   -> List(INST_NAME_JALR,   ALU_TYPE_JALR, ALU_RS1_R,  ALU_RS2_IMM_I, JMP_T, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_PC),
+
+            LB     -> List(INST_NAME_LB,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_1_S, REG_WR_T, REG_WR_SRC_MEM),
+            LH     -> List(INST_NAME_LH,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_2_S, REG_WR_T, REG_WR_SRC_MEM),
+            LBU    -> List(INST_NAME_LBU,    ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_1_U, REG_WR_T, REG_WR_SRC_MEM),
+            LHU    -> List(INST_NAME_LHU,    ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_2_U, REG_WR_T, REG_WR_SRC_MEM),
+            LW     -> List(INST_NAME_LW,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_4_S, REG_WR_T, REG_WR_SRC_MEM),
+            LD     -> List(INST_NAME_LD,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_I, JMP_F, MEM_WR_F, MEM_BYT_8_S, REG_WR_T, REG_WR_SRC_MEM),
+
+            SB     -> List(INST_NAME_SB,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_1_U, REG_WR_F, REG_WR_SRC_X),
+            SH     -> List(INST_NAME_SH,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_2_U, REG_WR_F, REG_WR_SRC_X),
+            SW     -> List(INST_NAME_SW,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_4_U, REG_WR_F, REG_WR_SRC_X),
+            SD     -> List(INST_NAME_SD,     ALU_TYPE_ADD,  ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_8_U, REG_WR_F, REG_WR_SRC_X),
+
+            EBREAK -> List(INST_NAME_EBREAK, ALU_TYPE_X,    ALU_RS1_X,  ALU_RS2_X,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_F, REG_WR_SRC_X))
     )
     val instName = signals(0)
     val aluType  = signals(1)
@@ -65,7 +79,7 @@ class IDU extends Module {
     val regWrEn  = signals(7)
     val regWrSrc = signals(8)
 
-    when (aluType === ALU_TYPE_X) {
+    when (instName === INST_NAME_X) {
         assert(false.B, "Invalid instruction at 0x%x", io.iPC)
     }
 
