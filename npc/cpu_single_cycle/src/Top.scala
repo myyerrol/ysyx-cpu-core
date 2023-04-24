@@ -39,6 +39,7 @@ class Top extends Module {
     exu.io.iInstRS1Val  := idu.io.oInstRS1Val
     exu.io.iInstRS2Val  := idu.io.oInstRS2Val
     exu.io.iPC          := ifu.io.oPC
+    exu.io.iMemRdData   := mem.io.oMemRdData
     exu.io.iALUType     := idu.io.oALUType
     exu.io.iALURS1Val   := idu.io.oALURS1Val
     exu.io.iALURS2Val   := idu.io.oALURS2Val
@@ -47,6 +48,8 @@ class Top extends Module {
     exu.io.iMemByt      := idu.io.oMemByt
     exu.io.iRegWrEn     := idu.io.oRegWrEn
     exu.io.iRegWrSrc    := idu.io.oRegWrSrc
+
+    mem.io.iMemRdAddr   := exu.io.oMemRdAddr
 
     val amu = Module(new AMU())
     amu.io.iMemWrEn   := exu.io.oMemWrEn
