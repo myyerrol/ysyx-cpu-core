@@ -47,9 +47,41 @@ class EXU extends Module {
             (io.iALUType === ALU_TYPE_AND)  ->  (io.iALURS1Val & io.iALURS2Val),
             (io.iALUType === ALU_TYPE_OR)   ->  (io.iALURS1Val | io.iALURS2Val),
             (io.iALUType === ALU_TYPE_XOR)  ->  (io.iALURS1Val ^ io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_JALR) -> ((io.iALURS1Val + io.iALURS2Val) & jalrMask)
+            (io.iALUType === ALU_TYPE_SLT)  ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_SLTU) ->  (io.iALURS1Val.asUInt() < io.iALURS2Val.asUInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_SLL)  ->  (io.iALURS1Val << io.iALURS2Val(5, 0)).asUInt(),
+            (io.iALUType === ALU_TYPE_SRL)  ->  (io.iALURS1Val >> io.iALURS2Val(5, 0)).asUInt(),
+            (io.iALUType === ALU_TYPE_SRA)  ->  (io.iALURS1Val.asSInt() >> io.iALURS2Val(5, 0).asUInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_BEQ)  ->  (io.iALURS1Val === io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_BNE)  ->  (io.iALURS1Val =/= io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_BLT)  ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()),
+            (io.iALUType === ALU_TYPE_BGE)  ->  (io.iALURS1Val.asSInt() >= io.iALURS2Val.asSInt()),
+            (io.iALUType === ALU_TYPE_BLTU) ->  (io.iALURS1Val < io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_BGEU) ->  (io.iALURS1Val >= io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_JALR) -> ((io.iALURS1Val + io.iALURS2Val) & jalrMask),
+            (io.iALUType === ALU_TYPE_MUL)  ->  (io.iALURS1Val * io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_DIVU) ->  (io.iALURS1Val / io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_DIVW) ->  (io.iALURS1Val(31, 0).asSInt() / io.iALURS2Val(31, 0).asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_REMU) ->  (io.iALURS1Val % io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_REMW) ->  (io.iALURS1Val(31, 0).asSInt() % io.iALURS2Val(31, 0).asSInt()).asUInt()
         )
     )
+
+    // 处理分支操作
+    val brAddr = io.iPC + io.iInstRS2Val
+    when ((io.iInstName === INST_NAME_BEQ   ||
+           io.iInstName === INST_NAME_BNE   ||
+           io.iInstName === INST_NAME_BLT   ||
+           io.iInstName === INST_NAME_BGE   ||
+           io.iInstName === INST_NAME_BLTU  ||
+           io.iInstName === INST_NAME_BGEU) &&
+           aluOut === 1.U) {
+        io.oJmpEn := true.B
+        io.oJmpPC := brAddr
+    }.otherwise {
+        io.oJmpEn := false.B
+        io.oJmpPC := io.iPC
+    }
 
     // 处理跳转操作
     when (io.iJmpEn === true.B) {
@@ -106,7 +138,14 @@ class EXU extends Module {
         Seq(
             (io.iInstName === INST_NAME_ADDW  ||
              io.iInstName === INST_NAME_ADDIW ||
-             io.iInstName === INST_NAME_SUBW) -> Cat(Fill(32, aluOutByt4(31)), aluOutByt4)
+             io.iInstName === INST_NAME_SUBW  ||
+             io.iInstName === INST_NAME_SLLW  ||
+             io.iInstName === INST_NAME_SLLIW ||
+             io.iInstName === INST_NAME_SRLW  ||
+             io.iInstName === INST_NAME_SRLIW ||
+             io.iInstName === INST_NAME_SRAW  ||
+             io.iInstName === INST_NAME_SRAIW ||
+             io.iInstName === INST_NAME_MULW) -> Cat(Fill(32, aluOutByt4(31)), aluOutByt4)
         )
     )
     val regWrData = MuxCase(

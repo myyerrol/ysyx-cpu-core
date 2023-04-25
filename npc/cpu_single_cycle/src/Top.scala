@@ -84,13 +84,56 @@ class Top extends Module {
 
     val instName = idu.io.oInstName
     switch (instName) {
-        is (INST_NAME_LUI)    { printf(p"inst name:   LUI\n") }
-        is (INST_NAME_AUIPC)  { printf(p"inst name:   AUIPC\n") }
-        is (INST_NAME_JAL)    { printf(p"inst name:   JAL\n") }
-        is (INST_NAME_JALR)   { printf(p"inst name:   JALR\n") }
-        is (INST_NAME_SD)     { printf(p"inst name:   SD\n")}
-        is (INST_NAME_ADDI)   { printf(p"inst name:   ADDI\n") }
-        is (INST_NAME_EBREAK) { printf(p"inst name:   EBREAK\n") }
+        is(INST_NAME_SLLI  ) { printf(p"inst name:   SLLI\n") }
+        is(INST_NAME_SRLI  ) { printf(p"inst name:   SRLI\n") }
+        is(INST_NAME_SRA   ) { printf(p"inst name:   SRA\n") }
+        is(INST_NAME_SRAI  ) { printf(p"inst name:   SRAI\n") }
+        is(INST_NAME_SLLW  ) { printf(p"inst name:   SLLW\n") }
+        is(INST_NAME_SLLIW ) { printf(p"inst name:   SLLIW\n") }
+        is(INST_NAME_SRLW  ) { printf(p"inst name:   SRLW\n") }
+        is(INST_NAME_SRLIW ) { printf(p"inst name:   SRLIW\n") }
+        is(INST_NAME_SRAW  ) { printf(p"inst name:   SRAW\n") }
+        is(INST_NAME_SRAIW ) { printf(p"inst name:   SRAIW\n") }
+        is(INST_NAME_ADD   ) { printf(p"inst name:   ADD\n") }
+        is(INST_NAME_ADDI  ) { printf(p"inst name:   ADDI\n") }
+        is(INST_NAME_SUB   ) { printf(p"inst name:   SUB\n") }
+        is(INST_NAME_LUI   ) { printf(p"inst name:   LUI\n") }
+        is(INST_NAME_AUIPC ) { printf(p"inst name:   AUIPC\n") }
+        is(INST_NAME_ADDW  ) { printf(p"inst name:   ADDW\n") }
+        is(INST_NAME_ADDIW ) { printf(p"inst name:   ADDIW\n") }
+        is(INST_NAME_SUBW  ) { printf(p"inst name:   SUBW\n") }
+        is(INST_NAME_XORI  ) { printf(p"inst name:   XORI\n") }
+        is(INST_NAME_OR    ) { printf(p"inst name:   OR\n") }
+        is(INST_NAME_AND   ) { printf(p"inst name:   AND\n") }
+        is(INST_NAME_ANDI  ) { printf(p"inst name:   ANDI\n") }
+        is(INST_NAME_SLT   ) { printf(p"inst name:   SLT\n") }
+        is(INST_NAME_SLTU  ) { printf(p"inst name:   SLTU\n") }
+        is(INST_NAME_SLTIU ) { printf(p"inst name:   SLTIU\n") }
+        is(INST_NAME_BEQ   ) { printf(p"inst name:   BEQ\n") }
+        is(INST_NAME_BNE   ) { printf(p"inst name:   BNE\n") }
+        is(INST_NAME_BLT   ) { printf(p"inst name:   BLT\n") }
+        is(INST_NAME_BGE   ) { printf(p"inst name:   BGE\n") }
+        is(INST_NAME_BLTU  ) { printf(p"inst name:   BLTU\n") }
+        is(INST_NAME_BGEU  ) { printf(p"inst name:   BGEU\n") }
+        is(INST_NAME_JAL   ) { printf(p"inst name:   JAL\n") }
+        is(INST_NAME_JALR  ) { printf(p"inst name:   JALR\n") }
+        is(INST_NAME_LB    ) { printf(p"inst name:   LB\n") }
+        is(INST_NAME_LH    ) { printf(p"inst name:   LH\n") }
+        is(INST_NAME_LBU   ) { printf(p"inst name:   LBU\n") }
+        is(INST_NAME_LHU   ) { printf(p"inst name:   LHU\n") }
+        is(INST_NAME_LW    ) { printf(p"inst name:   LW\n") }
+        is(INST_NAME_LD    ) { printf(p"inst name:   LD\n") }
+        is(INST_NAME_SB    ) { printf(p"inst name:   SB\n") }
+        is(INST_NAME_SH    ) { printf(p"inst name:   SH\n") }
+        is(INST_NAME_SW    ) { printf(p"inst name:   SW\n") }
+        is(INST_NAME_SD    ) { printf(p"inst name:   SD\n") }
+        is(INST_NAME_EBREAK) { printf(p"inst name:   EBREAK\n") }
+        is(INST_NAME_MUL   ) { printf(p"inst name:   MUL\n") }
+        is(INST_NAME_MULW  ) { printf(p"inst name:   MULW\n") }
+        is(INST_NAME_DIVU  ) { printf(p"inst name:   DIVU\n") }
+        is(INST_NAME_DIVW  ) { printf(p"inst name:   DIVW\n") }
+        is(INST_NAME_REMU  ) { printf(p"inst name:   REMU\n") }
+        is(INST_NAME_REMW  ) { printf(p"inst name:   REMW\n") }
     }
     printf("rs1 addr:   %d\n", idu.io.oInstRS1Addr)
     printf("rs2 addr:   %d\n", idu.io.oInstRS2Addr)
