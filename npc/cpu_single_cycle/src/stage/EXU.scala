@@ -54,8 +54,8 @@ class EXU extends Module {
             (io.iALUType === ALU_TYPE_SRA)  ->  (io.iALURS1Val.asSInt() >> io.iALURS2Val(5, 0).asUInt()).asUInt(),
             (io.iALUType === ALU_TYPE_BEQ)  ->  (io.iALURS1Val === io.iALURS2Val),
             (io.iALUType === ALU_TYPE_BNE)  ->  (io.iALURS1Val =/= io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_BLT)  ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()),
-            (io.iALUType === ALU_TYPE_BGE)  ->  (io.iALURS1Val.asSInt() >= io.iALURS2Val.asSInt()),
+            (io.iALUType === ALU_TYPE_BLT)  ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_BGE)  ->  (io.iALURS1Val.asSInt() >= io.iALURS2Val.asSInt()).asUInt(),
             (io.iALUType === ALU_TYPE_BLTU) ->  (io.iALURS1Val < io.iALURS2Val),
             (io.iALUType === ALU_TYPE_BGEU) ->  (io.iALURS1Val >= io.iALURS2Val),
             (io.iALUType === ALU_TYPE_JALR) -> ((io.iALURS1Val + io.iALURS2Val) & jalrMask),
@@ -67,6 +67,8 @@ class EXU extends Module {
         )
     )
 
+    io.oJmpEn := false.B
+    io.oJmpPC := io.iPC
     // 处理分支操作
     val brAddr = io.iPC + io.iInstRS2Val
     when ((io.iInstName === INST_NAME_BEQ   ||
@@ -78,34 +80,27 @@ class EXU extends Module {
            aluOut === 1.U) {
         io.oJmpEn := true.B
         io.oJmpPC := brAddr
-    }.otherwise {
-        io.oJmpEn := false.B
-        io.oJmpPC := io.iPC
     }
-
     // 处理跳转操作
     when (io.iJmpEn === true.B) {
         io.oJmpEn := true.B
         io.oJmpPC := aluOut
-    }.otherwise {
-        io.oJmpEn := false.B
-        io.oJmpPC := io.iPC
     }
 
     // 处理访存写入操作
     val memWrData = io.iInstRS2Val
     when (io.iMemWrEn) {
         io.oMemWrEn   := true.B
-        io.oMemWrAddr := MuxCase(
-            aluOut,
+        io.oMemWrAddr := aluOut
+        io.oMemWrData := MuxCase(
+            0.U(DATA_WIDTH.W),
             Seq(
-                (io.iMemByt === MEM_BYT_1_U) -> aluOut(7, 0),
-                (io.iMemByt === MEM_BYT_2_U) -> aluOut(15, 0),
-                (io.iMemByt === MEM_BYT_4_U) -> aluOut(31, 0),
-                (io.iMemByt === MEM_BYT_8_U) -> aluOut(63, 0)
+                (io.iMemByt === MEM_BYT_1_U) -> memWrData(7, 0),
+                (io.iMemByt === MEM_BYT_2_U) -> memWrData(15, 0),
+                (io.iMemByt === MEM_BYT_4_U) -> memWrData(31, 0),
+                (io.iMemByt === MEM_BYT_8_U) -> memWrData(63, 0)
             )
         )
-        io.oMemWrData := memWrData
     }.otherwise {
         io.oMemWrEn   := false.B
         io.oMemWrAddr := 0.U(DATA_WIDTH.W)
@@ -113,23 +108,7 @@ class EXU extends Module {
     }
 
     // 处理访存读取操作
-    io.oMemRdAddr := aluOut
-    val iMemRdData = io.iMemRdData
-    val memRdDataByt1 = iMemRdData(7, 0)
-    val memRdDataByt2 = iMemRdData(15, 0)
-    val memRdDataByt4 = iMemRdData(31, 0)
-    val memRdDataByt8 = iMemRdData(63, 0)
-    val memRdData = MuxCase(
-        0.U(DATA_WIDTH.W),
-        Seq(
-            (io.iMemByt === MEM_BYT_1_S) -> Cat(Fill(56, memRdDataByt1(7)),  memRdDataByt1),
-            (io.iMemByt === MEM_BYT_2_S) -> Cat(Fill(48, memRdDataByt2(15)), memRdDataByt2),
-            (io.iMemByt === MEM_BYT_1_U) -> Cat(Fill(56, 0.U), memRdDataByt1),
-            (io.iMemByt === MEM_BYT_2_U) -> Cat(Fill(48, 0.U), memRdDataByt2),
-            (io.iMemByt === MEM_BYT_4_S) -> Cat(Fill(32, memRdDataByt4(31)), memRdDataByt4),
-            (io.iMemByt === MEM_BYT_8_S) -> memRdDataByt8
-        )
-    )
+    io.oMemRdAddr := 0.U(DATA_WIDTH.W)
 
     // 处理写回操作
     val aluOutByt4 = aluOut(31, 0)
@@ -152,14 +131,34 @@ class EXU extends Module {
         0.U(DATA_WIDTH.W),
         Seq(
             (io.iRegWrSrc === REG_WR_SRC_ALU) -> aluOutData,
-            (io.iRegWrSrc === REG_WR_SRC_MEM) -> memRdData,
             (io.iRegWrSrc === REG_WR_SRC_PC)  -> (io.iPC + 4.U(DATA_WIDTH.W))
         )
     )
     when (io.iRegWrEn) {
         io.oRegWrEn   := true.B
         io.oRegWrAddr := io.iInstRDAddr
-        io.oRegWrData := regWrData
+        when (io.iRegWrSrc === REG_WR_SRC_MEM) {
+            io.oMemRdAddr := aluOut
+            val iMemRdData = io.iMemRdData
+            val memRdDataByt1 = iMemRdData(7, 0)
+            val memRdDataByt2 = iMemRdData(15, 0)
+            val memRdDataByt4 = iMemRdData(31, 0)
+            val memRdDataByt8 = iMemRdData(63, 0)
+            val memRdData = MuxCase(
+                0.U(DATA_WIDTH.W),
+                Seq(
+                    (io.iMemByt === MEM_BYT_1_S) -> Cat(Fill(56, memRdDataByt1(7)),  memRdDataByt1),
+                    (io.iMemByt === MEM_BYT_2_S) -> Cat(Fill(48, memRdDataByt2(15)), memRdDataByt2),
+                    (io.iMemByt === MEM_BYT_1_U) -> Cat(Fill(56, 0.U), memRdDataByt1),
+                    (io.iMemByt === MEM_BYT_2_U) -> Cat(Fill(48, 0.U), memRdDataByt2),
+                    (io.iMemByt === MEM_BYT_4_S) -> Cat(Fill(32, memRdDataByt4(31)), memRdDataByt4),
+                    (io.iMemByt === MEM_BYT_8_S) -> memRdDataByt8
+                )
+            )
+            io.oRegWrData := memRdData
+        }.otherwise {
+            io.oRegWrData := regWrData
+        }
     }.otherwise {
         io.oRegWrEn   := false.B
         io.oRegWrAddr := 0.U(DATA_WIDTH.W)

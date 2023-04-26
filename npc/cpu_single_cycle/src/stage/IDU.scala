@@ -119,7 +119,7 @@ class IDU extends Module {
     val instImmB     = Cat(inst(31), inst(7), inst(30, 25), inst(11, 8))
     val instImmBSext = Cat(Fill(51, instImmB(11)), instImmB, 0.U(1.U))
     val instImmU     = inst(31, 12)
-    val instImmUSext = Cat(Fill(32, instImmU(19)), instImmU, 0.U(12.U))
+    val instImmUSext = Cat(Fill(32, instImmU(19)), instImmU, Fill(12, 0.U))
     val instImmJ     = Cat(inst(31), inst(19, 12), inst(20), inst(30, 21))
     val instImmJSext = Cat(Fill(43, instImmJ(19)), instImmJ, 0.U(1.U))
 

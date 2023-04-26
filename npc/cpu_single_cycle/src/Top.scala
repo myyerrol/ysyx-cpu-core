@@ -16,10 +16,9 @@ class Top extends Module {
 
     val ifu = Module(new IFU())
     io.oPC := ifu.io.oPC
-    // io.oPC := ifu.io.oPCNext
 
-    val mem = Module(new MemM())
-    mem.io.iMemRdAddr := 0.U(DATA_WIDTH.W)
+    // val mem = Module(new MemM())
+    // mem.io.iMemRdAddr := 0.U(DATA_WIDTH.W)
 
     val reg = Module(new RegM())
 
@@ -32,6 +31,9 @@ class Top extends Module {
     reg.io.iRegRd1Addr := idu.io.oInstRS1Addr
     reg.io.iRegRd2Addr := idu.io.oInstRS2Addr
 
+    val dpi = Module(new DPI())
+    dpi.io.iEbreakFlag := Mux(idu.io.oInstName === INST_NAME_EBREAK, 1.U, 0.U)
+
     val exu = Module(new EXU())
     exu.io.iInstRS1Addr := idu.io.oInstRS1Addr
     exu.io.iInstRS2Addr := idu.io.oInstRS2Addr
@@ -39,7 +41,8 @@ class Top extends Module {
     exu.io.iInstRS1Val  := idu.io.oInstRS1Val
     exu.io.iInstRS2Val  := idu.io.oInstRS2Val
     exu.io.iPC          := ifu.io.oPC
-    exu.io.iMemRdData   := mem.io.oMemRdData
+    // exu.io.iMemRdData   := mem.io.oMemRdData
+    exu.io.iMemRdData   := dpi.io.oMemRdData
     exu.io.iInstName    := idu.io.oInstName
     exu.io.iALUType     := idu.io.oALUType
     exu.io.iALURS1Val   := idu.io.oALURS1Val
@@ -50,16 +53,21 @@ class Top extends Module {
     exu.io.iRegWrEn     := idu.io.oRegWrEn
     exu.io.iRegWrSrc    := idu.io.oRegWrSrc
 
-    mem.io.iMemRdAddr   := exu.io.oMemRdAddr
+    // mem.io.iMemRdAddr   := exu.io.oMemRdAddr
+    dpi.io.iMemRdAddr   := exu.io.oMemRdAddr
 
-    val amu = Module(new AMU())
-    amu.io.iMemWrEn   := exu.io.oMemWrEn
-    amu.io.iMemWrAddr := exu.io.oMemWrAddr
-    amu.io.iMemWrData := exu.io.oMemWrData
+    // val amu = Module(new AMU())
+    // amu.io.iMemWrEn   := exu.io.oMemWrEn
+    // amu.io.iMemWrAddr := exu.io.oMemWrAddr
+    // amu.io.iMemWrData := exu.io.oMemWrData
 
-    mem.io.iMemWrEn   := amu.io.oMemWrEn
-    mem.io.iMemWrAddr := amu.io.oMemWrAddr
-    mem.io.iMemWrData := amu.io.oMemWrData
+    // mem.io.iMemWrEn   := amu.io.oMemWrEn
+    // mem.io.iMemWrAddr := amu.io.oMemWrAddr
+    // mem.io.iMemWrData := amu.io.oMemWrData
+
+    dpi.io.iMemWrEn   := exu.io.oMemWrEn
+    dpi.io.iMemWrAddr := exu.io.oMemWrAddr
+    dpi.io.iMemWrData := exu.io.oMemWrData
 
     val wbu = Module(new WBU())
     ifu.io.iJmpEn     := exu.io.oJmpEn
@@ -72,81 +80,82 @@ class Top extends Module {
     reg.io.iRegWrAddr := wbu.io.oRegWrAddr
     reg.io.iRegWrData := wbu.io.oRegWrData
 
-    val dpi = Module(new DPI())
-    dpi.io.iEbreakFlag := Mux(idu.io.oInstName === INST_NAME_EBREAK, 1.U, 0.U)
-    dpi.io.iRegVal := 11.U
-    printf("reg addr: %d\n", dpi.io.oRegAddr)
+    // val dpi = Module(new DPI())
+    // dpi.io.iEbreakFlag := Mux(idu.io.oInstName === INST_NAME_EBREAK, 1.U, 0.U)
     reg.io.iRegRdEAddr := 10.U(REG_WIDTH.W)
     io.oReg := reg.io.oRegRdEData
 
-    printf("pc:          0x%x\n", io.oPC)
-    printf("inst:        0x%x\n", io.iInst)
-
+    printf("v pc:          0x%x\n", io.oPC)
+    printf("v inst:        0x%x\n", io.iInst)
     val instName = idu.io.oInstName
     switch (instName) {
-        is(INST_NAME_SLLI  ) { printf(p"inst name:   SLLI\n") }
-        is(INST_NAME_SRLI  ) { printf(p"inst name:   SRLI\n") }
-        is(INST_NAME_SRA   ) { printf(p"inst name:   SRA\n") }
-        is(INST_NAME_SRAI  ) { printf(p"inst name:   SRAI\n") }
-        is(INST_NAME_SLLW  ) { printf(p"inst name:   SLLW\n") }
-        is(INST_NAME_SLLIW ) { printf(p"inst name:   SLLIW\n") }
-        is(INST_NAME_SRLW  ) { printf(p"inst name:   SRLW\n") }
-        is(INST_NAME_SRLIW ) { printf(p"inst name:   SRLIW\n") }
-        is(INST_NAME_SRAW  ) { printf(p"inst name:   SRAW\n") }
-        is(INST_NAME_SRAIW ) { printf(p"inst name:   SRAIW\n") }
-        is(INST_NAME_ADD   ) { printf(p"inst name:   ADD\n") }
-        is(INST_NAME_ADDI  ) { printf(p"inst name:   ADDI\n") }
-        is(INST_NAME_SUB   ) { printf(p"inst name:   SUB\n") }
-        is(INST_NAME_LUI   ) { printf(p"inst name:   LUI\n") }
-        is(INST_NAME_AUIPC ) { printf(p"inst name:   AUIPC\n") }
-        is(INST_NAME_ADDW  ) { printf(p"inst name:   ADDW\n") }
-        is(INST_NAME_ADDIW ) { printf(p"inst name:   ADDIW\n") }
-        is(INST_NAME_SUBW  ) { printf(p"inst name:   SUBW\n") }
-        is(INST_NAME_XORI  ) { printf(p"inst name:   XORI\n") }
-        is(INST_NAME_OR    ) { printf(p"inst name:   OR\n") }
-        is(INST_NAME_AND   ) { printf(p"inst name:   AND\n") }
-        is(INST_NAME_ANDI  ) { printf(p"inst name:   ANDI\n") }
-        is(INST_NAME_SLT   ) { printf(p"inst name:   SLT\n") }
-        is(INST_NAME_SLTU  ) { printf(p"inst name:   SLTU\n") }
-        is(INST_NAME_SLTIU ) { printf(p"inst name:   SLTIU\n") }
-        is(INST_NAME_BEQ   ) { printf(p"inst name:   BEQ\n") }
-        is(INST_NAME_BNE   ) { printf(p"inst name:   BNE\n") }
-        is(INST_NAME_BLT   ) { printf(p"inst name:   BLT\n") }
-        is(INST_NAME_BGE   ) { printf(p"inst name:   BGE\n") }
-        is(INST_NAME_BLTU  ) { printf(p"inst name:   BLTU\n") }
-        is(INST_NAME_BGEU  ) { printf(p"inst name:   BGEU\n") }
-        is(INST_NAME_JAL   ) { printf(p"inst name:   JAL\n") }
-        is(INST_NAME_JALR  ) { printf(p"inst name:   JALR\n") }
-        is(INST_NAME_LB    ) { printf(p"inst name:   LB\n") }
-        is(INST_NAME_LH    ) { printf(p"inst name:   LH\n") }
-        is(INST_NAME_LBU   ) { printf(p"inst name:   LBU\n") }
-        is(INST_NAME_LHU   ) { printf(p"inst name:   LHU\n") }
-        is(INST_NAME_LW    ) { printf(p"inst name:   LW\n") }
-        is(INST_NAME_LD    ) { printf(p"inst name:   LD\n") }
-        is(INST_NAME_SB    ) { printf(p"inst name:   SB\n") }
-        is(INST_NAME_SH    ) { printf(p"inst name:   SH\n") }
-        is(INST_NAME_SW    ) { printf(p"inst name:   SW\n") }
-        is(INST_NAME_SD    ) { printf(p"inst name:   SD\n") }
-        is(INST_NAME_EBREAK) { printf(p"inst name:   EBREAK\n") }
-        is(INST_NAME_MUL   ) { printf(p"inst name:   MUL\n") }
-        is(INST_NAME_MULW  ) { printf(p"inst name:   MULW\n") }
-        is(INST_NAME_DIVU  ) { printf(p"inst name:   DIVU\n") }
-        is(INST_NAME_DIVW  ) { printf(p"inst name:   DIVW\n") }
-        is(INST_NAME_REMU  ) { printf(p"inst name:   REMU\n") }
-        is(INST_NAME_REMW  ) { printf(p"inst name:   REMW\n") }
+        is(INST_NAME_SLLI  ) { printf(p"v inst name:   SLLI\n") }
+        is(INST_NAME_SRLI  ) { printf(p"v inst name:   SRLI\n") }
+        is(INST_NAME_SRA   ) { printf(p"v inst name:   SRA\n") }
+        is(INST_NAME_SRAI  ) { printf(p"v inst name:   SRAI\n") }
+        is(INST_NAME_SLLW  ) { printf(p"v inst name:   SLLW\n") }
+        is(INST_NAME_SLLIW ) { printf(p"v inst name:   SLLIW\n") }
+        is(INST_NAME_SRLW  ) { printf(p"v inst name:   SRLW\n") }
+        is(INST_NAME_SRLIW ) { printf(p"v inst name:   SRLIW\n") }
+        is(INST_NAME_SRAW  ) { printf(p"v inst name:   SRAW\n") }
+        is(INST_NAME_SRAIW ) { printf(p"v inst name:   SRAIW\n") }
+        is(INST_NAME_ADD   ) { printf(p"v inst name:   ADD\n") }
+        is(INST_NAME_ADDI  ) { printf(p"v inst name:   ADDI\n") }
+        is(INST_NAME_SUB   ) { printf(p"v inst name:   SUB\n") }
+        is(INST_NAME_LUI   ) { printf(p"v inst name:   LUI\n") }
+        is(INST_NAME_AUIPC ) { printf(p"v inst name:   AUIPC\n") }
+        is(INST_NAME_ADDW  ) { printf(p"v inst name:   ADDW\n") }
+        is(INST_NAME_ADDIW ) { printf(p"v inst name:   ADDIW\n") }
+        is(INST_NAME_SUBW  ) { printf(p"v inst name:   SUBW\n") }
+        is(INST_NAME_XORI  ) { printf(p"v inst name:   XORI\n") }
+        is(INST_NAME_OR    ) { printf(p"v inst name:   OR\n") }
+        is(INST_NAME_AND   ) { printf(p"v inst name:   AND\n") }
+        is(INST_NAME_ANDI  ) { printf(p"v inst name:   ANDI\n") }
+        is(INST_NAME_SLT   ) { printf(p"v inst name:   SLT\n") }
+        is(INST_NAME_SLTU  ) { printf(p"v inst name:   SLTU\n") }
+        is(INST_NAME_SLTIU ) { printf(p"v inst name:   SLTIU\n") }
+        is(INST_NAME_BEQ   ) { printf(p"v inst name:   BEQ\n") }
+        is(INST_NAME_BNE   ) { printf(p"v inst name:   BNE\n") }
+        is(INST_NAME_BLT   ) { printf(p"v inst name:   BLT\n") }
+        is(INST_NAME_BGE   ) { printf(p"v inst name:   BGE\n") }
+        is(INST_NAME_BLTU  ) { printf(p"v inst name:   BLTU\n") }
+        is(INST_NAME_BGEU  ) { printf(p"v inst name:   BGEU\n") }
+        is(INST_NAME_JAL   ) { printf(p"v inst name:   JAL\n") }
+        is(INST_NAME_JALR  ) { printf(p"v inst name:   JALR\n") }
+        is(INST_NAME_LB    ) { printf(p"v inst name:   LB\n") }
+        is(INST_NAME_LH    ) { printf(p"v inst name:   LH\n") }
+        is(INST_NAME_LBU   ) { printf(p"v inst name:   LBU\n") }
+        is(INST_NAME_LHU   ) { printf(p"v inst name:   LHU\n") }
+        is(INST_NAME_LW    ) { printf(p"v inst name:   LW\n") }
+        is(INST_NAME_LD    ) { printf(p"v inst name:   LD\n") }
+        is(INST_NAME_SB    ) { printf(p"v inst name:   SB\n") }
+        is(INST_NAME_SH    ) { printf(p"v inst name:   SH\n") }
+        is(INST_NAME_SW    ) { printf(p"v inst name:   SW\n") }
+        is(INST_NAME_SD    ) { printf(p"v inst name:   SD\n") }
+        is(INST_NAME_EBREAK) { printf(p"v inst name:   EBREAK\n") }
+        is(INST_NAME_MUL   ) { printf(p"v inst name:   MUL\n") }
+        is(INST_NAME_MULW  ) { printf(p"v inst name:   MULW\n") }
+        is(INST_NAME_DIVU  ) { printf(p"v inst name:   DIVU\n") }
+        is(INST_NAME_DIVW  ) { printf(p"v inst name:   DIVW\n") }
+        is(INST_NAME_REMU  ) { printf(p"v inst name:   REMU\n") }
+        is(INST_NAME_REMW  ) { printf(p"v inst name:   REMW\n") }
     }
-    printf("rs1 addr:   %d\n", idu.io.oInstRS1Addr)
-    printf("rs2 addr:   %d\n", idu.io.oInstRS2Addr)
-    printf("rd  addr:   %d\n", idu.io.oInstRDAddr)
-    printf("rs1 val :    0x%x\n", idu.io.iInstRS1Val)
-    printf("rs2 val :    0x%x\n", idu.io.iInstRS2Val)
-    printf("rd  val :    0x%x\n", exu.io.oRegWrData)
-    printf("alu type: %d\n", idu.io.oALUType)
-    printf("alu rs1 val: 0x%x\n", idu.io.oALURS1Val)
-    printf("alu rs2 val: 0x%x\n", idu.io.oALURS2Val)
-    printf("alu out:     0x%x\n", exu.io.oALUOut)
-    printf("jmp en:      %d\n", idu.io.oJmpEn)
-    printf("mem wr en:   %d\n", idu.io.oMemWrEn)
-    printf("reg wr en:   %d\n", idu.io.oRegWrEn)
-    printf("reg(10):     0x%x\n\n", io.oReg)
+    printf("v rs1 addr:   %d\n", idu.io.oInstRS1Addr)
+    printf("v rs2 addr:   %d\n", idu.io.oInstRS2Addr)
+    printf("v rd  addr:   %d\n", idu.io.oInstRDAddr)
+    printf("v rs1 val :    0x%x\n", idu.io.oInstRS1Val)
+    printf("v rs2 val :    0x%x\n", idu.io.oInstRS2Val)
+    printf("v rd  val :    0x%x\n", exu.io.oRegWrData)
+    printf("v mem rd addr: 0x%x\n", exu.io.oMemRdAddr)
+    printf("v mem rd data: 0x%x\n", exu.io.iMemRdData)
+    printf("v mem wr addr: 0x%x\n", exu.io.oMemWrAddr)
+    printf("v mem wr data: 0x%x\n", exu.io.oMemWrData)
+    printf("v alu type: %d\n", idu.io.oALUType)
+    printf("v alu rs1 val: 0x%x\n", idu.io.oALURS1Val)
+    printf("v alu rs2 val: 0x%x\n", idu.io.oALURS2Val)
+    printf("v alu out:     0x%x\n", exu.io.oALUOut)
+    printf("v jmp en:      %d\n", exu.io.oJmpEn)
+    printf("v mem wr en:   %d\n", idu.io.oMemWrEn)
+    printf("v reg wr en:   %d\n", idu.io.oRegWrEn)
+    printf("v reg(10):     0x%x\n\n", io.oReg)
 }
