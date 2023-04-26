@@ -11,6 +11,7 @@ static char *img_file = NULL;
 // 兼容执行函数
 void init_log(const char *log_file);
 void init_mem();
+void sdb_set_batch_mode();
 // void init_sdb();
 
 // 初始执行函数
@@ -27,7 +28,7 @@ static int parseArgs(int argc, char **argv) {
     int o;
     while ((o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
         switch (o) {
-        // case 'b': sdb_set_batch_mode(); break;
+        case 'b': sdb_set_batch_mode(); break;
         // case 'p': sscanf(optarg, "%d", &difftest_port); break;
         case 'l': log_file = optarg; break;
         // case 'd': diff_so_file = optarg; break;
@@ -45,6 +46,16 @@ static int parseArgs(int argc, char **argv) {
         }
     }
     return 0;
+}
+
+static void printWelcome() {
+    Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
+    IFDEF(CONFIG_TRACE, Log("If trace is enabled, a log file will be generated "
+            "to record the trace. This may lead to a large log file. "
+            "If it is not necessary, you can disable it in menuconfig"));
+    Log("Build time: %s, %s", __TIME__, __DATE__);
+    printf("Welcome to %s-NPC!\n", ANSI_FMT(str(__GUEST_ISA__), ANSI_FG_YELLOW ANSI_BG_RED));
+    printf("For help, type \"h\"\n");
 }
 
 static void initLog() {
@@ -98,6 +109,8 @@ static void initMonitor(int argc, char **argv) {
     initISA();
     initImg();
     initSDB();
+
+    printWelcome();
 }
 
 int main(int argc, char **argv, char **env) {

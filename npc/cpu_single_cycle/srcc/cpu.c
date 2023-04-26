@@ -3,8 +3,8 @@
 #include <common.h>
 #include <isa.h>
 
-#include "state.h"
 #include "sim.h"
+#include "state.h"
 
 // #define MAX_INST_TO_PRINT 10
 
@@ -18,7 +18,6 @@ void set_npc_state(int state, vaddr_t pc, int halt_ret) {
     npc_state.halt_pc = pc;
     npc_state.halt_ret = halt_ret;
 }
-
 
 static void exec_once() {
     runSimModule();

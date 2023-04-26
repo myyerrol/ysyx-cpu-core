@@ -14,5 +14,3 @@ void runSimModule();
 void resetSimModule(int n);
 
 #endif
-
-
