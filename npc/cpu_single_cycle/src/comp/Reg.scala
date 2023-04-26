@@ -10,7 +10,7 @@ class RegM extends Module {
         val iRegWrEn    =  Input(Bool())
         val iRegRd1Addr =  Input(UInt(DATA_WIDTH.W))
         val iRegRd2Addr =  Input(UInt(DATA_WIDTH.W))
-        val iRegRdEAddr  =  Input(UInt(DATA_WIDTH.W))
+        val iRegRdEAddr =  Input(UInt(DATA_WIDTH.W))
         val iRegWrAddr  =  Input(UInt(DATA_WIDTH.W))
         val iRegWrData  =  Input(UInt(DATA_WIDTH.W))
         val oRegRd1Data = Output(UInt(DATA_WIDTH.W))
@@ -23,6 +23,8 @@ class RegM extends Module {
     when (io.iRegWrEn) {
         regFile(io.iRegWrAddr) := io.iRegWrData
     }
+
+    regFile(0.U) := 0.U(DATA_WIDTH.W)
 
     io.oRegRd1Data := regFile(io.iRegRd1Addr)
     io.oRegRd2Data := regFile(io.iRegRd2Addr)
