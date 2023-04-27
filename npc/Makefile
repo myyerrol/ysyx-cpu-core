@@ -49,10 +49,15 @@ endif
 
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 
-SRCCS_LIB += $(NEMU_HOME)/src/memory
-# SRCCS_LIB += $(NEMU_HOME)/src/monitor/sdb/sdb.c $(NEMU_HOME)/src/monitor/sdb/expr.c
-SRCCS_LIB += $(NEMU_HOME)/src/utils
-SRCCS_PROJECT += $(shell find $(SRCCS_LIB) -name "*.c")
+SRCCS_LIB_DIR += $(NEMU_HOME)/src/memory
+SRCCS_LIB_DIR += $(NEMU_HOME)/src/utils
+SRCCS_LIB_DIR_BLACKLIST +=
+SRCCS_LIB_SRC_BLACKLIST += $(NEMU_HOME)/src/utils/state.c
+SRCCS_LIB_BLACKLIST += $(SRCCS_LIB_SRC_BLACKLIST) $(shell find $(SRCCS_LIB_DIR_BLACKLIST) -name "*.c")
+SRCCS_LIB_WHITELIST += $(shell find $(SRCCS_LIB_DIR) -name "*.c")
+SRCCS_LIB += $(filter-out $(SRCCS_LIB_BLACKLIST),$(SRCCS_LIB_WHITELIST))
+
+SRCCS_PROJECT += $(SRCCS_LIB)
 
 $(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
 	$(call git_commit, "generate verilog")
