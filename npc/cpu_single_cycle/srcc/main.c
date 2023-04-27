@@ -4,6 +4,7 @@
 #include <memory/paddr.h>
 
 #include "sdb.h"
+#include "state.h"
 
 static char *log_file = NULL;
 static char *img_file = NULL;
@@ -121,5 +122,5 @@ int main(int argc, char **argv, char **env) {
 
     sdb_mainloop();
 
-    return 0;
+    return is_exit_status_bad();
 }

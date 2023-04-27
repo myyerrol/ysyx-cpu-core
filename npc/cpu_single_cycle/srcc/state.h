@@ -13,4 +13,6 @@ typedef struct {
 
 extern NPCState npc_state;
 
+int is_exit_status_bad();
+
 #endif
