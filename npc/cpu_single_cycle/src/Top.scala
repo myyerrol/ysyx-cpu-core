@@ -9,13 +9,15 @@ import cpu.util.Inst._
 
 class Top extends Module {
     val io = IO(new Bundle {
-        val iInst =  Input(UInt(DATA_WIDTH.W))
         val oPC   = Output(UInt(DATA_WIDTH.W))
         val oReg  = Output(UInt(DATA_WIDTH.W))
     });
 
+    val dpi = Module(new DPI())
+
     val ifu = Module(new IFU())
     io.oPC := ifu.io.oPC
+    dpi.io.iMemRdAddrInst := ifu.io.oPC
 
     // val mem = Module(new MemM())
     // mem.io.iMemRdAddr := 0.U(DATA_WIDTH.W)
@@ -23,7 +25,7 @@ class Top extends Module {
     val reg = Module(new RegM())
 
     val idu = Module(new IDU())
-    idu.io.iInst       := io.iInst
+    idu.io.iInst       := dpi.io.oMemRdDataInst
     idu.io.iInstRS1Val := reg.io.oRegRd1Data
     idu.io.iInstRS2Val := reg.io.oRegRd2Data
     idu.io.iPC         := ifu.io.oPC
@@ -31,7 +33,6 @@ class Top extends Module {
     reg.io.iRegRd1Addr := idu.io.oInstRS1Addr
     reg.io.iRegRd2Addr := idu.io.oInstRS2Addr
 
-    val dpi = Module(new DPI())
     dpi.io.iEbreakFlag := Mux(idu.io.oInstName === INST_NAME_EBREAK, 1.U, 0.U)
 
     val exu = Module(new EXU())
@@ -42,7 +43,7 @@ class Top extends Module {
     exu.io.iInstRS2Val  := idu.io.oInstRS2Val
     exu.io.iPC          := ifu.io.oPC
     // exu.io.iMemRdData   := mem.io.oMemRdData
-    exu.io.iMemRdData   := dpi.io.oMemRdData
+    exu.io.iMemRdData   := dpi.io.oMemRdDataLoad
     exu.io.iInstName    := idu.io.oInstName
     exu.io.iALUType     := idu.io.oALUType
     exu.io.iALURS1Val   := idu.io.oALURS1Val
@@ -54,7 +55,7 @@ class Top extends Module {
     exu.io.iRegWrSrc    := idu.io.oRegWrSrc
 
     // mem.io.iMemRdAddr   := exu.io.oMemRdAddr
-    dpi.io.iMemRdAddr   := exu.io.oMemRdAddr
+    dpi.io.iMemRdAddrLoad := exu.io.oMemRdAddr
 
     // val amu = Module(new AMU())
     // amu.io.iMemWrEn   := exu.io.oMemWrEn
@@ -80,13 +81,11 @@ class Top extends Module {
     reg.io.iRegWrAddr := wbu.io.oRegWrAddr
     reg.io.iRegWrData := wbu.io.oRegWrData
 
-    // val dpi = Module(new DPI())
-    // dpi.io.iEbreakFlag := Mux(idu.io.oInstName === INST_NAME_EBREAK, 1.U, 0.U)
     reg.io.iRegRdEAddr := 10.U(REG_WIDTH.W)
     io.oReg := reg.io.oRegRdEData
 
-    printf("v pc:          0x%x\n", io.oPC)
-    printf("v inst:        0x%x\n", io.iInst)
+    printf("v pc:          0x%x\n", ifu.io.oPC)
+    printf("v inst:        0x%x\n", idu.io.iInst)
     val instName = idu.io.oInstName
     switch (instName) {
         is(INST_NAME_SLLI  ) { printf(p"v inst name:   SLLI\n") }
