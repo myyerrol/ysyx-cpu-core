@@ -1,5 +1,6 @@
 #include <common.h>
 #include <memory/paddr.h>
+
 #include "sim.h"
 #include "cpu.h"
 
@@ -76,6 +77,12 @@ void runSimModule() {
         runSimModuleCycle();
     }
     else {
+        // for (int i = 0; i < 200; i++) {
+        //     word_t addr = RESET_VECTOR + (i * 4);
+        //     printf("addr: " FMT_WORD " ", addr);
+        //     word_t data = paddr_read(addr, 8);
+        //     printf("data: " FMT_WORD "\n", data);
+        // }
         NPC_INST_TRAP(top->io_oPC - 4, top->io_oReg);
     }
 }
