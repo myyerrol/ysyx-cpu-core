@@ -108,15 +108,6 @@ class EXU extends Module {
                 (io.iMemByt === MEM_BYT_8_U) -> 8.U(BYTE_WIDTH.W),
             )
         )
-        // io.oMemWrData := MuxCase(
-        //     0.U(DATA_WIDTH.W),
-        //     Seq(
-        //         (io.iMemByt === MEM_BYT_1_U) -> memWrData(7, 0),
-        //         (io.iMemByt === MEM_BYT_2_U) -> memWrData(15, 0),
-        //         (io.iMemByt === MEM_BYT_4_U) -> memWrData(31, 0),
-        //         (io.iMemByt === MEM_BYT_8_U) -> memWrData(63, 0)
-        //     )
-        // )
     }.otherwise {
         io.oMemWrEn   := false.B
         io.oMemWrAddr := 0.U(DATA_WIDTH.W)
