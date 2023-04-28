@@ -9,8 +9,8 @@ import cpu.util.Inst._
 
 class Top extends Module {
     val io = IO(new Bundle {
-        val oPC   = Output(UInt(DATA_WIDTH.W))
-        val oReg  = Output(UInt(DATA_WIDTH.W))
+        val oPC  = Output(UInt(DATA_WIDTH.W))
+        val oReg = Output(UInt(DATA_WIDTH.W))
     });
 
     val dpi = Module(new DPI())
@@ -18,9 +18,6 @@ class Top extends Module {
     val ifu = Module(new IFU())
     io.oPC := ifu.io.oPC
     dpi.io.iMemRdAddrInst := ifu.io.oPC
-
-    // val mem = Module(new MemM())
-    // mem.io.iMemRdAddr := 0.U(DATA_WIDTH.W)
 
     val reg = Module(new RegM())
 
@@ -42,7 +39,6 @@ class Top extends Module {
     exu.io.iInstRS1Val  := idu.io.oInstRS1Val
     exu.io.iInstRS2Val  := idu.io.oInstRS2Val
     exu.io.iPC          := ifu.io.oPC
-    // exu.io.iMemRdData   := mem.io.oMemRdData
     exu.io.iMemRdData   := dpi.io.oMemRdDataLoad
     exu.io.iInstName    := idu.io.oInstName
     exu.io.iALUType     := idu.io.oALUType
@@ -54,21 +50,12 @@ class Top extends Module {
     exu.io.iRegWrEn     := idu.io.oRegWrEn
     exu.io.iRegWrSrc    := idu.io.oRegWrSrc
 
-    // mem.io.iMemRdAddr   := exu.io.oMemRdAddr
     dpi.io.iMemRdAddrLoad := exu.io.oMemRdAddr
-
-    // val amu = Module(new AMU())
-    // amu.io.iMemWrEn   := exu.io.oMemWrEn
-    // amu.io.iMemWrAddr := exu.io.oMemWrAddr
-    // amu.io.iMemWrData := exu.io.oMemWrData
-
-    // mem.io.iMemWrEn   := amu.io.oMemWrEn
-    // mem.io.iMemWrAddr := amu.io.oMemWrAddr
-    // mem.io.iMemWrData := amu.io.oMemWrData
 
     dpi.io.iMemWrEn   := exu.io.oMemWrEn
     dpi.io.iMemWrAddr := exu.io.oMemWrAddr
     dpi.io.iMemWrData := exu.io.oMemWrData
+    dpi.io.iMemWrLen  := exu.io.oMemWrLen
 
     val wbu = Module(new WBU())
     ifu.io.iJmpEn     := exu.io.oJmpEn

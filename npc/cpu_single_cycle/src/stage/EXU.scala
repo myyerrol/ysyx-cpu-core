@@ -32,6 +32,7 @@ class EXU extends Module {
         val oMemWrEn     = Output(Bool())
         val oMemWrAddr   = Output(UInt(DATA_WIDTH.W))
         val oMemWrData   = Output(UInt(DATA_WIDTH.W))
+        val oMemWrLen    = Output(UInt(BYTE_WIDTH.W))
         val oRegWrEn     = Output(Bool())
         val oRegWrAddr   = Output(UInt(DATA_WIDTH.W))
         val oRegWrData   = Output(UInt(DATA_WIDTH.W))
@@ -42,28 +43,33 @@ class EXU extends Module {
     val aluOut = MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(
-            (io.iALUType === ALU_TYPE_ADD)  ->  (io.iALURS1Val + io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_SUB)  ->  (io.iALURS1Val - io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_AND)  ->  (io.iALURS1Val & io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_OR)   ->  (io.iALURS1Val | io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_XOR)  ->  (io.iALURS1Val ^ io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_SLT)  ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_SLTU) ->  (io.iALURS1Val.asUInt() < io.iALURS2Val.asUInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_SLL)  ->  (io.iALURS1Val << io.iALURS2Val(5, 0)).asUInt(),
-            (io.iALUType === ALU_TYPE_SRL)  ->  (io.iALURS1Val >> io.iALURS2Val(5, 0)).asUInt(),
-            (io.iALUType === ALU_TYPE_SRA)  ->  (io.iALURS1Val.asSInt() >> io.iALURS2Val(5, 0).asUInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_BEQ)  ->  (io.iALURS1Val === io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_BNE)  ->  (io.iALURS1Val =/= io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_BLT)  ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_BGE)  ->  (io.iALURS1Val.asSInt() >= io.iALURS2Val.asSInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_BLTU) ->  (io.iALURS1Val < io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_BGEU) ->  (io.iALURS1Val >= io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_JALR) -> ((io.iALURS1Val + io.iALURS2Val) & jalrMask),
-            (io.iALUType === ALU_TYPE_MUL)  ->  (io.iALURS1Val * io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_DIVU) ->  (io.iALURS1Val / io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_DIVW) ->  (io.iALURS1Val(31, 0).asSInt() / io.iALURS2Val(31, 0).asSInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_REMU) ->  (io.iALURS1Val % io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_REMW) ->  (io.iALURS1Val(31, 0).asSInt() % io.iALURS2Val(31, 0).asSInt()).asUInt()
+            (io.iALUType === ALU_TYPE_ADD)   ->  (io.iALURS1Val + io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_SUB)   ->  (io.iALURS1Val - io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_AND)   ->  (io.iALURS1Val & io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_OR)    ->  (io.iALURS1Val | io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_XOR)   ->  (io.iALURS1Val ^ io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_SLT)   ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_SLTU)  ->  (io.iALURS1Val.asUInt() < io.iALURS2Val.asUInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_SLL)   ->  (io.iALURS1Val << io.iALURS2Val(5, 0)),
+            (io.iALUType === ALU_TYPE_SLLW)  ->  (io.iALURS1Val(31, 0) << io.iALURS2Val(4, 0)),
+            (io.iALUType === ALU_TYPE_SRL)   ->  (io.iALURS1Val >> io.iALURS2Val(5, 0)),
+            (io.iALUType === ALU_TYPE_SRLW)  ->  (io.iALURS1Val(31, 0) >> io.iALURS2Val(4, 0)),
+            (io.iALUType === ALU_TYPE_SRLIW) ->  (io.iALURS1Val(31, 0) >> io.iALURS2Val(5, 0)),
+            (io.iALUType === ALU_TYPE_SRA)   ->  (io.iALURS1Val.asSInt() >> io.iALURS2Val(5, 0).asUInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_SRAW)  ->  (io.iALURS1Val(31, 0).asSInt() >> io.iALURS2Val(4, 0).asUInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_SRAIW) ->  (io.iALURS1Val(31, 0).asSInt() >> io.iALURS2Val(5, 0).asUInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_BEQ)   ->  (io.iALURS1Val === io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_BNE)   ->  (io.iALURS1Val =/= io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_BLT)   ->  (io.iALURS1Val.asSInt() < io.iALURS2Val.asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_BGE)   ->  (io.iALURS1Val.asSInt() >= io.iALURS2Val.asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_BLTU)  ->  (io.iALURS1Val < io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_BGEU)  ->  (io.iALURS1Val >= io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_JALR)  -> ((io.iALURS1Val + io.iALURS2Val) & jalrMask),
+            (io.iALUType === ALU_TYPE_MUL)   ->  (io.iALURS1Val * io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_DIVU)  ->  (io.iALURS1Val / io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_DIVW)  ->  (io.iALURS1Val(31, 0).asSInt() / io.iALURS2Val(31, 0).asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_REMU)  ->  (io.iALURS1Val % io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_REMW)  ->  (io.iALURS1Val(31, 0).asSInt() % io.iALURS2Val(31, 0).asSInt()).asUInt()
         )
     )
 
@@ -92,19 +98,30 @@ class EXU extends Module {
     when (io.iMemWrEn) {
         io.oMemWrEn   := true.B
         io.oMemWrAddr := aluOut
-        io.oMemWrData := MuxCase(
-            0.U(DATA_WIDTH.W),
+        io.oMemWrData := memWrData
+        io.oMemWrLen  := MuxCase(
+            8.U(BYTE_WIDTH.W),
             Seq(
-                (io.iMemByt === MEM_BYT_1_U) -> memWrData(7, 0),
-                (io.iMemByt === MEM_BYT_2_U) -> memWrData(15, 0),
-                (io.iMemByt === MEM_BYT_4_U) -> memWrData(31, 0),
-                (io.iMemByt === MEM_BYT_8_U) -> memWrData(63, 0)
+                (io.iMemByt === MEM_BYT_1_U) -> 1.U(BYTE_WIDTH.W),
+                (io.iMemByt === MEM_BYT_2_U) -> 2.U(BYTE_WIDTH.W),
+                (io.iMemByt === MEM_BYT_4_U) -> 4.U(BYTE_WIDTH.W),
+                (io.iMemByt === MEM_BYT_8_U) -> 8.U(BYTE_WIDTH.W),
             )
         )
+        // io.oMemWrData := MuxCase(
+        //     0.U(DATA_WIDTH.W),
+        //     Seq(
+        //         (io.iMemByt === MEM_BYT_1_U) -> memWrData(7, 0),
+        //         (io.iMemByt === MEM_BYT_2_U) -> memWrData(15, 0),
+        //         (io.iMemByt === MEM_BYT_4_U) -> memWrData(31, 0),
+        //         (io.iMemByt === MEM_BYT_8_U) -> memWrData(63, 0)
+        //     )
+        // )
     }.otherwise {
         io.oMemWrEn   := false.B
         io.oMemWrAddr := 0.U(DATA_WIDTH.W)
         io.oMemWrData := 0.U(DATA_WIDTH.W)
+        io.oMemWrLen  := 0.U(BYTE_WIDTH.W)
     }
 
     // 处理访存读取操作
@@ -124,7 +141,9 @@ class EXU extends Module {
              io.iInstName === INST_NAME_SRLIW ||
              io.iInstName === INST_NAME_SRAW  ||
              io.iInstName === INST_NAME_SRAIW ||
-             io.iInstName === INST_NAME_MULW) -> Cat(Fill(32, aluOutByt4(31)), aluOutByt4)
+             io.iInstName === INST_NAME_MULW  ||
+             io.iInstName === INST_NAME_DIVW  ||
+             io.iInstName === INST_NAME_REMW) -> Cat(Fill(32, aluOutByt4(31)), aluOutByt4)
         )
     )
     val regWrData = MuxCase(
