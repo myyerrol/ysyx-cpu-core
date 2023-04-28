@@ -35,7 +35,7 @@ always @(iMemRdAddrLoad) begin
     oMemRdDataLoad = readMemData(iMemRdAddrLoad, 8);
 end
 
-always @(iMemWrAddr) begin
+always @(iMemWrAddr or iMemWrData) begin
     if (iMemWrEn == 1'b1) begin
         writeMemData(iMemWrAddr, iMemWrData, iMemWrLen);
     end
