@@ -11,13 +11,13 @@ extern "C" void judgeIsEbreak(int flag) {
     ebreak_flag = flag;
 }
 
-extern "C" long long readMemData(uint64_tt addr) {
+extern "C" long long readMemData(uint64_tt addr, char len) {
     long long data = 0;
     if (likely(in_pmem(addr))) {
-        data = paddr_read(addr, 8);
+        data = paddr_read(addr, len);
     }
-    printf("c mem rd addr: " FMT_WORD "\n", (uint64_t)addr);
-    printf("c mem rd data: " FMT_WORD "\n", (uint64_t)data);
+    // printf("c mem rd addr: " FMT_WORD "\n", (uint64_t)addr);
+    // printf("c mem rd data: " FMT_WORD "\n", (uint64_t)data);
     return data;
 }
 
@@ -25,8 +25,8 @@ extern "C" void writeMemData(uint64_tt addr, uint64_tt data, char len) {
     if (likely(in_pmem(addr))) {
         paddr_write(addr, len, data);
     }
-    printf("c mem wr addr: " FMT_WORD "\n", (uint64_t)addr);
-    printf("c mem wr data: " FMT_WORD "\n", (uint64_t)data);
+    // printf("c mem wr addr: " FMT_WORD "\n", (uint64_t)addr);
+    // printf("c mem wr data: " FMT_WORD "\n", (uint64_t)data);
 }
 
 static VerilatedContext *contextp = NULL;
