@@ -3,7 +3,7 @@
 
 #include <elf.h>
 
-#define ARR_LEN 4096
+#define ARR_LEN 4096 * 4096
 
 char *elf_get_func(Elf64_Addr addr);
 void elf_free();
