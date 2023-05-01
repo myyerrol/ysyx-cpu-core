@@ -92,9 +92,9 @@ static int cmd_x(char *args) {
       uint32_t n = strtoul(args_n, NULL, 10);
       uint32_t addr = expr(args_expr, NULL, &success);
       for (uint32_t i = 0; i < n; i++) {
-        printf("0x%016"PRIx32"     =     0x%016"PRIx64"\n",
+        printf("[mem] addr: 0x%016"PRIx32" = 0x%016"PRIx64"\n",
                addr,
-               paddr_read(addr, 8));
+               paddr_read(addr, 4));
         addr = addr + 4;
       }
     }
