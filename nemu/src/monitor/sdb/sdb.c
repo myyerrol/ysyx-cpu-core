@@ -44,7 +44,7 @@ static char* rl_gets() {
   return line_read;
 }
 
-static int cmd_help(char *args);
+static int cmd_h(char *args);
 
 static int cmd_c(char *args) {
   cpu_exec(-1);
@@ -56,7 +56,7 @@ static int cmd_q(char *args) {
   return -1;
 }
 
-static int cmd_si(char *args) {
+static int cmd_s(char *args) {
   char *args_n = strtok(args, " ");
   uint64_t n = 1;
   if (args_n != NULL) {
@@ -66,7 +66,7 @@ static int cmd_si(char *args) {
   return 0;
 }
 
-static int cmd_info(char *args) {
+static int cmd_i(char *args) {
   char *args_t = strtok(args, " ");
   if (args_t != NULL) {
     if (strcmp(args_t, "r") == 0) {
@@ -138,12 +138,12 @@ static struct {
   const char *description;
   int (*handler) (char *);
 } cmd_table [] = {
-  { "help", "Display information about all supported commands.", cmd_help },
+  { "h", "Display information about all supported commands.", cmd_h },
   { "c", "Continue the execution of the program.", cmd_c },
   { "q", "Exit NEMU.", cmd_q },
   /* TODO: Add more commands */
-  { "si", "Step one instruction exactly.", cmd_si },
-  { "info", "Generic command for showing things about the program being debugged.", cmd_info },
+  { "s", "Step one instruction exactly.", cmd_s },
+  { "i", "Generic command for showing things about the program being debugged.", cmd_i },
   { "x", "Address.", cmd_x },
   { "p", "Print value of expression EXP.", cmd_p },
   { "w", "Set a watchpoint for an expression.", cmd_w },
@@ -152,7 +152,7 @@ static struct {
 
 #define NR_CMD ARRLEN(cmd_table)
 
-static int cmd_help(char *args) {
+static int cmd_h(char *args) {
   /* extract the first argument */
   char *arg = strtok(NULL, " ");
   int i;
