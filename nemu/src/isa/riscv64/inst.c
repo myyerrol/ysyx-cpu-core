@@ -17,7 +17,7 @@
 #include <cpu/cpu.h>
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
-#include <elf-def.h>
+#include <trace.h>
 
 #define R(i) gpr(i)
 #define Mr vaddr_read
@@ -51,11 +51,6 @@ enum {
 static int   inst_num = 1;
 static bool  inst_func_call = false;
 static bool  inst_func_ret = false;
-#ifdef CONFIG_FTRACE_COND
-static char *inst_func_name_arr[1024];
-static char **inst_func_name_head = inst_func_name_arr;
-static int inst_func_call_depth = -1;
-#endif
 
 static void decode_operand(char *op,
                            Decode *s,
@@ -138,6 +133,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 00110 11", addiw,  I, R(rd) = SEXT(BITS(src1 + imm, 31, 0), 32));
   INSTPAT("0100000 ????? ????? 000 ????? 01110 11", subw,   R, R(rd) = SEXT(BITS(src1 - src2, 31, 0), 32));
 
+  INSTPAT("??????? ????? ????? 100 ????? 01100 11", xori,   R, R(rd) = src1 ^ src2);
   INSTPAT("??????? ????? ????? 100 ????? 00100 11", xori,   I, R(rd) = src1 ^ imm);
   INSTPAT("0000000 ????? ????? 110 ????? 01100 11", or,     R, R(rd) = src1 | src2);
   INSTPAT("0000000 ????? ????? 111 ????? 01100 11", and,    R, R(rd) = src1 & src2);
@@ -183,53 +179,10 @@ static int decode_exec(Decode *s) {
 
   R(0) = 0;
 
-#ifdef CONFIG_INST
-#ifdef CONFIG_FTRACE_COND
-  printf("dnpc: " FMT_WORD "\n", s->dnpc);
+#ifdef CONFIG_FTRACE_COND_PROCESS
+  ftrace_display("process", &inst_func_call, &inst_func_ret, s->pc, s->dnpc);
 #else
-  printf("dnpc: " FMT_WORD "\n\n", s->dnpc);
-#endif
-#endif
-
-#ifdef CONFIG_FTRACE_COND
-  if (inst_func_call || inst_func_ret) {
-    printf("ftrace address: " "0x%08"PRIx32, (uint32_t)s->pc);
-  }
-#ifdef CONFIG_INST
-  else {
-    printf("\n");
-  }
-#endif
-
-  if (inst_func_call) {
-    inst_func_name_head++;
-    inst_func_call_depth++;
-    if (*inst_func_name_head == NULL) {
-      *inst_func_name_head = (char *)malloc(sizeof(char *) * 256);
-    }
-    strcpy(*inst_func_name_head, elf_get_func(s->dnpc));
-
-    char printf_format[256] = " call %*s[%s@" "0x%08"PRIx32 "]\n";
-#ifdef CONFIG_INST
-    strcat(printf_format, "\n");
-#endif
-
-    printf(printf_format, inst_func_call_depth * 2, "", *inst_func_name_head, (uint32_t)s->dnpc);
-    inst_func_call = false;
-  }
-
-  if (inst_func_ret) {
-    inst_func_name_head--;
-    inst_func_call_depth--;
-
-    char printf_format[256] = " ret  %*s[%s]\n";
-#ifdef CONFIG_INST
-    strcat(printf_format, "\n");
-#endif
-
-    printf(printf_format, inst_func_call_depth * 2, "", *inst_func_name_head);
-    inst_func_ret = false;
-  }
+  ftrace_display("", &inst_func_call, &inst_func_ret, s->pc, s->dnpc);
 #endif
 
   return 0;

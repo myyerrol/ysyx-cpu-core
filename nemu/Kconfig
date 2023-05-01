@@ -151,18 +151,26 @@ mainmenu "NEMU Configuration Menu"
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable memory tracer"
       default y
-    config MTRACE_COND
+    config MTRACE_COND_PROCESS
       depends on MTRACE
-      string "Only trace instructions when the condition is true"
-      default "true"
+      bool "Trace memory when the condition is process"
+      default y
+    config MTRACE_COND_RESULT
+      depends on MTRACE
+      bool "Trace memory when the condition is result"
+      default y
     config FTRACE
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable function tracer"
       default y
-    config FTRACE_COND
+    config FTRACE_COND_PROCESS
       depends on FTRACE
-      string "Only trace instructions when the condition is true"
-      default "true"
+      bool "Trace functions when the condition is process"
+      default y
+    config FTRACE_COND_RESULT
+      depends on FTRACE
+      bool "Trace functions when the condition is result"
+      default y
     config DIFFTEST
       depends on TARGET_NATIVE_ELF
       bool "Enable differential testing"

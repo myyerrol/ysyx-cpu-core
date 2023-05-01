@@ -12,13 +12,12 @@
 *
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
+#include <locale.h>
 
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
-#include <sdb.h>
-
-#include <locale.h>
+#include <trace.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -34,34 +33,11 @@ static bool g_print_step = true;
 
 void device_update();
 
-#define IRING_BUF_LEN 16
-char  *iringbuf[IRING_BUF_LEN];
-char **iringbuf_head = NULL;
-char **iringbuf_tail = iringbuf + IRING_BUF_LEN;
-char **iringbuf_curr = NULL;
-
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) {
     log_write("%s\n", _this->logbuf);
-
-    if (iringbuf_head == NULL) {
-      iringbuf_head = iringbuf;
-    }
-    else {
-      if (iringbuf_head != iringbuf_tail) {
-        iringbuf_head++;
-      }
-      else {
-        iringbuf_head = iringbuf;
-      }
-    }
-
-    if (*iringbuf_head == NULL) {
-      *iringbuf_head = (char *)malloc(128 * sizeof(char));
-    }
-    strcpy(*iringbuf_head, _this->logbuf);
-    iringbuf_curr = iringbuf_head;
+    itrace_record(_this->logbuf);
   }
 #endif
 
@@ -82,7 +58,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   cpu.pc = s->dnpc;
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
-  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
+  p += snprintf(p, sizeof(s->logbuf), FMT_WORD, s->pc);
   int ilen = s->snpc - s->pc;
   int i;
   uint8_t *inst = (uint8_t *)&s->isa.inst.val;
@@ -109,20 +85,6 @@ static void execute(uint64_t n) {
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
     if (nemu_state.state != NEMU_RUNNING) {
-#ifdef CONFIG_ITRACE_COND
-      iringbuf_head = iringbuf;
-      while (*iringbuf_head != NULL) {
-        if (iringbuf_head == iringbuf_curr) {
-          printf("itrace: --> %s\n", *iringbuf_head);
-        }
-        else {
-          printf("itrace:     %s\n", *iringbuf_head);
-        }
-        char *iringbuf_temp = *iringbuf_head;
-        free(iringbuf_temp);
-        iringbuf_head++;
-      }
-#endif
       break;
     }
     IFDEF(CONFIG_DEVICE, device_update());
@@ -164,6 +126,18 @@ void cpu_exec(uint64_t n) {
     case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;
 
     case NEMU_END: case NEMU_ABORT:
+#ifdef CONFIG_ITRACE_COND
+      itrace_display();
+#endif
+#ifdef CONFIG_MTRACE_COND_RESULT
+      printf("\n");
+      mtrace_display("result", NULL, 0, 0, 50);
+#endif
+#ifdef CONFIG_FTRACE_COND_RESULT
+      printf("\n");
+      ftrace_display("result", NULL, NULL, 0, 0);
+#endif
+
       Log("nemu: %s at pc = " FMT_WORD,
           (nemu_state.state == NEMU_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :
            (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :

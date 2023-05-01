@@ -15,26 +15,27 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
+#include <trace.h>
 
 word_t vaddr_ifetch(vaddr_t addr, int len) {
   word_t data = paddr_read(addr, len);
-#ifdef CONFIG_MTRACE_COND
-  printf("mtrace read inst: [" FMT_WORD "]" FMT_WORD "\n", addr, data);
+#ifdef CONFIG_MTRACE_COND_PROCESS
+  mtrace_display("process", "rd ins", addr, data, 0);
 #endif
   return data;
 }
 
 word_t vaddr_read(vaddr_t addr, int len) {
   word_t data = paddr_read(addr, len);
-#ifdef CONFIG_MTRACE_COND
-  printf("mtrace read regs: [" FMT_WORD "]" FMT_WORD "\n", addr, data);
+#ifdef CONFIG_MTRACE_COND_PROCESS
+  mtrace_display("process", "rd mem", addr, data, 0);
 #endif
   return data;
 }
 
 void vaddr_write(vaddr_t addr, int len, word_t data) {
-#ifdef CONFIG_MTRACE_COND
-  printf("mtrace wrte regs: [" FMT_WORD "]" FMT_WORD "\n", addr, data);
+#ifdef CONFIG_MTRACE_COND_PROCESS
+  mtrace_display("process", "wr mem", addr, data, 0);
 #endif
   paddr_write(addr, len, data);
 }
