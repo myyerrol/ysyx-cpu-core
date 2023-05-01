@@ -20,10 +20,11 @@
 
 word_t expr(char *e, char *r, bool *success);
 word_t expr_test();
+
 void watch_new(char *expr);
 void watch_free(int no);
 void watch_display();
-int watch_trace();
 void watch_test();
+int  watch_trace();
 
 #endif
