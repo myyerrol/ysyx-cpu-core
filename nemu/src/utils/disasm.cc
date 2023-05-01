@@ -101,15 +101,15 @@ extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int
   assert((int)s.length() - skip < size);
 
   std::string s_temp = s.substr(skip, s.length() - 1);
-  int inst_len = s_temp.find('\t');
-  if (inst_len != -1) {
-    s_temp.replace(inst_len, 1, "");
+  int inst_pos = s_temp.find('\t');
+  if (inst_pos != -1) {
+    s_temp.replace(inst_pos, 1, "");
   }
   else {
-    inst_len = 3;
+    inst_pos = 3;
   }
-  int space_len = (5 - inst_len) + 4;
-  s_temp.insert(inst_len, space_len, ' ');
+  int space_len = (5 - inst_pos) + 4;
+  s_temp.insert(inst_pos, space_len, ' ');
 
   strcpy(str, s_temp.c_str());
 }
