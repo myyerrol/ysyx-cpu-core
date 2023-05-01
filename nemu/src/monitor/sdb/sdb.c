@@ -67,6 +67,7 @@ static int cmd_s(char *args) {
 }
 
 static int cmd_i(char *args) {
+  bool flag = false;
   char *args_t = strtok(args, " ");
   if (args_t != NULL) {
     if (strcmp(args_t, "r") == 0) {
@@ -75,29 +76,51 @@ static int cmd_i(char *args) {
     else if (strcmp(args_t, "w") == 0) {
       watch_display();
     }
+    else {
+      flag = true;
+    }
+  }
+  else {
+    flag = true;
+  }
+
+  if (flag) {
+    printf("Please use the format in the example: [i r] or [i w]\n");
   }
   return 0;
 }
 
 static int cmd_x(char *args) {
+  bool flag = false;
   char *args_n = strtok(args, " ");
-
-  if (strcmp(args_n, "test") == 0) {
-    expr_test();
-  }
-  else {
-    char *args_expr = strtok(NULL, " ");
-    if (args_n != NULL && args_expr != NULL) {
-      bool success = false;
-      uint32_t n = strtoul(args_n, NULL, 10);
-      uint32_t addr = expr(args_expr, NULL, &success);
-      for (uint32_t i = 0; i < n; i++) {
-        printf("[mem] addr: 0x%016"PRIx32" = 0x%016"PRIx64"\n",
-               addr,
-               paddr_read(addr, 4));
-        addr = addr + 4;
+  if (args_n != NULL) {
+    if (strcmp(args_n, "test") == 0) {
+      expr_test();
+    }
+    else {
+      char *args_expr = strtok(NULL, " ");
+      if (args_n != NULL && args_expr != NULL) {
+        bool success = false;
+        uint32_t n = strtoul(args_n, NULL, 10);
+        uint32_t addr = expr(args_expr, NULL, &success);
+        for (uint32_t i = 0; i < n; i++) {
+          printf("[mem] addr: 0x%016"PRIx32" = 0x%016"PRIx64"\n",
+                 addr,
+                 paddr_read(addr, 4));
+          addr = addr + 4;
+        }
+      }
+      else {
+        flag = true;
       }
     }
+  }
+  else {
+    flag = true;
+  }
+
+  if (flag) {
+    printf("Please use the format in the example: [x test] or [x 10 0x80000000]\n");
   }
   return 0;
 }
@@ -110,16 +133,24 @@ static int cmd_p(char *args) {
     printf("$%d = %lu\n", cmd_p_index, ret);
     cmd_p_index++;
   }
+  else {
+    printf("Please use the format in the example: [p 1+2*3]\n");
+  }
   return 0;
 }
 
 static int cmd_w(char *args) {
   char *args_expr = strtok(args, " ");
-  if (strcmp(args_expr, "test") == 0) {
-    watch_test();
+  if (args_expr != NULL) {
+    if (strcmp(args_expr, "test") == 0) {
+      watch_test();
+    }
+    else {
+      watch_new(args_expr);
+    }
   }
   else {
-    watch_new(args_expr);
+    printf("Please use the format in the example: [w test] or [w 1+2*3]\n");
   }
   return 0;
 }
@@ -129,6 +160,9 @@ static int cmd_d(char *args) {
   if (args_no != NULL) {
     int no = strtol(args_no, NULL, 10);
     watch_free(no);
+  }
+  else {
+    printf("Please use the format in the example: [d 1]\n");
   }
   return 0;
 }
