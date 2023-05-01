@@ -24,25 +24,39 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
-  char *space = " ";
+  char *space_num = " ";
+  char *space_reg = " ";
   char *flag  = "";
   for (int i = 0; i < ARRLEN(regs); i++) {
-    if (strcmp(regs[i], "s10") == 0 || strcmp(regs[i], "s11") == 0) {
-      space = "";
+    if (i < 10) {
+      space_num = " ";
     }
     else {
-      space = " ";
+      space_num = "";
+    }
+
+    if (strcmp(regs[i], "s10") == 0 || strcmp(regs[i], "s11") == 0) {
+      space_reg = "";
+    }
+    else {
+      space_reg = " ";
     }
 
     word_t val = cpu.gpr[i];
     if (val != 0) {
-      flag = ANSI_FMT("[x]", ANSI_FG_GREEN);
+      flag = ANSI_FMT("*", ANSI_FG_GREEN);
     }
     else {
       flag = "";
     }
 
-    printf("%s%s     =     " FMT_WORD "%s\n", space, regs[i], val, flag);
+    printf("[reg] i: %d%s name: %s%s = " FMT_WORD "%s\n",
+           i,
+           space_num,
+           space_reg,
+           regs[i],
+           val,
+           flag);
   }
 }
 
