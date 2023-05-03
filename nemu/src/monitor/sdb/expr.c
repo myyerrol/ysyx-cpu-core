@@ -103,7 +103,7 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-#ifdef CONFIG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_TOKEN
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
             i, rules[i].regex, position, substr_len, substr_len, substr_start);
 #endif
@@ -113,13 +113,13 @@ static bool make_token(char *e) {
          * to record the token in the array `tokens'. For certain types
          * of tokens, some extra actions should be performed.
          */
-#ifdef CONFIG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_TOKEN
         Log("substr_start: %s", substr_start);
 #endif
         Token token = { 0, -1, "" };
         token.type = rules[i].type;
         token.prior = rules[i].prior;
-#ifdef CONFIG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_TOKEN
         Log("token.type: %d", token.type);
         Log("token.prior: %d", token.prior);
 #endif
@@ -127,7 +127,7 @@ static bool make_token(char *e) {
           substr_len = TOKEN_STR_LENGTH;
         }
         strncpy(token.str, substr_start, substr_len);
-#ifdef CONFIG_EXPR_MAKE_TOKEN
+#ifdef CONFIG_EXPR_TOKEN
         Log("token.str: %s\n", token.str);
 #endif
         if (nr_token < ARRLEN(tokens)) {
