@@ -127,6 +127,7 @@ void cpu_exec(uint64_t n) {
 
     case NEMU_END: case NEMU_ABORT:
 #ifdef CONFIG_ITRACE_COND
+      printf("\n");
       itrace_display();
 #endif
 #ifdef CONFIG_MTRACE_COND_RESULT
