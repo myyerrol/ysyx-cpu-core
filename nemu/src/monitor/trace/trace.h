@@ -19,5 +19,10 @@ void ftrace_display(char *type,
                     word_t pc,
                     word_t dpnc);
 void ftrace_free();
+void dtrace_display(char *type,
+                    char *dir,
+                    const char *name,
+                    word_t addr,
+                    word_t data);
 
 #endif

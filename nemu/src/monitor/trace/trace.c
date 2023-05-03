@@ -236,3 +236,18 @@ void ftrace_free() {
     free(func_name_arr[i]);
   }
 }
+
+void dtrace_display(char *type,
+                    char *dir,
+                    const char *name,
+                    word_t addr,
+                    word_t data) {
+  if (strcmp(type, "process") == 0) {
+    printf("[dtrace] addr: " FMT_WORD " data: " FMT_WORD " %s %s\n", addr,
+                                                                     data,
+                                                                     dir,
+                                                                     name);
+  }
+  else if (strcmp(type, "result") == 0) {
+  }
+}
