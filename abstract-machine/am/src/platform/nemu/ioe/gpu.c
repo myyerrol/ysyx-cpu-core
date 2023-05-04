@@ -1,5 +1,6 @@
 #include <am.h>
 #include <nemu.h>
+#include <klib.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
 #define CONFIG_GPU_TEST 0
@@ -37,25 +38,12 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   uint32_t *pixels = (uint32_t *)(ctl->pixels);
   uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
 
-  int count_x = 0;
-  int count_y = 0;
-  int index   = 0;
-  for (int i = 0; i < w * h; i++) {
-    if (count_x > 0 && count_x < 12) {
-      index++;
-    }
-    else {
-      if (count_y < 9) {
-        index = width * (y + count_y) + x;
-        count_y++;
-      }
-      else {
-        break;
-      }
-    }
-    count_x++;
-
-    fb[index] = pixels[i];
+  int pixel_num_x = (w < (width - x) ? w : (width - x));
+  int pixel_byt_x = pixel_num_x * sizeof(uint32_t);
+  for (int j = 0; j < h && y + j < height; j++) {
+    int index = (y + j) * width + x;
+    memcpy(&fb[index], pixels, pixel_byt_x);
+    pixels += w;
   }
 
 #if !CONFIG_GPU_TEST
