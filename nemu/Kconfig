@@ -113,17 +113,17 @@ mainmenu "NEMU Configuration Menu"
     config EXPR
     bool "Enable print expression"
     default n
-    config EXPR_MAKE_TOKEN
-    bool "Enable print expression token"
+    config EXPR_TOKEN
+    bool "Enable print expression tokens"
     default n
     config EXPR_EVAL
-    bool "Enable print expression eval"
+    bool "Enable print expression evals"
     default n
     config WATCH
-    bool "Enable print watchpoint"
+    bool "Enable print watchpoints"
     default n
     config INST
-    bool "Enable print instruction"
+    bool "Enable print instructions"
     default n
     config ELF
     bool "Enable print ELF"
@@ -170,6 +170,18 @@ mainmenu "NEMU Configuration Menu"
     config FTRACE_COND_RESULT
       depends on FTRACE
       bool "Trace functions when the condition is result"
+      default y
+    config DTRACE
+      depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+      bool "Enable device tracer"
+      default y
+    config DTRACE_COND_PROCESS
+      depends on DTRACE
+      bool "Trace devices when the condition is process"
+      default y
+    config DTRACE_COND_RESULT
+      depends on DTRACE
+      bool "Trace devices when the condition is result"
       default y
     config DIFFTEST
       depends on TARGET_NATIVE_ELF
