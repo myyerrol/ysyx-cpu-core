@@ -107,27 +107,29 @@ mainmenu "NEMU Configuration Menu"
   endmenu
 
   menu "Testing and Debugging"
-    config CMD_ARGS
-    bool "Enable print cmd args"
-    default n
-    config EXPR
-    bool "Enable print expression"
-    default n
-    config EXPR_TOKEN
-    bool "Enable print expression tokens"
-    default n
-    config EXPR_EVAL
-    bool "Enable print expression evals"
-    default n
-    config WATCH
-    bool "Enable print watchpoints"
-    default n
-    config INST
-    bool "Enable print instructions"
-    default n
-    config ELF
-    bool "Enable print ELF"
-    default n
+    config SDB
+      bool "Enable simple debugger"
+      default y
+    config SDB_CMD
+      depends on SDB
+      bool "Enable print SDB command"
+      default n
+    config SDB_EXPR
+      depends on SDB
+      bool "Enable print SDB expression"
+      default n
+    config SDB_EXPR_TOKEN
+      depends on SDB
+      bool "Enable print SDB expression token"
+      default n
+    config SDB_EXPR_EVAL
+      depends on SDB
+      bool "Enable print SDB expression eval"
+      default n
+    config SDB_WATCH
+      depends on SDB
+      bool "Enable print SDB watchpoint"
+      default n
     config TRACE
       bool "Enable tracer"
       default y
@@ -147,6 +149,10 @@ mainmenu "NEMU Configuration Menu"
       depends on ITRACE
       string "Trace instructions when the condition is true"
       default "true"
+    config ITRACE_COND_PROCESS
+      depends on ITRACE
+      bool "Trace instructions when the condition is process"
+      default y
     config MTRACE
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable memory tracer"
@@ -163,6 +169,9 @@ mainmenu "NEMU Configuration Menu"
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable function tracer"
       default y
+    config FTRACE_ELF
+      bool "Enable print ftrace ELF"
+      default n
     config FTRACE_COND_PROCESS
       depends on FTRACE
       bool "Trace functions when the condition is process"
