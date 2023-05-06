@@ -17,11 +17,6 @@
 
 #define NR_WP 32
 #define WATCH_ARR_LENGTH 256
-#define WATCH_TEST_CHAR_LEN  8 + 1
-#define WATCH_TEST_SPACE_LEN 5
-#define WATCH_TEST_LEN WATCH_TEST_CHAR_LEN + WATCH_TEST_SPACE_LEN
-
-#define INFO_LINKED_LIST 1
 
 typedef struct watchpoint {
   /* TODO: Add more members if necessary */
@@ -138,6 +133,7 @@ void watch_display() {
     char *line_arrow = NULL;
     char *line_next = NULL;
 
+    printf("[sdb watch]\n");
     printf("Num%5sType%10sDisp Enb Address%10sWhat\n", " ", " ", " ");
 
     WP *wp_temp = wp_head;
@@ -147,25 +143,25 @@ void watch_display() {
 
       printf("%-2d%6shw watchpoint keep y%20s%s\n", no, " ", " ", expr);
 
-      char *line_no_t = malloc(sizeof(char) * WATCH_TEST_CHAR_LEN);
+      char *line_no_t = malloc(sizeof(char) * WATCH_ARR_LENGTH);
       sprintf(line_no_t, "|  %02d  |", no);
       if (line == NULL) {
-        line = (char *)malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        line = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line, "--------");
 
-        line_no = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        line_no = malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line_no, line_no_t);
 
-        line_arrow = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        line_arrow = malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line_arrow, "--------");
 
-        line_next = malloc(sizeof(char) * WATCH_TEST_LEN * NR_WP);
+        line_next = malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line_next, "| next |");
       }
       else {
         strcat(line, "     --------");
 
-        char *line_no_tt = malloc(sizeof(char) * WATCH_TEST_LEN);
+        char *line_no_tt = malloc(sizeof(char) * WATCH_ARR_LENGTH);
         sprintf(line_no_tt, "     %s", line_no_t);
         strcat(line_no, line_no_tt);
         free(line_no_tt);
@@ -179,14 +175,18 @@ void watch_display() {
       wp_temp = wp_temp->next;
     }
 
-#if INFO_LINKED_LIST
-    printf("wp_head: \n");
+    printf("\n");
     printf("%s\n", line);
     printf("%s\n", line_no);
     printf("%s\n", line_arrow);
     printf("%s\n", line_next);
     printf("%s\n", line);
-#endif
+    printf("\n");
+
+    free(line);
+    free(line_no);
+    free(line_arrow);
+    free(line_next);
   }
   else {
     printf("No watchpoints.\n");
