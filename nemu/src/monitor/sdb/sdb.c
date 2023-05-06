@@ -85,7 +85,7 @@ static int cmd_i(char *args) {
   }
 
   if (flag) {
-    printf("Please use the format in the example: [i r] or [i w]\n");
+    printf("[sdb cmd] please use the format in the example: [i r] or [i w]\n");
   }
   return 0;
 }
@@ -104,7 +104,7 @@ static int cmd_x(char *args) {
         uint32_t n = strtoul(args_n, NULL, 10);
         uint32_t addr = expr(args_expr, NULL, &success);
         for (uint32_t i = 0; i < n; i++) {
-          printf("[mem] addr: 0x%016"PRIx32" = 0x%016"PRIx64"\n",
+          printf("[sdb cmd] addr: 0x%016"PRIx32" = 0x%016"PRIx64"\n",
                  addr,
                  paddr_read(addr, 4));
           addr = addr + 4;
@@ -120,7 +120,7 @@ static int cmd_x(char *args) {
   }
 
   if (flag) {
-    printf("Please use the format in the example: [x test] or [x 10 0x80000000]\n");
+    printf("[sdb cmd] please use the format in the example: [x test] or [x 10 0x80000000]\n");
   }
   return 0;
 }
@@ -130,11 +130,11 @@ static int cmd_p(char *args) {
   if (args_expr != NULL) {
     bool success = false;
     word_t ret = expr(args_expr, NULL, &success);
-    printf("$%d = %lu\n", cmd_p_index, ret);
+    printf("[sdb cmd] $%d = %lu\n", cmd_p_index, ret);
     cmd_p_index++;
   }
   else {
-    printf("Please use the format in the example: [p 1+2*3]\n");
+    printf("[sdb cmd] please use the format in the example: [p 1+2*3]\n");
   }
   return 0;
 }
@@ -150,7 +150,7 @@ static int cmd_w(char *args) {
     }
   }
   else {
-    printf("Please use the format in the example: [w test] or [w 1+2*3]\n");
+    printf("[sdb cmd] please use the format in the example: [w test] or [w 1+2*3]\n");
   }
   return 0;
 }
@@ -162,7 +162,7 @@ static int cmd_d(char *args) {
     watch_free(no);
   }
   else {
-    printf("Please use the format in the example: [d 1]\n");
+    printf("[sdb cmd] please use the format in the example: [d 1]\n");
   }
   return 0;
 }
@@ -194,17 +194,17 @@ static int cmd_h(char *args) {
   if (arg == NULL) {
     /* no argument given */
     for (i = 0; i < NR_CMD; i ++) {
-      printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
+      printf("[sdb cmd] %s: %s\n", cmd_table[i].name, cmd_table[i].description);
     }
   }
   else {
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(arg, cmd_table[i].name) == 0) {
-        printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
+        printf("[sdb cmd] %s: %s\n", cmd_table[i].name, cmd_table[i].description);
         return 0;
       }
     }
-    printf("Unknown command '%s'\n", arg);
+    printf("[sdb cmd] unknown command: %s\n", arg);
   }
   return 0;
 }
@@ -233,8 +233,8 @@ void sdb_mainloop() {
     if (args >= str_end) {
       args = NULL;
     }
-#ifdef CONFIG_CMD_ARGS
-    Log("command args: %s", args);
+#ifdef CONFIG_SDB_CMD
+    printf("[sdb cmd] command: %s, args: %s\n\n", cmd, args);
 #endif
 
 #ifdef CONFIG_DEVICE
@@ -250,7 +250,7 @@ void sdb_mainloop() {
       }
     }
 
-    if (i == NR_CMD) { printf("Unknown command '%s'\n", cmd); }
+    if (i == NR_CMD) { printf("[sdb cmd] unknown command: %s\n", cmd); }
   }
 }
 

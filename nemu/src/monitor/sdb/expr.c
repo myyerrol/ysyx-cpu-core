@@ -103,9 +103,11 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-#ifdef CONFIG_EXPR_TOKEN
-        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-            i, rules[i].regex, position, substr_len, substr_len, substr_start);
+#ifdef CONFIG_SDB_EXPR_TOKEN
+        printf("[sdb expr token] match rule:  \"%s\"\n", rules[i].regex);
+        printf("[sdb expr token] match pos:   %d\n", position);
+        printf("[sdb expr token] match len:   %d\n", substr_len);
+        printf("[sdb expr token] match str:   %.*s\n",  substr_len, substr_start);
 #endif
         position += substr_len;
 
@@ -113,22 +115,22 @@ static bool make_token(char *e) {
          * to record the token in the array `tokens'. For certain types
          * of tokens, some extra actions should be performed.
          */
-#ifdef CONFIG_EXPR_TOKEN
-        Log("substr_start: %s", substr_start);
+#ifdef CONFIG_SDB_EXPR_TOKEN
+        printf("[sdb expr token] substr:      %s\n", substr_start);
 #endif
         Token token = { 0, -1, "" };
         token.type = rules[i].type;
         token.prior = rules[i].prior;
-#ifdef CONFIG_EXPR_TOKEN
-        Log("token.type: %d", token.type);
-        Log("token.prior: %d", token.prior);
+#ifdef CONFIG_SDB_EXPR_TOKEN
+        printf("[sdb expr token] token.type:  %d\n", token.type);
+        printf("[sdb expr token] token.prior: %d\n", token.prior);
 #endif
         if (substr_len > TOKEN_STR_LENGTH) {
           substr_len = TOKEN_STR_LENGTH;
         }
         strncpy(token.str, substr_start, substr_len);
-#ifdef CONFIG_EXPR_TOKEN
-        Log("token.str: %s\n", token.str);
+#ifdef CONFIG_SDB_EXPR_TOKEN
+        printf("[sdb expr token] token.str:   %s\n\n", token.str);
 #endif
         if (nr_token < ARRLEN(tokens)) {
           tokens[nr_token] = token;
@@ -292,10 +294,10 @@ static word_t eval(word_t p, word_t q) {
     }
     word_t val2 = eval(op + 1, q);
 
-#ifdef CONFIG_EXPR_EVAL
-    Log("op: %s", tokens[op].str);
-    Log("val1: %lu", val1);
-    Log("val2: %lu", val2);
+#ifdef CONFIG_SDB_EXPR_EVAL
+    printf("[sdb expr eval] op:   %s\n", tokens[op].str);
+    printf("[sdb expr eval] val1: %lu\n", val1);
+    printf("[sdb expr eval] val2: %lu\n", val2);
 #endif
 
     word_t ret = 0;
@@ -354,8 +356,8 @@ static word_t eval(word_t p, word_t q) {
       }
     }
 
-#ifdef CONFIG_EXPR_EVAL
-    Log("ret: %lu\n", ret);
+#ifdef CONFIG_SDB_EXPR_EVAL
+    printf("[sdb expr eval] ret:  %lu\n\n", ret);
 #endif
 
     return ret;
@@ -396,12 +398,8 @@ word_t expr(char *e, char *r, bool *success) {
     *success = true;
   }
 
-#ifdef CONFIG_EXPR
-  #ifdef CONFIG_EXPR_EVAL
-    Log("success: %d, ret: %lu\n", *success, ret);
-  #else
-    Log("success: %d, ret: %lu", *success, ret);
-  #endif
+#ifdef CONFIG_SDB_EXPR
+  printf("[sdb expr] success: %d, ret: %lu\n\n", *success, ret);
 #endif
 
   return ret;
