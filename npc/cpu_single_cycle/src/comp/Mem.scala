@@ -7,10 +7,11 @@ import cpu.util.Base._
 
 class MemM extends Module {
     val io = IO(new Bundle {
-        val iMemWrEn   =  Input(Bool())
-        val iMemRdAddr =  Input(UInt(DATA_WIDTH.W))
-        val iMemWrAddr =  Input(UInt(DATA_WIDTH.W))
-        val iMemWrData =  Input(UInt(DATA_WIDTH.W))
+        val iMemWrEn   = Input(Bool())
+        val iMemRdAddr = Input(UInt(DATA_WIDTH.W))
+        val iMemWrAddr = Input(UInt(DATA_WIDTH.W))
+        val iMemWrData = Input(UInt(DATA_WIDTH.W))
+
         val oMemRdData = Output(UInt(DATA_WIDTH.W))
     })
 
