@@ -78,21 +78,20 @@ static void decode_operand(char *op,
     case TYPE_U:                   immU(); break;
     case TYPE_J:                   immJ(); break;
   }
-#ifdef CONFIG_INST
-  printf("[inst] name:        %s\n", op);
-  printf("[inst] rs1 addr:    %d\n", *rs1);
-  printf("[inst] rs2 addr:    %d\n", *rs2);
-  printf("[inst] rd  addr:    %d\n", *rd);
-  printf("[inst] rs1 val hex: " FMT_WORD "\n", *src1);
-  printf("[inst] rs2 val hex: " FMT_WORD "\n", *src2);
-  printf("[inst] rs1 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
-         PRINTF_BIN_INT64(*src1));
-  printf("[inst] rs2 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
-         PRINTF_BIN_INT64(*src2));
-  printf("[inst] imm val hex: " FMT_WORD "\n", *imm);
-  printf("[inst] imm val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
-         PRINTF_BIN_INT64(*imm));
-  printf("\n");
+#ifdef CONFIG_ITRACE_COND_PROCESS
+  printf("[itrace] name:        %s\n", op);
+  printf("[itrace] rs1 addr:    %d\n", *rs1);
+  printf("[itrace] rs2 addr:    %d\n", *rs2);
+  printf("[itrace] rd  addr:    %d\n", *rd);
+  printf("[itrace] rs1 val hex: " FMT_WORD "\n", *src1);
+  printf("[itrace] rs2 val hex: " FMT_WORD "\n", *src2);
+  // printf("[itrace] rs1 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
+  //        PRINTF_BIN_INT64(*src1));
+  // printf("[itrace] rs2 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
+  //        PRINTF_BIN_INT64(*src2));
+  printf("[itrace] imm val hex: " FMT_WORD "\n", *imm);
+  // printf("[itrace] imm val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
+  //        PRINTF_BIN_INT64(*imm));
 #endif
 }
 
@@ -111,13 +110,13 @@ static int decode_exec(Decode *s) {
 
   INSTPAT_START();
 
-#ifdef CONFIG_INST
-  printf("[inst] num:         %d\n", inst_num);
-  printf("[inst] pc:          " FMT_WORD "\n", s->pc);
-  printf("[inst] dnpc:        " FMT_WORD "\n", s->dnpc);
-  printf("[inst] format hex:  " FMT_WORD "\n", (uint64_t)s->isa.inst.val);
-  printf("[inst] format bin:  " PRINTF_BIN_PATTERN_INST "\n",
-         PRINTF_BIN_INT32(s->isa.inst.val));
+#ifdef CONFIG_ITRACE_COND_PROCESS
+  printf("[itrace] num:         %d\n", inst_num);
+  printf("[itrace] pc:          " FMT_WORD "\n", s->pc);
+  printf("[itrace] dnpc:        " FMT_WORD "\n", s->dnpc);
+  printf("[itrace] format hex:  " FMT_WORD "\n", (uint64_t)s->isa.inst.val);
+  // printf("[itrace] format bin:  " PRINTF_BIN_PATTERN_INST "\n",
+  //        PRINTF_BIN_INT32(s->isa.inst.val));
 #endif
 
   inst_num++;
@@ -184,7 +183,6 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 101 ????? 01100 11", divu,   R, R(rd) = src1 / src2);
   INSTPAT("0000001 ????? ????? 100 ????? 01110 11", divw,   R, R(rd) = SEXT((sword_t)BITS(src1, 31, 0) / (sword_t)BITS(src2, 31, 0), 32));
   INSTPAT("0000001 ????? ????? 101 ????? 01110 11", divuw,  R, R(rd) = SEXT(BITS(src1, 31, 0) / BITS(src2, 31, 0), 32));
-
   INSTPAT("0000001 ????? ????? 110 ????? 01100 11", rem,    R, R(rd) = (sword_t)src1 % (sword_t)src2);
   INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu,   R, R(rd) = src1 % src2);
   INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw,   R, R(rd) = SEXT((sword_t)BITS(src1, 31, 0) % (sword_t)BITS(src2, 31, 0), 32));
@@ -195,10 +193,16 @@ static int decode_exec(Decode *s) {
 
   R(0) = 0;
 
+#ifdef CONFIG_ITRACE_COND_PROCESS
+    printf("[itrace] rd  val hex: " FMT_WORD "\n\n", R(rd));
+#endif
+
+#ifdef CONFIG_FTRACE
 #ifdef CONFIG_FTRACE_COND_PROCESS
   ftrace_display("process", &inst_func_call, &inst_func_ret, s->pc, s->dnpc);
 #else
-  // ftrace_display("", &inst_func_call, &inst_func_ret, s->pc, s->dnpc);
+  ftrace_display("", &inst_func_call, &inst_func_ret, s->pc, s->dnpc);
+#endif
 #endif
 
   return 0;

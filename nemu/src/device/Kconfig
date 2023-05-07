@@ -1,6 +1,6 @@
 menuconfig DEVICE
   depends on !TARGET_SHARE
-  bool "Devices"
+  bool "-CPU Devices"
   default n
   help
     Provide device support for NEMU.

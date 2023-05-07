@@ -17,6 +17,7 @@
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
+#include <sdb.h>
 #include <trace.h>
 
 /* The assembly code of instructions executed is only output to the screen
@@ -37,11 +38,14 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) {
     log_write("%s\n", _this->logbuf);
-    itrace_record(_this->logbuf);
   }
 #endif
 
-#ifdef CONFIG_WATCH
+#ifdef CONFIG_ITRACE_COND_RESULT
+  itrace_record(_this->logbuf);
+#endif
+
+#ifdef CONFIG_SDB_WATCH
   if (watch_trace() > 0) {
     nemu_state.state = NEMU_STOP;
   }
@@ -126,13 +130,15 @@ void cpu_exec(uint64_t n) {
     case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;
 
     case NEMU_END: case NEMU_ABORT:
-#ifdef CONFIG_ITRACE_COND
+#ifdef CONFIG_ITRACE_COND_RESULT
+#ifndef CONFIG_ITRACE_COND_PROCESS
       printf("\n");
+#endif
       itrace_display();
 #endif
 #ifdef CONFIG_MTRACE_COND_RESULT
       printf("\n");
-      mtrace_display("result", NULL, 0, 0, 50);
+      mtrace_display("result", NULL, 0, 0, 16);
 #endif
 #ifdef CONFIG_FTRACE_COND_RESULT
       printf("\n");

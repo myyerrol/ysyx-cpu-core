@@ -52,9 +52,10 @@ void mtrace_display(char *type,
                                                                   dir);
   }
   else if (strcmp(type, "result") == 0) {
+    word_t addr_base = (addr != 0) ? addr : CONFIG_MBASE;
     for (word_t i = 0; i < len; i++) {
-      addr = CONFIG_MBASE + i * 4;
-      data = paddr_read(CONFIG_MBASE + i * 4, 8);
+      addr = addr_base + i * 4;
+      data = paddr_read(addr, 8);
       printf("[mtrace] addr: " FMT_WORD " data: " FMT_WORD "\n", addr, data);
     }
   }
@@ -154,9 +155,9 @@ void ftrace_init(const char *elf_file) {
             func_name_arr[offset] = (char *)malloc(sizeof(char) * 256);
         }
         strcpy(func_name_arr[offset], func_name);
-#ifdef CONFIG_ELF
-        printf("Symbol Address: " FMT_WORD "\n", st_value);
-        printf("Function Name:  %s\n\n", func_name);
+#ifdef CONFIG_FTRACE_ELF
+        printf("[ftrace] symb addr: " FMT_WORD "\n", st_value);
+        printf("[ftrace] func name:  %s\n\n", func_name);
 #endif
       }
     }

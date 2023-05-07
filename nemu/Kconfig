@@ -1,62 +1,18 @@
-mainmenu "NEMU Configuration Menu"
+mainmenu "CPU Configuration Menu"
   choice
-    prompt "Base ISA"
-    default ISA_riscv32
-    config ISA_x86
-      bool "x86"
-    config ISA_mips32
-      bool "mips32"
-    config ISA_riscv32
-      bool "riscv32"
-    config ISA_riscv64
-      bool "riscv64"
+    prompt "*CPU Type"
+    default TYPE_NEMU
+    config TYPE_NEMU
+      bool "nemu"
+    config TYPE_NPC
+      bool "npc"
   endchoice
-  config ISA
+  config TYPE
     string
-    default "x86" if ISA_x86
-    default "mips32" if ISA_mips32
-    default "riscv32" if ISA_riscv32
-    default "riscv64" if ISA_riscv64
-    default "none"
-  config ISA64
-    depends on ISA_riscv64
-    bool
-    default y
+    default "nemu" if TYPE_NEMU
+    default "npc" if TYPE_NPC
 
-  choice
-    prompt "NEMU execution engine"
-    default ENGINE_INTERPRETER
-    config ENGINE_INTERPRETER
-      bool "Interpreter"
-      help
-        Interpreter guest instructions one by one.
-  endchoice
-  config ENGINE
-    string
-    default "interpreter" if ENGINE_INTERPRETER
-    default "none"
-
-  choice
-    prompt "Running mode"
-    default MODE_SYSTEM
-    config MODE_SYSTEM
-      bool "System mode"
-      help
-        Support full-system functionality, including privileged instructions, MMU and devices.
-  endchoice
-
-  choice
-    prompt "Build target"
-    default TARGET_NATIVE_ELF
-    config TARGET_NATIVE_ELF
-      bool "Executable on Linux Native"
-    config TARGET_SHARE
-      bool "Shared object (used as REF for differential testing)"
-    config TARGET_AM
-      bool "Application on Abstract-Machine (DON'T CHOOSE)"
-  endchoice
-
-  menu "Build Options"
+  menu "*CPU Build Options"
     choice
       prompt "Compiler"
       default CC_GCC
@@ -106,7 +62,7 @@ mainmenu "NEMU Configuration Menu"
       default n
   endmenu
 
-  menu "Testing and Debugging"
+  menu "*CPU Debug"
     config SDB
       bool "Enable simple debugger"
       default y
@@ -153,6 +109,10 @@ mainmenu "NEMU Configuration Menu"
       depends on ITRACE
       bool "Trace instructions when the condition is process"
       default y
+    config ITRACE_COND_RESULT
+      depends on ITRACE
+      bool "Trace instructions when the condition is result"
+      default y
     config MTRACE
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable memory tracer"
@@ -170,6 +130,7 @@ mainmenu "NEMU Configuration Menu"
       bool "Enable function tracer"
       default y
     config FTRACE_ELF
+      depends on FTRACE
       bool "Enable print ftrace ELF"
       default n
     config FTRACE_COND_PROCESS
@@ -198,7 +159,7 @@ mainmenu "NEMU Configuration Menu"
       default n
       help
         Enable differential testing with a reference design.
-        Note that this will significantly reduce the performance of NEMU.
+        Note that this will significantly reduce the performance of NEMU(NPC).
     choice
       prompt "Reference design"
       default DIFFTEST_REF_SPIKE if ISA_riscv64 || ISA_riscv32
@@ -228,14 +189,71 @@ mainmenu "NEMU Configuration Menu"
       default "kvm" if DIFFTEST_REF_KVM
       default "spike" if DIFFTEST_REF_SPIKE
       default "none"
-  endmenu
+    endmenu
+
+  choice
+    prompt "-CPU ISA"
+    default ISA_riscv32
+    config ISA_x86
+      bool "x86"
+    config ISA_mips32
+      bool "mips32"
+    config ISA_riscv32
+      bool "riscv32"
+    config ISA_riscv64
+      bool "riscv64"
+  endchoice
+  config ISA
+    string
+    default "x86" if ISA_x86
+    default "mips32" if ISA_mips32
+    default "riscv32" if ISA_riscv32
+    default "riscv64" if ISA_riscv64
+    default "none"
+  config ISA64
+    depends on ISA_riscv64
+    bool
+    default y
+
+  choice
+    prompt "-CPU Execution engine"
+    default ENGINE_INTERPRETER
+    config ENGINE_INTERPRETER
+      bool "Interpreter"
+      help
+        Interpreter guest instructions one by one.
+  endchoice
+  config ENGINE
+    string
+    default "interpreter" if ENGINE_INTERPRETER
+    default "none"
+
+  choice
+    prompt "-CPU Running mode"
+    default MODE_SYSTEM
+    config MODE_SYSTEM
+      bool "System mode"
+      help
+        Support full-system functionality, including privileged instructions, MMU and devices.
+  endchoice
+
+  choice
+    prompt "-CPU Build target"
+    default TARGET_NATIVE_ELF
+    config TARGET_NATIVE_ELF
+      bool "Executable on Linux Native"
+    config TARGET_SHARE
+      bool "Shared object (used as REF for differential testing)"
+    config TARGET_AM
+      bool "Application on Abstract-Machine (DON'T CHOOSE)"
+  endchoice
 
   if MODE_SYSTEM
     source "src/memory/Kconfig"
     source "src/device/Kconfig"
   endif
 
-  menu "Miscellaneous"
+  menu "-CPU Miscellaneous"
     choice
       depends on !TARGET_AM
       prompt "Host timer"
