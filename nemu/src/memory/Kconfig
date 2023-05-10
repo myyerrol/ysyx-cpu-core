@@ -1,4 +1,4 @@
-menu "-CPU Memory Configuration"
+menu "-NEMU Memory Configuration"
 
 config MBASE
   hex "Memory base address"

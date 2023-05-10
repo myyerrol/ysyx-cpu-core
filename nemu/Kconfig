@@ -1,18 +1,5 @@
-mainmenu "CPU Configuration Menu"
-  choice
-    prompt "*CPU Type"
-    default TYPE_NEMU
-    config TYPE_NEMU
-      bool "nemu"
-    config TYPE_NPC
-      bool "npc"
-  endchoice
-  config TYPE
-    string
-    default "nemu" if TYPE_NEMU
-    default "npc" if TYPE_NPC
-
-  menu "*CPU Build Options"
+mainmenu "NEMU Configuration Menu"
+  menu "*NEMU Build Options"
     choice
       prompt "Compiler"
       default CC_GCC
@@ -62,7 +49,7 @@ mainmenu "CPU Configuration Menu"
       default n
   endmenu
 
-  menu "*CPU Debug"
+  menu "*NEMU Debug"
     config SDB
       bool "Enable simple debugger"
       default y
@@ -159,7 +146,7 @@ mainmenu "CPU Configuration Menu"
       default n
       help
         Enable differential testing with a reference design.
-        Note that this will significantly reduce the performance of NEMU(NPC).
+        Note that this will significantly reduce the performance of NEMU.
     choice
       prompt "Reference design"
       default DIFFTEST_REF_SPIKE if ISA_riscv64 || ISA_riscv32
@@ -192,7 +179,7 @@ mainmenu "CPU Configuration Menu"
     endmenu
 
   choice
-    prompt "-CPU ISA"
+    prompt "-NEMU ISA"
     default ISA_riscv32
     config ISA_x86
       bool "x86"
@@ -216,7 +203,7 @@ mainmenu "CPU Configuration Menu"
     default y
 
   choice
-    prompt "-CPU Execution engine"
+    prompt "-NEMU Execution engine"
     default ENGINE_INTERPRETER
     config ENGINE_INTERPRETER
       bool "Interpreter"
@@ -229,7 +216,7 @@ mainmenu "CPU Configuration Menu"
     default "none"
 
   choice
-    prompt "-CPU Running mode"
+    prompt "-NEMU Running mode"
     default MODE_SYSTEM
     config MODE_SYSTEM
       bool "System mode"
@@ -238,7 +225,7 @@ mainmenu "CPU Configuration Menu"
   endchoice
 
   choice
-    prompt "-CPU Build target"
+    prompt "-NEMU Build target"
     default TARGET_NATIVE_ELF
     config TARGET_NATIVE_ELF
       bool "Executable on Linux Native"
@@ -253,7 +240,7 @@ mainmenu "CPU Configuration Menu"
     source "src/device/Kconfig"
   endif
 
-  menu "-CPU Miscellaneous"
+  menu "-NEMU Miscellaneous"
     choice
       depends on !TARGET_AM
       prompt "Host timer"
