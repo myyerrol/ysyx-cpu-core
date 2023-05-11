@@ -161,7 +161,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu,   B, s->dnpc = (src1 >= src2) ? (s->pc + imm) : s->dnpc);
 
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal,    J, R(rd) = s->pc + 4; s->dnpc = s->pc + imm; inst_func_call = true);
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr,   I, R(rd) = s->pc + 4; s->dnpc = ((src1 + imm) & -1); if (rd == 0 && rs1 == 1 && imm == 0) { inst_func_ret = true; } else { inst_func_call = true; });
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr,   I, R(rd) = s->pc + 4; s->dnpc = ((src1 + imm) & -1); if (rd == 0) { inst_func_ret = true; } else { inst_func_call = true; });
 
   INSTPAT("??????? ????? ????? 000 ????? 00000 11", lb,     I, R(rd) = SEXT(Mr(src1 + imm, 1),  8));
   INSTPAT("??????? ????? ????? 001 ????? 00000 11", lh,     I, R(rd) = SEXT(Mr(src1 + imm, 2), 16));
@@ -199,9 +199,12 @@ static int decode_exec(Decode *s) {
 
 #ifdef CONFIG_FTRACE
 #ifdef CONFIG_FTRACE_COND_PROCESS
-  ftrace_display("process", &inst_func_call, &inst_func_ret, s->pc, s->dnpc);
+  ftrace_display("process", inst_func_call, inst_func_ret, s->pc, s->dnpc);
 #else
-  ftrace_display("", &inst_func_call, &inst_func_ret, s->pc, s->dnpc);
+  ftrace_display("", inst_func_call, inst_func_ret, s->pc, s->dnpc);
+
+  inst_func_call = false;
+  inst_func_ret  = false;
 #endif
 #endif
 
