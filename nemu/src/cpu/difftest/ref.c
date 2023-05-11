@@ -20,7 +20,7 @@
 
 void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
   if (direction == DIFFTEST_TO_REF) {
-    memcpy(guest_to_host(RESET_VECTOR), buf, n);
+    memcpy(guest_to_host(addr), buf, n);
   }
   else if (direction == DIFFTEST_TO_DUT) {
     assert(0);
@@ -28,15 +28,14 @@ void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
 }
 
 void difftest_regcpy(void *dut, bool direction) {
+  CPU_state *dut_p = (CPU_state *)dut;
   if (direction == DIFFTEST_TO_REF) {
-    CPU_state *dut_p = (CPU_state *)dut;
     for (int i = 0; i < 32; i++) {
       cpu.gpr[i] = dut_p->gpr[i];
     }
     cpu.pc = dut_p->pc;
   }
   else if (direction == DIFFTEST_TO_DUT) {
-    CPU_state *dut_p = (CPU_state *)dut;
     for (int i = 0; i < 32; i++) {
       dut_p->gpr[i] = cpu.gpr[i];
     }
