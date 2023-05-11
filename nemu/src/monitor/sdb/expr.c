@@ -257,7 +257,7 @@ static word_t eval(word_t p, word_t q) {
     if (token_str != NULL) {
       switch (tokens[p].type) {
         case TK_NUM_HEX: {
-          strrpc(token_str, "0x", "");
+          strrpc(token_str, (char *)"0x", (char *)"");
           return strtoul(token_str, NULL, 16);
         }
         case TK_NUM_DEC: {
@@ -411,7 +411,7 @@ word_t expr_test() {
   assert(fp != NULL);
   while (fgets(str, TOKEN_ARR_LENGTH, fp) != NULL) {
     char *input_ret = strtok(str, " ");
-    char *input_expr = strrpc(strtok(NULL, " "), "\n", "");
+    char *input_expr = strrpc(strtok(NULL, " "), (char *)"\n", (char *)"");
     bool success = false;
     expr(input_expr, input_ret, &success);
     memset(str, '\0', strlen(str));

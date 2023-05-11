@@ -13,7 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include "sdb.h"
+#include <sdb.h>
 
 #define NR_WP 32
 #define WATCH_ARR_LENGTH 256
@@ -143,25 +143,25 @@ void watch_display() {
 
       printf("%-2d%6shw watchpoint keep y%20s%s\n", no, " ", " ", expr);
 
-      char *line_no_t = malloc(sizeof(char) * WATCH_ARR_LENGTH);
+      char *line_no_t = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH);
       sprintf(line_no_t, "|  %02d  |", no);
       if (line == NULL) {
         line = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line, "--------");
 
-        line_no = malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
+        line_no = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line_no, line_no_t);
 
-        line_arrow = malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
+        line_arrow = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line_arrow, "--------");
 
-        line_next = malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
+        line_next = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH * NR_WP);
         strcat(line_next, "| next |");
       }
       else {
         strcat(line, "     --------");
 
-        char *line_no_tt = malloc(sizeof(char) * WATCH_ARR_LENGTH);
+        char *line_no_tt = (char *)malloc(sizeof(char) * WATCH_ARR_LENGTH);
         sprintf(line_no_tt, "     %s", line_no_t);
         strcat(line_no, line_no_tt);
         free(line_no_tt);
@@ -220,8 +220,8 @@ int watch_trace() {
 }
 
 void watch_test() {
-  new_wp("*0x80000000");
-  new_wp("*0x80000004");
-  new_wp("*0x80000008");
+  new_wp((char *)"*0x80000000");
+  new_wp((char *)"*0x80000004");
+  new_wp((char *)"*0x80000008");
   watch_display();
 }

@@ -95,7 +95,7 @@ static char *ftrace_get_func(Elf64_Addr addr) {
     return func_name_arr[offset];
   }
   else {
-    return "";
+    return (char *)"";
   }
 }
 
@@ -170,8 +170,8 @@ char  *ftrace_info_arr[ARR_LEN];
 char **ftrace_info_head = ftrace_info_arr;
 
 void ftrace_display(char *type,
-                    bool *inst_func_call,
-                    bool *inst_func_ret,
+                    bool inst_func_call,
+                    bool inst_func_ret,
                     word_t pc,
                     word_t dpnc) {
   if (strcmp(type, "result") == 0) {
@@ -189,29 +189,38 @@ void ftrace_display(char *type,
   char buf_head[128];
   char buf_tail[128];
 
-  if (*inst_func_call || *inst_func_ret) {
-    sprintf(buf_head, "[ftrace] addr: 0x%08"PRIx32, (uint32_t)pc);
+  if (inst_func_call || inst_func_ret) {
+    sprintf(buf_head, "[ftrace] addr: 0x%08" PRIx32, (uint32_t)pc);
   }
 
-  if (*inst_func_call) {
+  if (inst_func_call) {
     inst_func_name_head++;
     inst_func_call_depth++;
     if (*inst_func_name_head == NULL) {
       *inst_func_name_head = (char *)malloc(sizeof(char *) * 256);
     }
     strcpy(*inst_func_name_head, ftrace_get_func(dpnc));
-    char printf_format[] = " call %*s[%s@" "0x%08"PRIx32 "]\n";
-    sprintf(buf_tail, printf_format, inst_func_call_depth * 2, "", *inst_func_name_head, (uint32_t)dpnc);
+    char printf_format[] = " call %*s[%s@" "0x%08" PRIx32 "]\n";
+    sprintf(buf_tail,
+            printf_format,
+            inst_func_call_depth * 2,
+            "",
+            *inst_func_name_head,
+            (uint32_t)dpnc);
   }
 
-  if (*inst_func_ret) {
+  if (inst_func_ret) {
     inst_func_name_head--;
     inst_func_call_depth--;
     char printf_format[] = " ret  %*s[%s]\n";
-    sprintf(buf_tail, printf_format, inst_func_call_depth * 2, "", *inst_func_name_head);
+    sprintf(buf_tail,
+            printf_format,
+            inst_func_call_depth * 2,
+            "",
+            *inst_func_name_head);
   }
 
-  if (*inst_func_call || *inst_func_ret) {
+  if (inst_func_call || inst_func_ret) {
     sprintf(buf, "%s%s", buf_head, buf_tail);
     if (*ftrace_info_head == NULL) {
       *ftrace_info_head = (char *)malloc(sizeof(char *) * 256);
@@ -222,13 +231,6 @@ void ftrace_display(char *type,
     if (strcmp(type, "process") == 0) {
       printf("%s", buf);
     }
-  }
-
-  if (*inst_func_call) {
-    *inst_func_call = false;
-  }
-  if (*inst_func_ret) {
-    *inst_func_ret = false;
   }
 }
 
