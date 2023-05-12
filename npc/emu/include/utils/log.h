@@ -27,7 +27,7 @@ void initLog(const char *log_file);
 
 #define writeLog(...) IFDEF(CONFIG_TARGET_NATIVE_ELF, \
     do { \
-        extern FILE* log_fp; \
+        extern FILE *log_fp; \
         extern bool enaLog(); \
         if (enaLog()) { \
             fprintf(log_fp, __VA_ARGS__); \
