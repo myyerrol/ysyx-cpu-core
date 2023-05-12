@@ -52,7 +52,7 @@ mainmenu "NEMU Configuration Menu"
   menu "*NEMU Debug"
     config SDB
       bool "Enable simple debugger"
-      default y
+      default n
     config SDB_CMD
       depends on SDB
       bool "Enable print SDB command"
@@ -99,23 +99,23 @@ mainmenu "NEMU Configuration Menu"
     config ITRACE_COND_RESULT
       depends on ITRACE
       bool "Trace instructions when the condition is result"
-      default y
+      default n
     config MTRACE
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable memory tracer"
-      default y
+      default n
     config MTRACE_COND_PROCESS
       depends on MTRACE
       bool "Trace memory when the condition is process"
-      default y
+      default n
     config MTRACE_COND_RESULT
       depends on MTRACE
       bool "Trace memory when the condition is result"
-      default y
+      default n
     config FTRACE
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable function tracer"
-      default y
+      default n
     config FTRACE_ELF
       depends on FTRACE
       bool "Enable print ftrace ELF"
@@ -123,23 +123,23 @@ mainmenu "NEMU Configuration Menu"
     config FTRACE_COND_PROCESS
       depends on FTRACE
       bool "Trace functions when the condition is process"
-      default y
+      default n
     config FTRACE_COND_RESULT
       depends on FTRACE
       bool "Trace functions when the condition is result"
-      default y
+      default n
     config DTRACE
       depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
       bool "Enable device tracer"
-      default y
+      default n
     config DTRACE_COND_PROCESS
       depends on DTRACE
       bool "Trace devices when the condition is process"
-      default y
+      default n
     config DTRACE_COND_RESULT
       depends on DTRACE
       bool "Trace devices when the condition is result"
-      default y
+      default n
     config DIFFTEST
       depends on TARGET_NATIVE_ELF
       bool "Enable differential testing"
