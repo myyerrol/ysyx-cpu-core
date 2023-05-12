@@ -9,10 +9,10 @@
 
 typedef unsigned long long uint64_tt;
 
-uint8_t ebreak_flag = 0;
+bool sim_ebreak = false;
 
 extern "C" void judgeIsEbreak(uint8_t flag) {
-    ebreak_flag = flag;
+    sim_ebreak = flag;
 }
 
 extern "C" uint64_tt readInsData(uint64_tt addr, uint8_t len) {
@@ -91,7 +91,7 @@ uint64_t sim_dnpc = 0;
 uint64_t sim_inst = 0;
 
 void runCPUSimModule() {
-    if (!ebreak_flag) {
+    if (!sim_ebreak) {
         sim_pc = top->io_oPC;
         sim_snpc = sim_pc + 4;
         sim_inst = top->io_oInst;
@@ -119,7 +119,8 @@ void runCPUSimModule() {
 #endif
 #endif
     }
-    else {
+
+    if (sim_ebreak) {
         setNPCState(NPC_END, sim_pc, top->io_oRegRdEndData);
     }
 }

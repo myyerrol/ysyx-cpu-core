@@ -18,9 +18,6 @@ class Top extends Module {
         val oInstCall     = Output(Bool())
         val oInstRet      = Output(Bool())
 
-
-
-
         val oRegData0  = Output(UInt(DATA_WIDTH.W))
         val oRegData1  = Output(UInt(DATA_WIDTH.W))
         val oRegData2  = Output(UInt(DATA_WIDTH.W))
@@ -82,6 +79,8 @@ class Top extends Module {
 
     val instName = RegInit(INST_NAME_X)
     instName := idu.io.oInstName
+
+    // val instName = idu.io.oInstName
 
     dpi.io.iEbreakFlag := Mux(instName === INST_NAME_EBREAK, 1.U, 0.U)
 

@@ -48,28 +48,29 @@ static void execCPUTimesSingle() {
     runCPUSimModule();
 
 #ifdef CONFIG_ITRACE_COND_RESULT
-    char *cpu_logbuf_p = cpu_logbuf;
-    cpu_logbuf_p += snprintf(cpu_logbuf_p,
-                             sizeof(cpu_logbuf),
-                             FMT_WORD,
-                             sim_pc);
-    int ilen = sim_snpc - sim_pc;
-    int i;
-    uint8_t *inst = (uint8_t *)&sim_inst;
-    for (i = ilen - 1; i >= 0; i--) {
-        cpu_logbuf_p += snprintf(cpu_logbuf_p, 4, " %02x", inst[i]);
-    }
-    int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
-    int space_len = ilen_max - ilen;
-    if (space_len < 0) space_len = 0;
-    space_len = space_len * 3 + 1;
-    memset(cpu_logbuf_p, ' ', space_len);
-    cpu_logbuf_p += space_len;
+        char *cpu_logbuf_p = cpu_logbuf;
+        cpu_logbuf_p += snprintf(cpu_logbuf_p,
+                                 sizeof(cpu_logbuf),
+                                 FMT_WORD,
+                                 sim_pc);
+        int ilen = sim_snpc - sim_pc;
+        int i;
+        uint8_t *inst = (uint8_t *)&sim_inst;
+        for (i = ilen - 1; i >= 0; i--) {
+            cpu_logbuf_p += snprintf(cpu_logbuf_p, 4, " %02x", inst[i]);
+        }
+        int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
+        int space_len = ilen_max - ilen;
+        if (space_len < 0) space_len = 0;
+        space_len = space_len * 3 + 1;
+        memset(cpu_logbuf_p, ' ', space_len);
+        cpu_logbuf_p += space_len;
 
-    execDisasm(cpu_logbuf_p,
-               cpu_logbuf + sizeof(cpu_logbuf) - cpu_logbuf_p,
-               MUXDEF(CONFIG_ISA_x86, sim_snpc, sim_pc),
-                     (uint8_t *)&sim_inst, ilen);
+        execDisasm(cpu_logbuf_p,
+                   cpu_logbuf + sizeof(cpu_logbuf) - cpu_logbuf_p,
+                   MUXDEF(CONFIG_ISA_x86, sim_snpc, sim_pc),
+                         (uint8_t *)&sim_inst, ilen);
+
 #endif
 }
 
