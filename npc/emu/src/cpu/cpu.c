@@ -4,8 +4,10 @@
 #include <cpu/sim.h>
 #include <debug/trace/trace.h>
 #include <isa/reg.h>
-#include <state.h>
 #include <monitor/sdb/watch.h>
+#include <state.h>
+#include <utils/disasm.h>
+#include <utils/log.h>
 #include <utils/timer.h>
 
 #define MAX_INST_TO_PRINT 10
@@ -13,15 +15,17 @@
 static uint64_t cpu_timer = 0;
 static bool cpu_print_step = true;
 
-uint64_t cpu_guest_inst = -1;
+uint64_t cpu_guest_inst = 0;
+
+char cpu_logbuf[256];
 
 static void execCPUTraceAndDifftest() {
-#ifdef CONFIG_ITRACE_COND
-    writeLog("%s\n", _this->logbuf);
+#ifdef CONFIG_ITRACE_COND_PROCESS
+    writeLog("%s\n", cpu_logbuf);
 #endif
 
 #ifdef CONFIG_ITRACE_COND_RESULT
-    printfDebugITrace(_this->logbuf);
+    recordDebugITrace(cpu_logbuf);
 #endif
 
 #ifdef CONFIG_SDB_WATCH
@@ -30,33 +34,42 @@ static void execCPUTraceAndDifftest() {
     }
 #endif
 
-//   if (cpu_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+  if (cpu_print_step) { IFDEF(CONFIG_ITRACE, puts(cpu_logbuf)); }
 //   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
     // difftest_step(_this->pc, dnpc);
 }
 
+extern uint64_t sim_pc;
+extern uint64_t sim_snpc;
+extern uint64_t sim_dnpc;
+extern uint64_t sim_inst;
+
 static void execCPUTimesSingle() {
     runCPUSimModule();
 
-#ifdef CONFIG_ITRACE_CMD_RESULT
-    // char *p = s->logbuf;
-    // p += snprintf(p, sizeof(s->logbuf), FMT_WORD, s->pc);
-    // int ilen = s->snpc - s->pc;
-    // int i;
-    // uint8_t *inst = (uint8_t *)&s->isa.inst.val;
-    // for (i = ilen - 1; i >= 0; i --) {
-    //     p += snprintf(p, 4, " %02x", inst[i]);
-    // }
-    // int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
-    // int space_len = ilen_max - ilen;
-    // if (space_len < 0) space_len = 0;
-    // space_len = space_len * 3 + 1;
-    // memset(p, ' ', space_len);
-    // p += space_len;
+#ifdef CONFIG_ITRACE_COND_RESULT
+    char *cpu_logbuf_p = cpu_logbuf;
+    cpu_logbuf_p += snprintf(cpu_logbuf_p,
+                             sizeof(cpu_logbuf),
+                             FMT_WORD,
+                             sim_pc);
+    int ilen = sim_snpc - sim_pc;
+    int i;
+    uint8_t *inst = (uint8_t *)&sim_inst;
+    for (i = ilen - 1; i >= 0; i--) {
+        cpu_logbuf_p += snprintf(cpu_logbuf_p, 4, " %02x", inst[i]);
+    }
+    int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
+    int space_len = ilen_max - ilen;
+    if (space_len < 0) space_len = 0;
+    space_len = space_len * 3 + 1;
+    memset(cpu_logbuf_p, ' ', space_len);
+    cpu_logbuf_p += space_len;
 
-    // void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-    // disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
-    //     MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
+    execDisasm(cpu_logbuf_p,
+               cpu_logbuf + sizeof(cpu_logbuf) - cpu_logbuf_p,
+               MUXDEF(CONFIG_ISA_x86, sim_snpc, sim_pc),
+                     (uint8_t *)&sim_inst, ilen);
 #endif
 }
 
@@ -64,7 +77,7 @@ static void execCPUTimesMultip(uint64_t num) {
     for (; num > 0; num--) {
         execCPUTimesSingle();
         cpu_guest_inst++;
-        // execCPUTraceAndDifftest(&s, cpu.pc);
+        execCPUTraceAndDifftest();
         if (npc_state.state != NPC_RUNNING) {
             break;
         }

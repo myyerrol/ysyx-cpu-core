@@ -2,10 +2,12 @@
 #include <time.h>
 
 #include <common.h>
+#include <debug/trace/trace.h>
 #include <memory/host.h>
 #include <memory/memory.h>
 #include <monitor/monitor.h>
 #include <monitor/sdb/sdb.h>
+#include <utils/disasm.h>
 
 static char *log_file = NULL;
 static char *img_file = NULL;
@@ -107,6 +109,14 @@ void initMonitor(int argc, char *argv[]) {
     initMonitorImg();
 
     initSDB();
+    initDebugTrace(elf_file);
+
+    IFDEF(CONFIG_ITRACE, initDisasm(
+        MUXDEF(CONFIG_ISA_x86,     "i686",
+        MUXDEF(CONFIG_ISA_mips32,  "mipsel",
+        MUXDEF(CONFIG_ISA_riscv32, "riscv32",
+        MUXDEF(CONFIG_ISA_riscv64, "riscv64", "bad")))) "-pc-linux-gnu"
+    ));
 
     printfWelcome();
 

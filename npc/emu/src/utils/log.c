@@ -15,6 +15,6 @@ void initLog(const char *log_file) {
 }
 
 bool enaLog() {
-  return MUXDEF(CONFIG_TRACE, (cpu_guest_inst >= CONFIG_TRACE_START) &&
-                              (cpu_guest_inst <= CONFIG_TRACE_END), false);
+    return MUXDEF(CONFIG_TRACE, (cpu_guest_inst >= CONFIG_TRACE_START) &&
+                                (cpu_guest_inst <= CONFIG_TRACE_END), false);
 }

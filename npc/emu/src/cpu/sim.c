@@ -85,30 +85,42 @@ void exitCPUSim() {
     delete top;
 }
 
+uint64_t sim_pc   = 0;
+uint64_t sim_snpc = 0;
+uint64_t sim_dnpc = 0;
+uint64_t sim_inst = 0;
+
 void runCPUSimModule() {
     if (!ebreak_flag) {
-        uint64_t pc = top->io_oPC;
-        // s->pc = pc;
-        // s->snpc = pc + 4;
-        // s->isa.inst.val = top->io_oInst;
+        sim_pc = top->io_oPC;
+        sim_snpc = sim_pc + 4;
+        sim_inst = top->io_oInst;
 
         bool inst_func_call = top->io_oInstCall;
         bool inst_func_ret  = top->io_oInstRet;
 
         runCPUSimModuleCycle();
 
-        uint64_t dnpc = top->io_oPC;
+        sim_dnpc = top->io_oPC;
 
 #ifdef CONFIG_FTRACE
 #ifdef CONFIG_FTRACE_COND_PROCESS
-        printfDebugFTrace((char *)"process", inst_func_call, inst_func_ret, pc, dnpc);
+        printfDebugFTrace((char *)"process",
+                          inst_func_call,
+                          inst_func_ret,
+                          sim_pc,
+                          sim_dnpc);
 #else
-        printfDebugFTrace((char *)"", inst_func_call, inst_func_ret, pc, dnpc);
+        printfDebugFTrace((char *)"",
+                          inst_func_call,
+                          inst_func_ret,
+                          sim_pc,
+                          sim_dnpc);
 #endif
 #endif
     }
     else {
-        setNPCState(NPC_END, top->io_oPC - 4, top->io_oRegRdEndData);
+        setNPCState(NPC_END, sim_pc, top->io_oRegRdEndData);
     }
 }
 
