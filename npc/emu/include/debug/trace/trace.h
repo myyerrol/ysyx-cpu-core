@@ -12,7 +12,6 @@ void printfDebugMTrace(char *type,
                        word_t data,
                        word_t len);
 
-void initDebugFTrace(const char *elf_file);
 void printfDebugFTrace(char *type,
                        bool inst_func_call,
                        bool inst_func_ret,
@@ -25,5 +24,7 @@ void printfDebugDTrace(char *type,
                        const char *name,
                        word_t addr,
                        word_t data);
+
+void initDebugTrace(char *elf_file);
 
 #endif

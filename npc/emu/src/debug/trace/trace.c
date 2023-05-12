@@ -102,7 +102,7 @@ static char *getDebugFTraceFunc(Elf64_Addr addr) {
   }
 }
 
-void initDebugFTrace(const char *elf_file) {
+static void initDebugFTrace(char *elf_file) {
     if (elf_file != NULL) {
         FILE *fp = fopen(elf_file, "r");
         ASSERT(fp, "Can not open '%s'", elf_file);
@@ -259,4 +259,8 @@ void printfDebugDTrace(char *type,
     }
     else if (strcmp(type, "result") == 0) {
     }
+}
+
+void initDebugTrace(char *elf_file) {
+    initDebugFTrace(elf_file);
 }
