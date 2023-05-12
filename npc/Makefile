@@ -1,63 +1,70 @@
-# 检查传递的类型是否在支持列表中
-ifneq ($(MAKECMDGOALS), clean)
-    PROJECTS = cpu_single_cycle cpu_yemu
-    ifeq ($(filter $(PROJECTS), $(PROJECT)), )
-        $(error Expected $$PROJECT in {$(PROJECTS)}, Got "$(PROJECT)")
-    endif
+ifeq ($(wildcard $(NPC_HOME)/emu/src/main.c),)
+    $(error NPC_HOME=$(NPC_HOME) is not a NPC repo)
 endif
 
-TOPNAME = Top
-
-BUILD_DIR = ./build
-BUILD_DIR_PROJECT =$(BUILD_DIR)/$(PROJECT)
-OBJ_DIR_PROJECT = $(BUILD_DIR_PROJECT)/obj_dir
-BIN_PROJECT = $(BUILD_DIR_PROJECT)/$(TOPNAME)
+-include $(NPC_HOME)/emu/include/config/auto.conf
+-include $(NPC_HOME)/emu/include/config/auto.conf.cmd
 
 export PATH := $(PATH):$(abspath ./utils)
 
+TOPNAME = Top
+PROJECT = cpu
+
+REMOVE_QUOTE = $(patsubst "%",%,$(1))
+GUEST_ISA ?= $(call REMOVE_QUOTE,$(CONFIG_ISA))
+ENGINE ?= $(call REMOVE_QUOTE,$(CONFIG_ENGINE))
+NAME    = $(GUEST_ISA)-npc-$(ENGINE)
+
+BUILD_DIR = $(NPC_HOME)/build
+BUILD_DIR_PROJECT = $(BUILD_DIR)/$(PROJECT)
+OBJ_DIR_PROJECT = $(BUILD_DIR_PROJECT)/obj_dir
+BIN_PROJECT = $(BUILD_DIR_PROJECT)/$(NAME)
+
 VERILATOR = verilator
-VERILATOR_CFLAGS += -MMD --build -cc  \
-                    -O3 --x-assign fast --x-initial fast --noassert --trace \
-                    -Wno-WIDTHEXPAND \
+VERILATOR_CFLAGS += -MMD --build -cc \
+                    -O3 --x-assign fast --x-initial fast --noassert \
+                    --trace \
+                    -Wno-WIDTHEXPAND
 
--include $(NEMU_HOME)/include/config/auto.conf
--include $(NEMU_HOME)/include/config/auto.conf.cmd
-
-INC_PATH += $(NEMU_HOME)/include
-INC_PATH += $(NEMU_HOME)/include/memory
-INC_PATH += $(NEMU_HOME)/src/isa/riscv64/include
-INC_PATH += $(NEMU_HOME)/src/monitor/sdb
-
-CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
-CFLAGS += -D__GUEST_ISA__=riscv64
-CFLAGS += -g
-
-LDFLAGS += -lreadline -ldl -pie
-
-ifneq ($(MAKECMDGOALS), clean)
-    PROJECT_SRCS_DIR = $(abspath $(PROJECT)/src)
-    PROJECT_SRCV_DIR = $(abspath $(PROJECT)/srcv)
-    PROJECT_SRCC_DIR = $(abspath $(PROJECT)/srcc)
-
-    INC_PATH += $(PROJECT_SRCC_DIR)
-
-    SRCSS_PROJECT     = $(shell find $(PROJECT_SRCS_DIR) -name "*.scala")
-    SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
-    SRCVS_PROJECT     = $(shell find $(PROJECT_SRCV_DIR) -name "*.v")
-    SRCCS_PROJECT     = $(shell find $(PROJECT_SRCC_DIR) -name "*.c")
-endif
-
+INC_PATH += $(NPC_HOME)/emu/include \
+            $(NPC_HOME)/emu/include/generated
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 
-SRCCS_LIB_DIR += $(NEMU_HOME)/src/memory
-SRCCS_LIB_DIR += $(NEMU_HOME)/src/utils
-SRCCS_LIB_DIR_BLACKLIST +=
-SRCCS_LIB_SRC_BLACKLIST += $(NEMU_HOME)/src/utils/state.c
-SRCCS_LIB_BLACKLIST += $(SRCCS_LIB_SRC_BLACKLIST) $(shell find $(SRCCS_LIB_DIR_BLACKLIST) -name "*.c")
-SRCCS_LIB_WHITELIST += $(shell find $(SRCCS_LIB_DIR) -name "*.c")
-SRCCS_LIB += $(filter-out $(SRCCS_LIB_BLACKLIST),$(SRCCS_LIB_WHITELIST))
+CFLAGS_BUILD += $(call REMOVE_QUOTE,$(CONFIG_CC_OPT))
+CFLAGS_BUILD += $(if $(CONFIG_CC_LTO),-flto,)
+CFLAGS_BUILD += $(if $(CONFIG_CC_DEBUG),-Og -ggdb3,)
+CFLAGS_BUILD += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
+CFLAGS  += $(CFLAGS_BUILD) \
+           -D__GUEST_ISA__=$(GUEST_ISA) \
+           -Wno-unused-result \
+           -DTOP_NAME="\"V$(TOPNAME)\"" \
+           $(INCFLAGS)
 
-SRCCS_PROJECT += $(SRCCS_LIB)
+LDFLAGS += $(CFLAGS_BUILD) \
+           -lreadline -ldl -pie
+
+PROJECT_SRCS_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/src)
+PROJECT_SRCV_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/srcv)
+
+SRCSS_PROJECT     = $(shell find $(PROJECT_SRCS_DIR) -name "*.scala")
+SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
+SRCVS_PROJECT     = $(shell find $(PROJECT_SRCV_DIR) -name "*.v")
+
+SRCCS_DIR += $(NPC_HOME)/emu/src \
+             $(NPC_HOME)/emu/src/cpu \
+             $(NPC_HOME)/emu/src/debug \
+             $(NPC_HOME)/emu/src/isa \
+             $(NPC_HOME)/emu/src/memory \
+             $(NPC_HOME)/emu/src/monitor \
+             $(NPC_HOME)/emu/src/monitor/sdb \
+             $(NPC_HOME)/emu/src/utils \
+
+SRCCS_DIR_BLACKLIST +=
+SRCCS_SRC_BLACKLIST +=
+SRCCS_BLACKLIST += $(SRCCS_SRC_BLACKLIST) \
+                   $(shell find $(SRCCS_DIR_BLACKLIST) -name "*.c")
+SRCCS_WHITELIST += $(shell find $(SRCCS_DIR) -name "*.c")
+SRCCS_PROJECT = $(filter-out $(SRCCS_BLACKLIST),$(SRCCS_WHITELIST))
 
 $(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
 	$(call git_commit, "generate verilog")
@@ -68,11 +75,15 @@ $(BIN_PROJECT): $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 	--top-module $(TOPNAME) $^ \
 	$(addprefix -CFLAGS , $(CFLAGS)) \
-    $(addprefix -LDFLAGS , $(LDFLAGS)) \
+	$(addprefix -LDFLAGS , $(LDFLAGS)) \
 	--Mdir $(OBJ_DIR_PROJECT) --exe -o \
 	$(abspath $(BIN_PROJECT))
 
+# ARGS_DIFF = --diff=$(NEMU_HOME)/build/riscv64-nemu-interpreter-so
+
 override ARGS ?= --log=$(BUILD_DIR)/npc-log.txt
+override ARGS += $(ARGS_DIFF)
+
 IMG ?=
 NPC_EXEC := $(BIN_PROJECT) $(ARGS) $(IMG)
 
@@ -80,16 +91,18 @@ NPC_EXEC := $(BIN_PROJECT) $(ARGS) $(IMG)
 
 test:
 	mill -i $(PROJECT).test
-gen:  $(SRCVS_PROJECT_GEN)
+gen: $(SRCVS_PROJECT_GEN)
 	@echo "success"
 run: $(BIN_PROJECT)
+	$(call git_commit, "run NPC")
 	rm -rf $(BUILD_DIR_PROJECT)/Wave.vcd
 	$(NPC_EXEC)
 gdb: $(BIN_PROJECT)
+	$(call git_commit, "gdb NPC")
 	rm -rf $(BUILD_DIR_PROJECT)/Wave.vcd
 	gdb -s $(BIN_PROJECT) --args $(NPC_EXEC)
 sim: $(BIN_PROJECT)
-	$(call git_commit, "sim RTL")
+	$(call git_commit, "sim NPC")
 	gtkwave $(BUILD_DIR_PROJECT)/Wave.vcd
 	@echo "success"
 install_bsp:
@@ -99,8 +112,6 @@ reformat:
 check_format:
 	mill -i __.checkFormat
 clean:
-	rm -rf $(BUILD_DIR_PROJECT)
+	rm -rf build
 	rm -rf out
 	rm -rf test_run_dir
-
-include ../Makefile
