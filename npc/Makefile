@@ -38,10 +38,12 @@ CFLAGS  += $(CFLAGS_BUILD) \
            -D__GUEST_ISA__=$(GUEST_ISA) \
            -Wno-unused-result \
            -DTOP_NAME="\"V$(TOPNAME)\"" \
-           $(INCFLAGS)
+           $(INCFLAGS) \
+           $(shell llvm-config-11 --cxxflags) -fPIE
 
 LDFLAGS += $(CFLAGS_BUILD) \
-           -lreadline -ldl -pie
+           -lreadline -ldl -pie \
+           $(shell llvm-config-11 --libs)
 
 PROJECT_SRCS_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/src)
 PROJECT_SRCV_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/srcv)
@@ -64,7 +66,8 @@ SRCCS_SRC_BLACKLIST +=
 SRCCS_BLACKLIST += $(SRCCS_SRC_BLACKLIST) \
                    $(shell find $(SRCCS_DIR_BLACKLIST) -name "*.c")
 SRCCS_WHITELIST += $(shell find $(SRCCS_DIR) -name "*.c")
-SRCCS_PROJECT = $(filter-out $(SRCCS_BLACKLIST),$(SRCCS_WHITELIST))
+SRCCS_PROJECT = $(filter-out $(SRCCS_BLACKLIST),$(SRCCS_WHITELIST)) \
+                $(NPC_HOME)/emu/src/utils/disasm.cc
 
 $(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
 	$(call git_commit, "generate verilog")
@@ -79,7 +82,9 @@ $(BIN_PROJECT): $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
 	--Mdir $(OBJ_DIR_PROJECT) --exe -o \
 	$(abspath $(BIN_PROJECT))
 
-# ARGS_DIFF = --diff=$(NEMU_HOME)/build/riscv64-nemu-interpreter-so
+ifdef CONFIG_DIFFTEST
+ARGS_DIFF = --diff=$(NEMU_HOME)/build/riscv64-nemu-interpreter-so
+endif
 
 override ARGS ?= --log=$(BUILD_DIR)/npc-log.txt
 override ARGS += $(ARGS_DIFF)

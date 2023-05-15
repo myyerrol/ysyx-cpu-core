@@ -1,3 +1,4 @@
+#include <isa/isa.h>
 #include <memory/host.h>
 #include <memory/memory.h>
 
@@ -5,10 +6,11 @@ static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 
 static void printfOutOfBoundInfo(paddr_t addr) {
     PANIC("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " \
-          FMT_PADDR "] at pc = 0xXXXXXXXX",
+          FMT_PADDR "] at pc = " FMT_WORD,
           addr,
           PMEM_LEFT,
-          PMEM_RIGHT);
+          PMEM_RIGHT,
+          cpu.pc);
 }
 
 uint8_t *convertGuestToHost(paddr_t paddr) {

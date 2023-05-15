@@ -3,7 +3,7 @@
 
 #include <common.h>
 #include <cpu/sim.h>
-#include <debug/trace/trace.h>
+#include <debug/trace.h>
 #include <memory/memory.h>
 #include <state.h>
 

@@ -2,7 +2,9 @@
 
 #include <cpu/cpu.h>
 #include <cpu/sim.h>
-#include <debug/trace/trace.h>
+#include <debug/difftest.h>
+#include <debug/trace.h>
+#include <isa/isa.h>
 #include <isa/reg.h>
 #include <monitor/sdb/watch.h>
 #include <state.h>
@@ -15,9 +17,14 @@
 static uint64_t cpu_timer = 0;
 static bool cpu_print_step = true;
 
-uint64_t cpu_guest_inst = 0;
+extern uint64_t sim_pc;
+extern uint64_t sim_snpc;
+extern uint64_t sim_dnpc;
+extern uint64_t sim_inst;
 
 char cpu_logbuf[256];
+uint64_t cpu_guest_inst = 0;
+CPUState cpu = {};
 
 static void execCPUTraceAndDifftest() {
 #ifdef CONFIG_ITRACE_COND_PROCESS
@@ -34,18 +41,13 @@ static void execCPUTraceAndDifftest() {
     }
 #endif
 
-  if (cpu_print_step) { IFDEF(CONFIG_ITRACE, puts(cpu_logbuf)); }
-//   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
-    // difftest_step(_this->pc, dnpc);
+    if (cpu_print_step) { IFDEF(CONFIG_ITRACE, puts(cpu_logbuf)); }
+    IFDEF(CONFIG_DIFFTEST, stepDebugDifftest(sim_pc, sim_dnpc));
 }
-
-extern uint64_t sim_pc;
-extern uint64_t sim_snpc;
-extern uint64_t sim_dnpc;
-extern uint64_t sim_inst;
 
 static void execCPUTimesSingle() {
     runCPUSimModule();
+    cpu.pc = sim_dnpc;
 
 #ifdef CONFIG_ITRACE_COND_RESULT
         char *cpu_logbuf_p = cpu_logbuf;

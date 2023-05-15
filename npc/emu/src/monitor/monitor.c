@@ -2,7 +2,9 @@
 #include <time.h>
 
 #include <common.h>
-#include <debug/trace/trace.h>
+#include <debug/difftest.h>
+#include <debug/trace.h>
+#include <isa/isa.h>
 #include <memory/host.h>
 #include <memory/memory.h>
 #include <monitor/monitor.h>
@@ -37,14 +39,14 @@ static long initMonitorImg() {
     return size;
 }
 
-static void initMonitorISA() {
-    static const uint32_t img[] = {
-        0x00100093, // addi r1 r0 1
-        0x00A00193, // addi r3 r0 10
-        0x00100073  // ebreak
-    };
-    memcpy(convertGuestToHost(RESET_VECTOR), img, sizeof(img));
-}
+// static void initMonitorISA() {
+//     static const uint32_t img[] = {
+//         0x00100093, // addi r1 r0 1
+//         0x00A00193, // addi r3 r0 10
+//         0x00100073  // ebreak
+//     };
+//     memcpy(convertGuestToHost(RESET_VECTOR), img, sizeof(img));
+// }
 
 static void initMonitorRand() {
     srand(time(0));
@@ -105,8 +107,10 @@ void initMonitor(int argc, char *argv[]) {
     initLog(log_file);
     initMem();
 
-    initMonitorISA();
-    initMonitorImg();
+    // initMonitorISA();
+    initISA();
+    long img_size = initMonitorImg();
+    initDebugDifftest(diff_so_file, img_size, difftest_port);
 
     initSDB();
     initDebugTrace(elf_file);

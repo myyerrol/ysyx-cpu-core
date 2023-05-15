@@ -1,6 +1,7 @@
 #include <elf.h>
+
+#include <debug/trace.h>
 #include <memory/memory.h>
-#include <debug/trace/trace.h>
 
 #define ITRACE_BUF_LEN 16
 char  *itrace[ITRACE_BUF_LEN];

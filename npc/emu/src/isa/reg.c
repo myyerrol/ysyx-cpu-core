@@ -8,13 +8,13 @@ const char *reg_name_arr[] = {
     "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
-static int judgeISARegIsValid(int id) {
+static int checkISARegIsValid(int id) {
     IFDEF(CONFIG_RT_CHECK, assert(id >= 0 && id < 32));
     return id;
 }
 
-static word_t getISAReg(int id) {
-    id = judgeISARegIsValid(id);
+word_t getISAReg(int id) {
+    id = checkISARegIsValid(id);
     switch (id) {
         case 0:  return top->io_oRegData0;
         case 1:  return top->io_oRegData1;
@@ -67,7 +67,7 @@ word_t getISARegData(const char *reg, bool *success) {
 }
 
 const char *getISARegName(int id) {
-    return reg_name_arr[judgeISARegIsValid(id)];
+    return reg_name_arr[checkISARegIsValid(id)];
 }
 
 void printfISARegData() {
@@ -80,7 +80,7 @@ void printfISARegData() {
                      strcmp(reg_name_arr[i], "s11") != 0) ? (char *)" " :
                                                             (char *)"";
         exist_str = (getISAReg(i) != 0) ? (char *)ANSI_FMT("*", ANSI_FG_GREEN) :
-                                    (char *)"";
+                                          (char *)"";
         printf("[sdb reg] i: %d%s val: %s%s = " FMT_WORD "%s\n",
                i,
                space_num,
