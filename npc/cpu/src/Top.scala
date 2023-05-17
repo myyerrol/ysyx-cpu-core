@@ -9,7 +9,6 @@ import cpu.util.Inst._
 
 class Top extends Module {
     val io = IO(new Bundle {
-        val iPCEn   = Input(Bool())
         val iItrace = Input(Bool())
 
         val oPC           = Output(UInt(DATA_WIDTH.W))
@@ -55,7 +54,6 @@ class Top extends Module {
     val dpi = Module(new DPI())
 
     val ifu = Module(new IFU())
-    ifu.io.iPCEn := io.iPCEn
     io.oPC := ifu.io.oPC
     dpi.io.iMemRdAddrInst := ifu.io.oPC
 
@@ -79,8 +77,6 @@ class Top extends Module {
 
     val instName = RegInit(INST_NAME_X)
     instName := idu.io.oInstName
-
-    // val instName = idu.io.oInstName
 
     dpi.io.iEbreakFlag := Mux(instName === INST_NAME_EBREAK, 1.U, 0.U)
 

@@ -7,7 +7,6 @@ import cpu.util.Base._
 
 class IFU extends Module {
     val io = IO(new Bundle {
-        val iPCEn  = Input(Bool())
         val iJmpEn = Input(Bool())
         val iJmpPC = Input(UInt(DATA_WIDTH.W))
 
@@ -24,5 +23,4 @@ class IFU extends Module {
 
     pc := pcNext
     io.oPC := pc
-    // io.oPC := Mux(io.iPCEn, pc, 0.U(DATA_WIDTH.W))
 }
