@@ -22,5 +22,6 @@ static uint64_t getTimerInternal() {
 
 uint64_t getTimerValue() {
     if (boot_time == 0) boot_time = getTimerInternal();
-    return getTimerInternal() - boot_time;
+    uint64_t curr_time = getTimerInternal();
+    return curr_time - boot_time;
 }

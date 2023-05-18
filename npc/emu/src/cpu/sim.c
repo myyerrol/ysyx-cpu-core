@@ -1,11 +1,12 @@
 #include <sys/time.h>
 
-
 #include <common.h>
 #include <cpu/sim.h>
 #include <debug/trace.h>
 #include <memory/memory.h>
 #include <state.h>
+#include <utils/log.h>
+#include <utils/timer.h>
 
 typedef unsigned long long uint64_tt;
 
@@ -16,20 +17,29 @@ extern "C" void judgeIsEbreak(uint8_t flag) {
 }
 
 extern "C" uint64_tt readInsData(uint64_tt addr, uint8_t len) {
-    long long data = 0;
-    if (likely(judgeAddrIsInPhyMem(addr))) {
-        data = readPhyMemData(addr, len);
-    }
+    uint64_tt data = 0;
+    if (addr != 0x00000000) {
+        data = (uint64_tt)readPhyMemData(addr, len);
 #ifdef CONFIG_MTRACE_COND_PROCESS
-    printfDebugMTrace((char *)"process", (char *)"rd ins", addr, data, 0);
+        printfDebugMTrace((char *)"process", (char *)"rd ins", addr, data, 0);
 #endif
+    }
     return data;
 }
 
 extern "C" uint64_tt readMemData(uint64_tt addr, uint8_t len) {
-    long long data = 0;
-    if (likely(judgeAddrIsInPhyMem(addr))) {
-        data = readPhyMemData(addr, len);
+    uint64_tt data = 0;
+    if (addr == 0xa0000048) {
+        data = (uint64_tt)getTimerValue();
+    }
+    else if (addr == 0xa0000060) {
+
+    }
+    else if (judgeAddrIsInPhyMem(addr)) {
+        data = (uint64_tt)readPhyMemData(addr, len);
+    }
+    else {
+        return data;
     }
 #ifdef CONFIG_MTRACE_COND_PROCESS
     printfDebugMTrace((char *)"process", (char *)"rd mem", addr, data, 0);
@@ -38,7 +48,10 @@ extern "C" uint64_tt readMemData(uint64_tt addr, uint8_t len) {
 }
 
 extern "C" void writeMemData(uint64_tt addr, uint64_tt data, uint8_t len) {
-    if (likely(judgeAddrIsInPhyMem(addr))) {
+    if (addr == 0xa00003f8) {
+        putc((uint8_t)data, stderr);
+    }
+    else {
         writePhyMemData(addr, len, data);
     }
 #ifdef CONFIG_MTRACE_COND_PROCESS
