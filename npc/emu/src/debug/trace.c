@@ -65,7 +65,7 @@ void printfDebugMTrace(char *type,
     }
 }
 
-#define ARR_LEN 1024 * 1024
+#define ARR_LEN 1024 * 1024 * 10
 
 static int    inst_func_call_depth = -1;
 static char  *inst_func_name_arr[ARR_LEN];
