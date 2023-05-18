@@ -119,8 +119,6 @@ static int decode_exec(Decode *s) {
   //        PRINTF_BIN_INT32(s->isa.inst.val));
 #endif
 
-  inst_num++;
-
   INSTPAT("0000000 ????? ????? 001 ????? 01100 11", sll,    R, R(rd) = src1 << src2);
   INSTPAT("000000? ????? ????? 001 ????? 00100 11", slli,   I, R(rd) = src1 << BITS(imm, 5, 0));
   INSTPAT("000000? ????? ????? 101 ????? 00100 11", srli,   I, R(rd) = src1 >> BITS(imm, 5, 0));
@@ -196,6 +194,8 @@ static int decode_exec(Decode *s) {
 #ifdef CONFIG_ITRACE_COND_PROCESS
     printf("[itrace] rd  val hex: " FMT_WORD "\n\n", R(rd));
 #endif
+
+  inst_num++;
 
 #ifdef CONFIG_FTRACE
 #ifdef CONFIG_FTRACE_COND_PROCESS
