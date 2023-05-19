@@ -4,6 +4,7 @@
 #include <common.h>
 #include <debug/difftest.h>
 #include <debug/trace.h>
+#include <device/device.h>
 #include <isa/isa.h>
 #include <memory/host.h>
 #include <memory/memory.h>
@@ -38,15 +39,6 @@ static long initMonitorImg() {
     fclose(fp);
     return size;
 }
-
-// static void initMonitorISA() {
-//     static const uint32_t img[] = {
-//         0x00100093, // addi r1 r0 1
-//         0x00A00193, // addi r3 r0 10
-//         0x00100073  // ebreak
-//     };
-//     memcpy(convertGuestToHost(RESET_VECTOR), img, sizeof(img));
-// }
 
 static void initMonitorRand() {
     srand(time(0));
@@ -106,9 +98,8 @@ void initMonitor(int argc, char *argv[]) {
 
     initLog(log_file);
     initMem();
-
-    // initMonitorISA();
     initISA();
+
     long img_size = initMonitorImg();
     initDebugDifftest(diff_so_file, img_size, difftest_port);
 
@@ -121,6 +112,7 @@ void initMonitor(int argc, char *argv[]) {
         MUXDEF(CONFIG_ISA_riscv32, "riscv32",
         MUXDEF(CONFIG_ISA_riscv64, "riscv64", "bad")))) "-pc-linux-gnu"
     ));
+    IFDEF(CONFIG_DEVICE, initDevice());
 
     printfWelcome();
 
