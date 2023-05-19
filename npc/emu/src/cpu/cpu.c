@@ -4,6 +4,7 @@
 #include <cpu/sim.h>
 #include <debug/difftest.h>
 #include <debug/trace.h>
+#include <device/device.h>
 #include <isa/isa.h>
 #include <isa/reg.h>
 #include <monitor/sdb/watch.h>
@@ -84,6 +85,7 @@ static void execCPUTimesMultip(uint64_t num) {
         if (npc_state.state != NPC_RUNNING) {
             break;
         }
+        IFDEF(CONFIG_DEVICE, updateDeviceState());
     }
 }
 

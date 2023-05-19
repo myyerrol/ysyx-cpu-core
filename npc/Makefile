@@ -43,7 +43,8 @@ CFLAGS  += $(CFLAGS_BUILD) \
 
 LDFLAGS += $(CFLAGS_BUILD) \
            -lreadline -ldl -pie \
-           $(shell llvm-config-11 --libs)
+           $(shell llvm-config-11 --libs) \
+           -lSDL2
 
 PROJECT_SRCS_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/src)
 PROJECT_SRCV_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/srcv)
@@ -55,6 +56,7 @@ SRCVS_PROJECT     = $(shell find $(PROJECT_SRCV_DIR) -name "*.v")
 SRCCS_DIR += $(NPC_HOME)/emu/src \
              $(NPC_HOME)/emu/src/cpu \
              $(NPC_HOME)/emu/src/debug \
+             $(NPC_HOME)/emu/src/device \
              $(NPC_HOME)/emu/src/isa \
              $(NPC_HOME)/emu/src/memory \
              $(NPC_HOME)/emu/src/monitor \
