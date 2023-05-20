@@ -1,9 +1,13 @@
 #include <am.h>
-#include <nemu.h>
 #include <klib.h>
 
+#include ISA_H
+
+#define VGACTL_ADDR 0xa0000100
+#define FB_ADDR     0xa1000000
+
 #define SYNC_ADDR (VGACTL_ADDR + 4)
-#define CONFIG_GPU_TEST 0
+#define CONFIG_GPU_TEST 1
 
 static uint32_t width  = 0;
 static uint32_t height = 0;

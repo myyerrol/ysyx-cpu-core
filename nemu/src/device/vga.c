@@ -72,6 +72,7 @@ static inline void update_screen() {
 #endif
 
 void vga_update_screen() {
+  printf("dev read: %lx\n", paddr_read(CONFIG_VGA_CTL_MMIO + 4, 4));
   if (paddr_read(CONFIG_VGA_CTL_MMIO + 4, 4) != 0) {
     update_screen();
     paddr_write(CONFIG_VGA_CTL_MMIO + 4, 4, 0);

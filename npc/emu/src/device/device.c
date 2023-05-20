@@ -21,6 +21,8 @@ void updateDeviceState() {
     }
     last = curr;
 
+    IFDEF(CONFIG_HAS_VGA, updateDeviceVGAScreen());
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {

@@ -1,21 +1,23 @@
 #include <device/vga.h>
+#include <memory/memory.h>
 
 #define SCREEN_W (MUXDEF(CONFIG_VGA_SIZE_800x600, 800, 400))
 #define SCREEN_H (MUXDEF(CONFIG_VGA_SIZE_800x600, 600, 300))
 
-static uint32_t getDeviceVGAScreenWidth() {
+uint32_t getDeviceVGAScreenWidth() {
     return SCREEN_W;
 }
 
-static uint32_t getDeviceVGAScreenHeight() {
+uint32_t getDeviceVGAScreenHeight() {
     return SCREEN_H;
 }
 
-static uint32_t getDeviceVGAScreenSize() {
+uint32_t getDeviceVGAScreenSize() {
     return getDeviceVGAScreenWidth() * getDeviceVGAScreenHeight() *
            sizeof(uint32_t);
 }
 
+static uint64_t  vgactl;
 static uint32_t *vmem[SCREEN_W * SCREEN_H];
 
 #ifdef CONFIG_VGA_SHOW_SCREEN
@@ -57,9 +59,11 @@ void initDeviceVGA() {
     IFDEF(CONFIG_VGA_SHOW_SCREEN, memset(vmem, 0, getDeviceVGAScreenSize()));
 }
 
-// void updateDeviceVGAScreen() {
-//     if (paddr_read(CONFIG_VGA_CTL_MMIO + 4, 4) != 0) {
-//         updateDeviceVGAScreenStep();
-//         paddr_write(CONFIG_VGA_CTL_MMIO + 4, 4, 0);
-//     }
-// }
+void updateDeviceVGAScreen() {
+    // printf("dev read: %x\n", readPhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4));
+
+    if (readPhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4) != 0) {
+        updateDeviceVGAScreenStep();
+        writePhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4, 0);
+    }
+}

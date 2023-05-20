@@ -4,6 +4,7 @@
 #include <cpu/sim.h>
 #include <debug/trace.h>
 #include <device/keyboard.h>
+#include <device/vga.h>
 #include <memory/memory.h>
 #include <state.h>
 #include <utils/log.h>
@@ -36,6 +37,10 @@ extern "C" uint64_tt readMemData(uint64_tt addr, uint8_t len) {
     else if (addr == 0xa0000060) {
         data = (uint64_tt)dequeueDiviceKey();
     }
+    else if (addr == 0xa0000100) {
+        data = (uint64_tt)(getDeviceVGAScreenWidth() << 16 |
+                           getDeviceVGAScreenHeight());
+    }
     else if (judgeAddrIsInPhyMem(addr)) {
         data = (uint64_tt)readPhyMemData(addr, len);
     }
@@ -53,6 +58,12 @@ extern "C" void writeMemData(uint64_tt addr, uint64_tt data, uint8_t len) {
         putc((uint8_t)data, stderr);
         // IFDEF(CONFIG_HAS_SERIAL, putc((uint8_t)data, stderr));
     }
+    // else if (addr == 0xa0000104) {
+
+    // }
+    // else if (addr == 0xb0000000) {
+
+    // }
     else {
         writePhyMemData(addr, len, data);
     }

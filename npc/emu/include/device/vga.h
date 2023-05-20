@@ -3,6 +3,9 @@
 
 #include <common.h>
 
+uint32_t getDeviceVGAScreenWidth();
+uint32_t getDeviceVGAScreenHeight();
+
 void initDeviceVGA();
 void updateDeviceVGAScreen();
 

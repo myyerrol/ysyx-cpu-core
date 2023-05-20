@@ -1,5 +1,4 @@
 #include <am.h>
-#include <klib.h>
 
 #include ISA_H
 
