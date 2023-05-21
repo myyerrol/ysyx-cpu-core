@@ -68,6 +68,7 @@ class EXU extends Module {
             (io.iALUType === ALU_TYPE_MUL)   ->  (io.iALURS1Val * io.iALURS2Val),
             (io.iALUType === ALU_TYPE_DIVU)  ->  (io.iALURS1Val / io.iALURS2Val),
             (io.iALUType === ALU_TYPE_DIVW)  ->  (io.iALURS1Val(31, 0).asSInt() / io.iALURS2Val(31, 0).asSInt()).asUInt(),
+            (io.iALUType === ALU_TYPE_DIVUW) ->  (io.iALURS1Val(31, 0).asUInt() / io.iALURS2Val(31, 0).asUInt()).asUInt(),
             (io.iALUType === ALU_TYPE_REMU)  ->  (io.iALURS1Val % io.iALURS2Val),
             (io.iALUType === ALU_TYPE_REMW)  ->  (io.iALURS1Val(31, 0).asSInt() % io.iALURS2Val(31, 0).asSInt()).asUInt()
         )
@@ -134,6 +135,7 @@ class EXU extends Module {
              io.iInstName === INST_NAME_SRAIW ||
              io.iInstName === INST_NAME_MULW  ||
              io.iInstName === INST_NAME_DIVW  ||
+             io.iInstName === INST_NAME_DIVUW ||
              io.iInstName === INST_NAME_REMW) -> Cat(Fill(32, aluOutByt4(31)), aluOutByt4)
         )
     )
@@ -162,6 +164,7 @@ class EXU extends Module {
                     (io.iMemByt === MEM_BYT_1_U) -> Cat(Fill(56, 0.U), memRdDataByt1),
                     (io.iMemByt === MEM_BYT_2_U) -> Cat(Fill(48, 0.U), memRdDataByt2),
                     (io.iMemByt === MEM_BYT_4_S) -> Cat(Fill(32, memRdDataByt4(31)), memRdDataByt4),
+                    (io.iMemByt === MEM_BYT_4_U) -> Cat(Fill(32, 0.U), memRdDataByt4),
                     (io.iMemByt === MEM_BYT_8_S) -> memRdDataByt8
                 )
             )
