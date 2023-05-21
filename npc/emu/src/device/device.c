@@ -9,8 +9,8 @@
 #define TIMER_HZ 60
 
 void initDevice() {
-    initDeviceKey();
-    initDeviceVGA();
+    IFDEF(CONFIG_HAS_KEYBOARD, initDeviceKey());
+    IFDEF(CONFIG_HAS_VGA, initDeviceVGA());
 }
 
 void updateDeviceState() {
