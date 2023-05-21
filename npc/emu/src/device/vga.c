@@ -60,10 +60,10 @@ void initDeviceVGA() {
 }
 
 void updateDeviceVGAScreen() {
-    // printf("dev read: %x\n", readPhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4));
-
-    if (readPhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4) != 0) {
-        updateDeviceVGAScreenStep();
-        writePhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4, 0);
-    }
+#ifdef CONFIG_VGA_SHOW_SCREEN
+    // if (readPhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4) != 0) {
+    //     updateDeviceVGAScreenStep();
+    //     writePhyMemData(CONFIG_VGA_CTL_MMIO + 4, 4, 0);
+    // }
+#endif
 }

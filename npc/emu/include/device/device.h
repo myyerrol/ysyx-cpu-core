@@ -3,6 +3,7 @@
 
 #include <common.h>
 
+void clearDeviceEventQueue();
 void initDevice();
 void updateDeviceState();
 

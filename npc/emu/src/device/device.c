@@ -8,6 +8,11 @@
 
 #define TIMER_HZ 60
 
+void clearDeviceEventQueue() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event));
+}
+
 void initDevice() {
     IFDEF(CONFIG_HAS_KEYBOARD, initDeviceKey());
     IFDEF(CONFIG_HAS_VGA, initDeviceVGA());

@@ -29,11 +29,6 @@ word_t readPhyMemData(paddr_t addr, int len) {
     if (likely(judgeAddrIsInPhyMem(addr))) {
         return readMemoryHost(convertGuestToHost(addr), len);
     }
-
-    if (addr == 0xa0000104) {
-        return readMemoryHost(&addr, len);
-    }
-
     else {
         printfOutOfBoundInfo(addr);
         return 0;
@@ -45,12 +40,6 @@ void writePhyMemData(paddr_t addr, int len, word_t data) {
         writeMemoryHost(convertGuestToHost(addr), len, data);
         return;
     }
-
-    if (addr == 0xa0000104 ||
-        addr >= 0xa1000000 && addr <= (0xa1000000 + 400 * 300)) {
-        writeMemoryHost(&addr, len, data);
-    }
-
     else {
         printfOutOfBoundInfo(addr);
     }

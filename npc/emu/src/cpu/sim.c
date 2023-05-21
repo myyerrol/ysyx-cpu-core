@@ -56,14 +56,7 @@ extern "C" uint64_tt readMemData(uint64_tt addr, uint8_t len) {
 extern "C" void writeMemData(uint64_tt addr, uint64_tt data, uint8_t len) {
     if (addr == 0xa00003f8) {
         putc((uint8_t)data, stderr);
-        // IFDEF(CONFIG_HAS_SERIAL, putc((uint8_t)data, stderr));
     }
-    // else if (addr == 0xa0000104) {
-
-    // }
-    // else if (addr == 0xb0000000) {
-
-    // }
     else {
         writePhyMemData(addr, len, data);
     }

@@ -3,6 +3,7 @@
 
 #include <cpu/cpu.h>
 #include <cpu/sim.h>
+#include <device/device.h>
 #include <isa/reg.h>
 #include <memory/memory.h>
 #include <monitor/sdb/expr.h>
@@ -224,6 +225,11 @@ void loopSDB() {
 #ifdef CONFIG_SDB_CMD
         printf("[sdb cmd] command: %s, args: %s\n\n", cmd, args);
 #endif
+
+#ifdef CONFIG_DEVICE
+    clearDeviceEventQueue();
+#endif
+
         int i;
         for (i = 0; i < NR_CMD; i ++) {
             if (strcmp(cmd, cmd_table[i].name) == 0) {
