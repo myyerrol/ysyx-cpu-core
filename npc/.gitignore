@@ -22,5 +22,6 @@ out/
 test_run_dir/
 
 # Kconfig
+!Kconfig
 config/
 generated/

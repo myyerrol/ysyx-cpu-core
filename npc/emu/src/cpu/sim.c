@@ -69,13 +69,17 @@ static bool inst_func_call = false;
 static bool inst_func_ret  = false;
 
 VerilatedContext *contextp = NULL;
+#ifdef CONFIG_DEBUG_WAVE
 VerilatedVcdC    *tfp = NULL;
+#endif
 VTop             *top = NULL;
 
 static void runCPUSimStep() {
     top->eval();
+#ifdef CONFIG_DEBUG_WAVE
     contextp->timeInc(1);
     tfp->dump(contextp->time());
+#endif
 }
 
 static void runCPUSimModuleCycle() {
@@ -87,11 +91,15 @@ static void runCPUSimModuleCycle() {
 
 void initCPUSim() {
     contextp = new VerilatedContext;
+#ifdef CONFIG_DEBUG_WAVE
     tfp = new VerilatedVcdC;
+#endif
     top = new VTop;
     contextp->traceEverOn(true);
+#ifdef CONFIG_DEBUG_WAVE
     top->trace(tfp, 0);
     tfp->open("build/cpu/Wave.vcd");
+#endif
 
 #ifdef CONFIG_ITRACE_COND_PROCESS
     top->io_iItrace = true;
@@ -100,7 +108,9 @@ void initCPUSim() {
 
 void exitCPUSim() {
     runCPUSimStep();
+#ifdef CONFIG_DEBUG_WAVE
     tfp->close();
+#endif
     delete top;
 }
 

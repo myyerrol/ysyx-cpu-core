@@ -1,0 +1,255 @@
+mainmenu "NPC Configuration Menu"
+    menu "*NPC Build Options"
+        choice
+            prompt "Compiler"
+            default CC_GCC
+            config CC_GCC
+                bool "gcc"
+            config CC_GPP
+                bool "g++"
+            config CC_CLANG
+                depends on !TARGET_AM
+                bool "clang"
+        endchoice
+        config CC
+            string
+            default "gcc" if CC_GCC
+            default "g++" if CC_GPP
+            default "clang" if CC_CLANG
+            default "none"
+        choice
+            prompt "Optimization Level"
+            default CC_O2
+            config CC_O0
+                bool "O0"
+            config CC_O1
+                bool "O1"
+            config CC_O2
+                bool "O2"
+            config CC_O3
+                bool "O3"
+        endchoice
+        config CC_OPT
+            string
+            default "-O0" if CC_O0
+            default "-O1" if CC_O1
+            default "-O2" if CC_O2
+            default "-O3" if CC_O3
+            default "none"
+        config CC_LTO
+            depends on !TARGET_AM
+            bool "Enable link-time optimization"
+            default n
+        config CC_DEBUG
+            bool "Enable debug information"
+            default n
+        config CC_ASAN
+            depends on MODE_SYSTEM
+            bool "Enable address sanitizer"
+            default n
+    endmenu
+
+    menu "*NPC Debug"
+        config SDB
+            bool "Enable simple debugger"
+            default n
+        config SDB_CMD
+            depends on SDB
+            bool "Enable print SDB command"
+            default n
+        config SDB_EXPR
+            depends on SDB
+            bool "Enable print SDB expression"
+            default n
+        config SDB_EXPR_TOKEN
+            depends on SDB
+            bool "Enable print SDB expression token"
+            default n
+        config SDB_EXPR_EVAL
+            depends on SDB
+            bool "Enable print SDB expression eval"
+            default n
+        config SDB_WATCH
+            depends on SDB
+            bool "Enable print SDB watchpoint"
+            default n
+        config TRACE
+            bool "Enable tracer"
+            default y
+        config TRACE_START
+            depends on TRACE
+            int "When tracing is enabled (unit: number of instructions)"
+            default 0
+        config TRACE_END
+            depends on TRACE
+            int "When tracing is disabled (unit: number of instructions)"
+            default 10000
+        config ITRACE
+            depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+            bool "Enable instruction tracer"
+            default y
+        config ITRACE_COND_PROCESS
+            depends on ITRACE
+            bool "Trace instructions when the condition is process"
+            default y
+        config ITRACE_COND_RESULT
+            depends on ITRACE
+            bool "Trace instructions when the condition is result"
+            default n
+        config MTRACE
+            depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+            bool "Enable memory tracer"
+            default n
+        config MTRACE_COND_PROCESS
+            depends on MTRACE
+            bool "Trace memory when the condition is process"
+            default n
+        config MTRACE_COND_RESULT
+            depends on MTRACE
+            bool "Trace memory when the condition is result"
+            default n
+        config FTRACE
+            depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+            bool "Enable function tracer"
+            default n
+        config FTRACE_ELF
+            depends on FTRACE
+            bool "Enable print ftrace ELF"
+            default n
+        config FTRACE_COND_PROCESS
+            depends on FTRACE
+            bool "Trace functions when the condition is process"
+            default n
+        config FTRACE_COND_RESULT
+            depends on FTRACE
+            bool "Trace functions when the condition is result"
+            default n
+        config DTRACE
+            depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+            bool "Enable device tracer"
+            default n
+        config DTRACE_COND_PROCESS
+            depends on DTRACE
+            bool "Trace devices when the condition is process"
+            default n
+        config DTRACE_COND_RESULT
+            depends on DTRACE
+            bool "Trace devices when the condition is result"
+            default n
+        config DIFFTEST
+            depends on TARGET_NATIVE_ELF
+            bool "Enable differential testing"
+            default n
+            help
+                Enable differential testing with a reference design.
+                Note that this will significantly reduce the performance of NPC.
+        choice
+            prompt "Reference design"
+            default DIFFTEST_REF_SPIKE if ISA_riscv64 || ISA_riscv32
+            default DIFFTEST_REF_KVM if ISA_x86
+            default DIFFTEST_REF_QEMU
+            depends on DIFFTEST
+            config DIFFTEST_REF_QEMU
+                bool "QEMU, communicate with socket"
+            if ISA_riscv64 || ISA_riscv32
+                config DIFFTEST_REF_SPIKE
+                    bool "Spike"
+            endif
+            if ISA_x86
+                config DIFFTEST_REF_KVM
+                    bool "KVM"
+            endif
+        endchoice
+        config DIFFTEST_REF_PATH
+            string
+            default "tools/qemu-diff" if DIFFTEST_REF_QEMU
+            default "tools/kvm-diff" if DIFFTEST_REF_KVM
+            default "tools/spike-diff" if DIFFTEST_REF_SPIKE
+            default "none"
+        config DIFFTEST_REF_NAME
+            string
+            default "qemu" if DIFFTEST_REF_QEMU
+            default "kvm" if DIFFTEST_REF_KVM
+            default "spike" if DIFFTEST_REF_SPIKE
+            default "none"
+        config DEBUG_WAVE
+            bool "Enable wave generate"
+            default n
+    endmenu
+
+    choice
+        prompt "-NPC ISA"
+        default ISA_riscv32
+        config ISA_x86
+        bool "x86"
+        config ISA_mips32
+        bool "mips32"
+        config ISA_riscv32
+        bool "riscv32"
+        config ISA_riscv64
+        bool "riscv64"
+    endchoice
+    config ISA
+        string
+        default "x86" if ISA_x86
+        default "mips32" if ISA_mips32
+        default "riscv32" if ISA_riscv32
+        default "riscv64" if ISA_riscv64
+        default "none"
+    config ISA64
+        depends on ISA_riscv64
+        bool
+        default y
+
+    choice
+        prompt "-NPC Execution engine"
+        default ENGINE_INTERPRETER
+        config ENGINE_INTERPRETER
+            bool "Interpreter"
+            help
+                Interpreter guest instructions one by one.
+    endchoice
+    config ENGINE
+        string
+        default "interpreter" if ENGINE_INTERPRETER
+        default "none"
+
+    choice
+        prompt "-NPC Running mode"
+        default MODE_SYSTEM
+        config MODE_SYSTEM
+        bool "System mode"
+        help
+            Support full-system functionality, including privileged instructions, MMU and devices.
+    endchoice
+
+    choice
+        prompt "-NPC Build target"
+        default TARGET_NATIVE_ELF
+        config TARGET_NATIVE_ELF
+            bool "Executable on Linux Native"
+        config TARGET_SHARE
+            bool "Shared object (used as REF for differential testing)"
+        config TARGET_AM
+            bool "Application on Abstract-Machine (DON'T CHOOSE)"
+    endchoice
+
+    if MODE_SYSTEM
+        source "configs/memory/Kconfig"
+        source "configs/device/Kconfig"
+    endif
+
+    menu "-NPC Miscellaneous"
+        choice
+            depends on !TARGET_AM
+            prompt "Host timer"
+            default TIMER_GETTIMEOFDAY
+            config TIMER_GETTIMEOFDAY
+                bool "gettimeofday"
+            config TIMER_CLOCK_GETTIME
+                bool "clock_gettime"
+        endchoice
+        config RT_CHECK
+            bool "Enable runtime checking"
+            default y
+    endmenu
