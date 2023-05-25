@@ -10,6 +10,7 @@ import cpu.util.Inst._
 class Top extends Module {
     val io = IO(new Bundle {
         val iItrace = Input(Bool())
+        val iEtrace = Input(Bool())
 
         val oPC           = Output(UInt(DATA_WIDTH.W))
         val oRegRdEndData = Output(UInt(DATA_WIDTH.W))
@@ -250,7 +251,11 @@ class Top extends Module {
             is(INST_NAME_SH    ) { printf(p"[itrace] inst name:   SH\n") }
             is(INST_NAME_SW    ) { printf(p"[itrace] inst name:   SW\n") }
             is(INST_NAME_SD    ) { printf(p"[itrace] inst name:   SD\n") }
+            is(INST_NAME_ECALL ) { printf(p"[itrace] inst name:   ECALL\n") }
             is(INST_NAME_EBREAK) { printf(p"[itrace] inst name:   EBREAK\n") }
+            is(INST_NAME_CSRRW ) { printf(p"[itrace] inst name:   CSRRW\n") }
+            is(INST_NAME_CSRRS ) { printf(p"[itrace] inst name:   CSRRS\n") }
+            is(INST_NAME_MRET  ) { printf(p"[itrace] inst name:   MRET\n") }
             is(INST_NAME_MUL   ) { printf(p"[itrace] inst name:   MUL\n") }
             is(INST_NAME_MULW  ) { printf(p"[itrace] inst name:   MULW\n") }
             is(INST_NAME_DIVU  ) { printf(p"[itrace] inst name:   DIVU\n") }
@@ -261,8 +266,10 @@ class Top extends Module {
         printf("[itrace] rs1 addr:   %d\n", idu.io.oInstRS1Addr)
         printf("[itrace] rs2 addr:   %d\n", idu.io.oInstRS2Addr)
         printf("[itrace] rd  addr:   %d\n", idu.io.oInstRDAddr)
+        printf("[itrace] csr addr:    0x%x\n", idu.io.oInstCSRAddr)
         printf("[itrace] rs1 val:     0x%x\n", idu.io.oInstRS1Val)
         printf("[itrace] rs2 val:     0x%x\n", idu.io.oInstRS2Val)
+        printf("[itrace] csr val:     0x%x\n", idu.io.oInstCSRVal)
         printf("[itrace] imm val:     0x%x\n", idu.io.oInstImmVal)
         printf("[itrace] rd  val:     0x%x\n", exu.io.oRegWrData)
         printf("[itrace] mem rd addr: 0x%x\n", exu.io.oMemRdAddr)
@@ -277,5 +284,17 @@ class Top extends Module {
         printf("[itrace] mem wr en:   %d\n", idu.io.oMemWrEn)
         printf("[itrace] reg wr en:   %d\n", idu.io.oRegWrEn)
         printf("[itrace] reg(10):     0x%x\n\n", io.oRegRdEndData)
+    }
+
+    csr.io.iCSRRdMSTAAddr := CSR_MSTATUS
+    csr.io.iCSRRdMTVEAddr := CSR_MTVEC
+    csr.io.iCSRRdMEPCAddr := CSR_MEPC
+    csr.io.iCSRRdMCAUAddr := CSR_MCAUSE
+    when (io.iEtrace && instName === INST_NAME_ECALL) {
+        printf("[etrace] mcause: %x, mstatus: %x, mepc: %x, mtvec: %x\n",
+               csr.io.oCSRRdMCAUData,
+               csr.io.oCSRRdMSTAData,
+               csr.io.oCSRRdMEPCData,
+               csr.io.oCSRRdMTVEData);
     }
 }

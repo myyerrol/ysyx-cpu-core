@@ -104,6 +104,10 @@ void initCPUSim() {
 #ifdef CONFIG_ITRACE_COND_PROCESS
     top->io_iItrace = true;
 #endif
+
+#ifdef CONFIG_ETRACE_COND_PROCESS
+    top->io_iEtrace = true;
+#endif
 }
 
 void exitCPUSim() {

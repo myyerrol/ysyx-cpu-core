@@ -136,6 +136,18 @@ mainmenu "NPC Configuration Menu"
             depends on DTRACE
             bool "Trace devices when the condition is result"
             default n
+        config ETRACE
+            depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+            bool "Enable exception tracer"
+            default n
+        config ETRACE_COND_PROCESS
+            depends on ETRACE
+            bool "Trace exception when the condition is process"
+            default n
+        config ETRACE_COND_RESULT
+            depends on ETRACE
+            bool "Trace exception when the condition is result"
+            default n
         config DIFFTEST
             depends on TARGET_NATIVE_ELF
             bool "Enable differential testing"
