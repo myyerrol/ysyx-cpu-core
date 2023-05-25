@@ -11,13 +11,16 @@ class IDU extends Module {
         val iInst        = Input(UInt(DATA_WIDTH.W))
         val iInstRS1Val  = Input(UInt(DATA_WIDTH.W))
         val iInstRS2Val  = Input(UInt(DATA_WIDTH.W))
+        val iInstCSRVal  = Input(UInt(DATA_WIDTH.W))
         val iPC          = Input(UInt(DATA_WIDTH.W))
 
         val oInstRS1Addr = Output(UInt(REG_WIDTH.W))
         val oInstRS2Addr = Output(UInt(REG_WIDTH.W))
         val oInstRDAddr  = Output(UInt(REG_WIDTH.W))
+        val oInstCSRAddr = Output(UInt(DATA_WIDTH.W))
         val oInstRS1Val  = Output(UInt(DATA_WIDTH.W))
         val oInstRS2Val  = Output(UInt(DATA_WIDTH.W))
+        val oInstCSRVal  = Output(UInt(DATA_WIDTH.W))
         val oInstImmVal  = Output(UInt(DATA_WIDTH.W))
 
         val oInstName    = Output(UInt(SIGNAL_WIDTH.W))
@@ -91,7 +94,12 @@ class IDU extends Module {
             SW     -> List(INST_NAME_SW,     ALU_TYPE_ADD,   ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_4_U, REG_WR_F, REG_WR_SRC_X),
             SD     -> List(INST_NAME_SD,     ALU_TYPE_ADD,   ALU_RS1_R,  ALU_RS2_IMM_S, JMP_F, MEM_WR_T, MEM_BYT_8_U, REG_WR_F, REG_WR_SRC_X),
 
+            ECALL  -> List(INST_NAME_ECALL,  ALU_TYPE_X,     ALU_RS1_X,  ALU_RS2_X,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_F, REG_WR_SRC_X),
             EBREAK -> List(INST_NAME_EBREAK, ALU_TYPE_X,     ALU_RS1_X,  ALU_RS2_X,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_F, REG_WR_SRC_X),
+
+            CSRRW  -> List(INST_NAME_CSRRW,  ALU_TYPE_OR,    ALU_RS1_R,  ALU_RS2_CSR,   JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_CSR),
+            CSRRS  -> List(INST_NAME_CSRRS,  ALU_TYPE_OR,    ALU_RS1_R,  ALU_RS2_CSR,   JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_CSR),
+            MRET   -> List(INST_NAME_MRET,   ALU_TYPE_ADD,   ALU_RS1_X,  ALU_RS2_CSR,   JMP_T, MEM_WR_F, MEM_BYT_X,   REG_WR_F, REG_WR_SRC_X),
 
             MUL    -> List(INST_NAME_MUL,    ALU_TYPE_MUL,   ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
             MULW   -> List(INST_NAME_MULW,   ALU_TYPE_MUL,   ALU_RS1_R,  ALU_RS2_R,     JMP_F, MEM_WR_F, MEM_BYT_X,   REG_WR_T, REG_WR_SRC_ALU),
@@ -131,13 +139,28 @@ class IDU extends Module {
 
     io.oInstRS1Addr := instRS1Addr
     io.oInstRS2Addr := instRS2Addr
+    io.oInstCSRAddr:= MuxCase(
+        0.U(DATA_WIDTH.W),
+        Seq(
+            ((instName === INST_NAME_CSRRW) ||
+             (instName === INST_NAME_CSRRS)) -> instImmISext,
+             (instName === INST_NAME_MRET)   -> CSR_MEPC
+        )
+    )
 
     val aluRS1Val = MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(
-            (aluRS1 === ALU_RS1_X)  -> 0.U(DATA_WIDTH.W),
-            (aluRS1 === ALU_RS1_R)  -> io.iInstRS1Val,
-            (aluRS1 === ALU_RS1_PC) -> io.iPC
+            (aluRS1 === ALU_RS1_X)   -> 0.U(DATA_WIDTH.W),
+            (aluRS1 === ALU_RS1_R)   -> io.iInstRS1Val,
+            (aluRS1 === ALU_RS1_PC)  -> io.iPC
+        )
+    )
+    val aluRS2ValCSR = MuxCase(
+        io.iInstCSRVal,
+        Seq(
+            (instName === INST_NAME_CSRRW) -> 0.U(DATA_WIDTH.W),
+            (instName === INST_NAME_MRET)  -> (io.iInstCSRVal + 4.U(DATA_WIDTH.W))
         )
     )
     val aluRS2Val = MuxCase(
@@ -145,6 +168,7 @@ class IDU extends Module {
         Seq(
             (aluRS2 === ALU_RS2_X)     -> 0.U(DATA_WIDTH.W),
             (aluRS2 === ALU_RS2_R)     -> io.iInstRS2Val,
+            (aluRS2 === ALU_RS2_CSR)   -> aluRS2ValCSR,
             (aluRS2 === ALU_RS2_IMM_I) -> instImmISext,
             (aluRS2 === ALU_RS2_IMM_S) -> instImmSSext,
             (aluRS2 === ALU_RS2_IMM_U) -> instImmUSext,
@@ -163,6 +187,7 @@ class IDU extends Module {
         (instName === INST_NAME_BGEU),
         instImmBSext,
         io.iInstRS2Val)
+    io.oInstCSRVal := io.iInstCSRVal
     io.oInstImmVal := MuxCase(
         0.U(DATA_WIDTH.W),
         Seq(

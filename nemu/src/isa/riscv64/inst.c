@@ -178,7 +178,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall,  N, s->dnpc = isa_raise_intr(gpr(17), s->pc));
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak, N, NEMUTRAP(s->pc, R(10)));
 
-  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw,  I, word_t t = SR(imm); SR(imm) = src1; R(rd) = t);
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw,  I, word_t t = SR(imm); SR(imm) = src1;     R(rd) = t);
   INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs,  I, word_t t = SR(imm); SR(imm) = src1 | t; R(rd) = t);
   INSTPAT("0011000 00010 00000 000 00000 11100 11", mret,   N, s->dnpc = SR(MEPC) + 4);
 

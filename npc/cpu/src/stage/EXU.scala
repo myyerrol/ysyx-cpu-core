@@ -3,6 +3,7 @@ package cpu.stage
 import chisel3._
 import chisel3.util._
 
+import cpu.comp._
 import cpu.util.Base._
 
 class EXU extends Module {
@@ -10,8 +11,10 @@ class EXU extends Module {
         val iInstRS1Addr = Input(UInt(REG_WIDTH.W))
         val iInstRS2Addr = Input(UInt(REG_WIDTH.W))
         val iInstRDAddr  = Input(UInt(REG_WIDTH.W))
+        val iInstCSRAddr = Input(UInt(DATA_WIDTH.W))
         val iInstRS1Val  = Input(UInt(DATA_WIDTH.W))
         val iInstRS2Val  = Input(UInt(DATA_WIDTH.W))
+        val iInstCSRVal  = Input(UInt(DATA_WIDTH.W))
         val iPC          = Input(UInt(DATA_WIDTH.W))
         val iMemRdData   = Input(UInt(DATA_WIDTH.W))
 
@@ -36,6 +39,9 @@ class EXU extends Module {
         val oRegWrEn     = Output(Bool())
         val oRegWrAddr   = Output(UInt(DATA_WIDTH.W))
         val oRegWrData   = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrEn     = Output(Bool())
+        val oCSRWrAddr   = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrData   = Output(UInt(DATA_WIDTH.W))
     })
 
     // 处理算术操作
@@ -143,7 +149,8 @@ class EXU extends Module {
         0.U(DATA_WIDTH.W),
         Seq(
             (io.iRegWrSrc === REG_WR_SRC_ALU) -> aluOutData,
-            (io.iRegWrSrc === REG_WR_SRC_PC)  -> (io.iPC + 4.U(DATA_WIDTH.W))
+            (io.iRegWrSrc === REG_WR_SRC_PC)  -> (io.iPC + 4.U(DATA_WIDTH.W)),
+            (io.iRegWrSrc === REG_WR_SRC_CSR) -> io.iInstCSRVal
         )
     )
     when (io.iRegWrEn) {
@@ -176,6 +183,17 @@ class EXU extends Module {
         io.oRegWrEn   := false.B
         io.oRegWrAddr := 0.U(DATA_WIDTH.W)
         io.oRegWrData := 0.U(DATA_WIDTH.W)
+    }
+
+    when (io.iRegWrEn === true.B &&
+          io.iRegWrSrc === REG_WR_SRC_CSR) {
+        io.oCSRWrEn   := true.B
+        io.oCSRWrAddr := io.iInstCSRAddr
+        io.oCSRWrData := aluOutData
+    }.otherwise {
+        io.oCSRWrEn   := false.B
+        io.oCSRWrAddr := 0.U(DATA_WIDTH.W)
+        io.oCSRWrData := 0.U(DATA_WIDTH.W)
     }
 
     io.oALUOut := aluOut

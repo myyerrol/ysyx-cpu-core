@@ -58,15 +58,18 @@ class Top extends Module {
     dpi.io.iMemRdAddrInst := ifu.io.oPC
 
     val reg = Module(new Reg())
+    val csr = Module(new CSR())
 
     val idu = Module(new IDU())
     idu.io.iInst       := dpi.io.oMemRdDataInst
     idu.io.iInstRS1Val := reg.io.oRegRd1Data
     idu.io.iInstRS2Val := reg.io.oRegRd2Data
+    idu.io.iInstCSRVal := csr.io.oCSRRdData
     idu.io.iPC         := ifu.io.oPC
 
     reg.io.iRegRd1Addr := idu.io.oInstRS1Addr
     reg.io.iRegRd2Addr := idu.io.oInstRS2Addr
+    csr.io.iCSRRdAddr  := idu.io.oInstCSRAddr
 
     io.oInst := idu.io.iInst
     io.oInstCall := Mux((idu.io.oInstName === INST_NAME_JAL) ||
@@ -84,8 +87,10 @@ class Top extends Module {
     exu.io.iInstRS1Addr := idu.io.oInstRS1Addr
     exu.io.iInstRS2Addr := idu.io.oInstRS2Addr
     exu.io.iInstRDAddr  := idu.io.oInstRDAddr
+    exu.io.iInstCSRAddr := idu.io.oInstCSRAddr
     exu.io.iInstRS1Val  := idu.io.oInstRS1Val
     exu.io.iInstRS2Val  := idu.io.oInstRS2Val
+    exu.io.iInstCSRVal  := idu.io.oInstCSRVal
     exu.io.iPC          := ifu.io.oPC
     exu.io.iMemRdData   := dpi.io.oMemRdDataLoad
     exu.io.iInstName    := idu.io.oInstName
@@ -115,6 +120,10 @@ class Top extends Module {
     reg.io.iRegWrEn   := wbu.io.oRegWrEn
     reg.io.iRegWrAddr := wbu.io.oRegWrAddr
     reg.io.iRegWrData := wbu.io.oRegWrData
+
+    csr.io.iCSRWrEn   := exu.io.oCSRWrEn
+    csr.io.iCSRWrAddr := exu.io.oCSRWrAddr
+    csr.io.iCSRWrData := exu.io.oCSRWrData
 
     reg.io.iRegRdEndAddr := 10.U(REG_WIDTH.W)
     io.oRegRdEndData := reg.io.oRegRdEndData
