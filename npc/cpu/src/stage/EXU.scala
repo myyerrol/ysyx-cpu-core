@@ -209,7 +209,7 @@ class EXU extends Module {
         io.oCSRWrMEPCAddr := CSR_MEPC
         io.oCSRWrMCAUAddr := CSR_MCAUSE
         io.oCSRWrMEPCData := io.iPC
-        io.oCSRWrMCAUData := 1.U(DATA_WIDTH.W)
+        io.oCSRWrMCAUData := -1.S(DATA_WIDTH.W).asUInt()
     }.otherwise {
         io.oCSRWrMEn      := false.B
         io.oCSRWrMEPCAddr := 0.U(DATA_WIDTH.W)
