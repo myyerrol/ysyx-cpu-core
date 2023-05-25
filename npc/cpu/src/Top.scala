@@ -121,9 +121,14 @@ class Top extends Module {
     reg.io.iRegWrAddr := wbu.io.oRegWrAddr
     reg.io.iRegWrData := wbu.io.oRegWrData
 
-    csr.io.iCSRWrEn   := exu.io.oCSRWrEn
-    csr.io.iCSRWrAddr := exu.io.oCSRWrAddr
-    csr.io.iCSRWrData := exu.io.oCSRWrData
+    csr.io.iCSRWrEn       := exu.io.oCSRWrEn
+    csr.io.iCSRWrMEn      := exu.io.oCSRWrMEn
+    csr.io.iCSRWrAddr     := exu.io.oCSRWrAddr
+    csr.io.iCSRWrMEPCAddr := exu.io.oCSRWrMEPCAddr
+    csr.io.iCSRWrMCAUAddr := exu.io.oCSRWrMCAUAddr
+    csr.io.iCSRWrData     := exu.io.oCSRWrData
+    csr.io.iCSRWrMEPCData := exu.io.oCSRWrMEPCData
+    csr.io.iCSRWrMCAUData := exu.io.oCSRWrMCAUData
 
     reg.io.iRegRdEndAddr := 10.U(REG_WIDTH.W)
     io.oRegRdEndData := reg.io.oRegRdEndData

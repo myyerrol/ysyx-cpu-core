@@ -141,10 +141,10 @@ class IDU extends Module {
     io.oInstRS2Addr := instRS2Addr
     io.oInstCSRAddr:= MuxCase(
         0.U(DATA_WIDTH.W),
-        Seq(
-            ((instName === INST_NAME_CSRRW) ||
-             (instName === INST_NAME_CSRRS)) -> instImmISext,
-             (instName === INST_NAME_MRET)   -> CSR_MEPC
+        Seq((instName === INST_NAME_ECALL)  -> CSR_MTVEC,
+           ((instName === INST_NAME_CSRRW) ||
+            (instName === INST_NAME_CSRRS)) -> instImmISext,
+            (instName === INST_NAME_MRET)   -> CSR_MEPC
         )
     )
 

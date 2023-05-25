@@ -28,20 +28,25 @@ class EXU extends Module {
         val iRegWrEn     = Input(Bool())
         var iRegWrSrc    = Input(UInt(DATA_WIDTH.W))
 
-        val oALUOut      = Output(UInt(DATA_WIDTH.W))
-        val oJmpEn       = Output(Bool())
-        val oJmpPC       = Output(UInt(DATA_WIDTH.W))
-        val oMemRdAddr   = Output(UInt(DATA_WIDTH.W))
-        val oMemWrEn     = Output(Bool())
-        val oMemWrAddr   = Output(UInt(DATA_WIDTH.W))
-        val oMemWrData   = Output(UInt(DATA_WIDTH.W))
-        val oMemWrLen    = Output(UInt(BYTE_WIDTH.W))
-        val oRegWrEn     = Output(Bool())
-        val oRegWrAddr   = Output(UInt(DATA_WIDTH.W))
-        val oRegWrData   = Output(UInt(DATA_WIDTH.W))
-        val oCSRWrEn     = Output(Bool())
-        val oCSRWrAddr   = Output(UInt(DATA_WIDTH.W))
-        val oCSRWrData   = Output(UInt(DATA_WIDTH.W))
+        val oALUOut        = Output(UInt(DATA_WIDTH.W))
+        val oJmpEn         = Output(Bool())
+        val oJmpPC         = Output(UInt(DATA_WIDTH.W))
+        val oMemRdAddr     = Output(UInt(DATA_WIDTH.W))
+        val oMemWrEn       = Output(Bool())
+        val oMemWrAddr     = Output(UInt(DATA_WIDTH.W))
+        val oMemWrData     = Output(UInt(DATA_WIDTH.W))
+        val oMemWrLen      = Output(UInt(BYTE_WIDTH.W))
+        val oRegWrEn       = Output(Bool())
+        val oRegWrAddr     = Output(UInt(DATA_WIDTH.W))
+        val oRegWrData     = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrEn       = Output(Bool())
+        val oCSRWrMEn      = Output(Bool())
+        val oCSRWrAddr     = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrMEPCAddr = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrMCAUAddr = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrData     = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrMEPCData = Output(UInt(DATA_WIDTH.W))
+        val oCSRWrMCAUData = Output(UInt(DATA_WIDTH.W))
     })
 
     // 处理算术操作
@@ -82,8 +87,7 @@ class EXU extends Module {
 
     io.oJmpEn := false.B
     io.oJmpPC := io.iPC
-    // 处理分支操作
-    val brAddr = io.iPC + io.iInstRS2Val
+    // 处理分支跳转操作
     when ((io.iInstName === INST_NAME_BEQ   ||
            io.iInstName === INST_NAME_BNE   ||
            io.iInstName === INST_NAME_BLT   ||
@@ -92,9 +96,14 @@ class EXU extends Module {
            io.iInstName === INST_NAME_BGEU) &&
            aluOut === 1.U) {
         io.oJmpEn := true.B
-        io.oJmpPC := brAddr
+        io.oJmpPC := io.iPC + io.iInstRS2Val
     }
-    // 处理跳转操作
+    // 处理异常跳转操作
+    when ((io.iInstName === INST_NAME_ECALL)) {
+        io.oJmpEn := true.B
+        io.oJmpPC := io.iInstCSRVal
+    }
+    // 处理正常跳转操作
     when (io.iJmpEn === true.B) {
         io.oJmpEn := true.B
         io.oJmpPC := aluOut
@@ -121,7 +130,6 @@ class EXU extends Module {
         io.oMemWrData := 0.U(DATA_WIDTH.W)
         io.oMemWrLen  := 0.U(BYTE_WIDTH.W)
     }
-
     // 处理访存读取操作
     io.oMemRdAddr := 0.U(DATA_WIDTH.W)
 
@@ -153,6 +161,7 @@ class EXU extends Module {
             (io.iRegWrSrc === REG_WR_SRC_CSR) -> io.iInstCSRVal
         )
     )
+    // 处理GPR写回操作
     when (io.iRegWrEn) {
         io.oRegWrEn   := true.B
         io.oRegWrAddr := io.iInstRDAddr
@@ -184,7 +193,7 @@ class EXU extends Module {
         io.oRegWrAddr := 0.U(DATA_WIDTH.W)
         io.oRegWrData := 0.U(DATA_WIDTH.W)
     }
-
+    // 处理CSR写回操作
     when (io.iRegWrEn === true.B &&
           io.iRegWrSrc === REG_WR_SRC_CSR) {
         io.oCSRWrEn   := true.B
@@ -194,6 +203,19 @@ class EXU extends Module {
         io.oCSRWrEn   := false.B
         io.oCSRWrAddr := 0.U(DATA_WIDTH.W)
         io.oCSRWrData := 0.U(DATA_WIDTH.W)
+    }
+    when (io.iInstName === INST_NAME_ECALL) {
+        io.oCSRWrMEn      := true.B
+        io.oCSRWrMEPCAddr := CSR_MEPC
+        io.oCSRWrMCAUAddr := CSR_MCAUSE
+        io.oCSRWrMEPCData := io.iPC
+        io.oCSRWrMCAUData := 1.U(DATA_WIDTH.W)
+    }.otherwise {
+        io.oCSRWrMEn      := false.B
+        io.oCSRWrMEPCAddr := 0.U(DATA_WIDTH.W)
+        io.oCSRWrMCAUAddr := 0.U(DATA_WIDTH.W)
+        io.oCSRWrMEPCData := 0.U(DATA_WIDTH.W)
+        io.oCSRWrMCAUData := 0.U(DATA_WIDTH.W)
     }
 
     io.oALUOut := aluOut

@@ -14,7 +14,10 @@ object Base {
     val DATA_WIDTH   = 64
     val SIGNAL_WIDTH = 10
 
-    val CSR_MEPC = 0x341.U
+    val CSR_MSTATUS = 0x300.U
+    val CSR_MTVEC   = 0x305.U
+    val CSR_MEPC    = 0x341.U
+    val CSR_MCAUSE  = 0x342.U
 
     val INST_NAME_X      =  0.U(SIGNAL_WIDTH.W)
     val INST_NAME_SLL    =  1.U(SIGNAL_WIDTH.W)
