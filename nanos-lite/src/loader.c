@@ -9,6 +9,18 @@
 # define Elf_Phdr Elf32_Phdr
 #endif
 
+#if defined(__ISA_AM_NATIVE__)
+#define EXPECT_TYPE EM_X86_64
+#elif defined(__ISA_X86__)
+#define EXPECT_TYPE EM_X86_64
+#elif defined(__ISA_MIPS32__)
+#define EXPECT_TYPE EM_MIPS
+#elif defined(__ISA_RISCV32__) || defined(__ISA_RISCV64__)
+#define EXPECT_TYPE EM_RISCV
+#else
+#error Unsupported ISA
+#endif
+
 extern size_t ramdisk_read(void *buf, size_t offset, size_t len);
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
@@ -16,6 +28,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   ramdisk_read(&elf_header, 0, sizeof(elf_header));
 
   assert(*(uint32_t *)elf_header.e_ident == 0x464C457f);
+  assert(elf_header.e_machine == EXPECT_TYPE);
 
   Elf_Phdr elf_segment_arr[elf_header.e_phnum];
   ramdisk_read(elf_segment_arr,
