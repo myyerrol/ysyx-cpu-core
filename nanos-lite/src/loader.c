@@ -14,6 +14,9 @@ extern size_t ramdisk_read(void *buf, size_t offset, size_t len);
 static uintptr_t loader(PCB *pcb, const char *filename) {
   Elf_Ehdr elf_header;
   ramdisk_read(&elf_header, 0, sizeof(elf_header));
+
+  assert(*(uint32_t *)elf_header.e_ident == 0x464C457f);
+
   Elf_Phdr elf_segment_arr[elf_header.e_phnum];
   ramdisk_read(elf_segment_arr,
                elf_header.e_phoff,
@@ -28,6 +31,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
              elf_segment_arr[i].p_memsz - elf_segment_arr[i].p_filesz);
     }
   }
+
   return elf_header.e_entry;
 }
 
