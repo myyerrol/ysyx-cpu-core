@@ -17,11 +17,6 @@ Context* __am_irq_handle(Context *c) {
 
     c = user_handler(ev, c);
     assert(c != NULL);
-
-    switch (c->GPRx) {
-      case 0: halt(0); break;
-      case 1: yield(); break;
-    }
   }
 
   return c;
