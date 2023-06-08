@@ -41,6 +41,9 @@
 #error _syscall_ is not implemented
 #endif
 
+extern char _end;
+intptr_t brk_addr = (intptr_t)&_end;
+
 intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
   register intptr_t _gpr1 asm (GPR1) = type;
   register intptr_t _gpr2 asm (GPR2) = a0;
@@ -66,7 +69,17 @@ int _write(int fd, void *buf, size_t count) {
 }
 
 void *_sbrk(intptr_t increment) {
-  return (void *)-1;
+  intptr_t brk_addr_prev = brk_addr;
+  intptr_t brk_addr_curr = brk_addr_prev + increment;
+  intptr_t ret = _syscall_(SYS_brk, brk_addr_curr, 0, 0);
+
+  if (ret == 0) {
+    brk_addr += increment;
+    return (void *)brk_addr_prev;
+  }
+  else {
+    return (void *)-1;
+  }
 }
 
 int _read(int fd, void *buf, size_t count) {
