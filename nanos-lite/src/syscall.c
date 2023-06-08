@@ -1,7 +1,7 @@
 #include <common.h>
 #include "syscall.h"
 
-// #define STRACE_COND_PROCESS
+#define STRACE_COND_PROCESS
 
 uintptr_t sys_write(int fd, const void *buf, size_t count) {
   uintptr_t i = 0;
@@ -39,6 +39,10 @@ void do_syscall(Context *c) {
       c->GPRx = sys_write(a[1], (void *)a[2], a[3]);
       break;
     }
+    case SYS_brk: {
+      c->GPRx = 0;
+      break;
+    }
     default: {
       panic("Unhandled syscall ID = %d", a[0]);
       break;
@@ -46,9 +50,10 @@ void do_syscall(Context *c) {
   }
 
 #ifdef STRACE_COND_PROCESS
-  char *type = (a[0] == SYS_exit)  ? " SYS_EXIT" :
+  char *type = (a[0] ==  SYS_exit) ? " SYS_EXIT" :
                (a[0] == SYS_yield) ? "SYS_YIELD" :
-               (a[0] == SYS_write) ? "SYS_WRITE" : "";
+               (a[0] == SYS_write) ? "SYS_WRITE" :
+               (a[0] ==   SYS_brk) ? "  SYS_BRK" : "";
   printf("[strace] type: %s, a0 = %x, a1 = %x, a2 = %x, ret: %x\n", type,
                                                                     a[1],
                                                                     a[2],
