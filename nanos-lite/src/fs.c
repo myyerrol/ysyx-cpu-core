@@ -1,6 +1,7 @@
 #include <fs.h>
 
 extern size_t ramdisk_read(void *buf, size_t offset, size_t len);
+extern size_t ramdisk_write(const void *buf, size_t offset, size_t len);
 
 size_t invalid_read(void *buf, size_t offset, size_t len) {
   panic("should not reach here");
@@ -24,10 +25,6 @@ void init_fs() {
   // TODO: initialize the size of /dev/fb
 }
 
-Finfo fs_get(int fd) {
-  return file_table[fd];
-}
-
 int fs_open(const char *pathname, int flags, int mode) {
   int fd = -1;
   for (int i = 0; i < LENGTH(file_table); i++) {
@@ -43,18 +40,18 @@ int fs_open(const char *pathname, int flags, int mode) {
 }
 
 int fs_close(int fd) {
-
   return 0;
 }
 
 size_t fs_read(int fd, void *buf, size_t len) {
-  if (fd > 2 && fd < LENGTH(file_table)) {
-    Finfo file = file_table[fd];
-    if (file.open_offset + len > file.size) {
-      len = file.size - file.open_offset;
+  if (fd == 0 || fd > 2) {
+    Finfo *file = &file_table[fd];
+    if ((*file).open_offset + len > (*file).size) {
+      len = (*file).size - (*file).open_offset;
     }
-    size_t bytes = ramdisk_read(buf, file.disk_offset + file.open_offset, len);
-    file.open_offset = bytes;
+    size_t offset = (*file).disk_offset + (*file).open_offset;
+    size_t bytes = ramdisk_read(buf, offset, len);
+    (*file).open_offset += bytes;
     return bytes;
   }
   else {
@@ -63,11 +60,31 @@ size_t fs_read(int fd, void *buf, size_t len) {
 }
 
 size_t fs_write(int fd, const void *buf, size_t len) {
-  return -1;
+  size_t i = 0;
+  if (fd == 1 || fd == 2) {
+    for(; len > 0; len--) {
+      putch(((char*)buf)[i]);
+      i++;
+    }
+    return i;
+  }
+  else if (fd != 0) {
+    Finfo *file = &file_table[fd];
+    if ((*file).open_offset + len > (*file).size) {
+      len = (*file).size - (*file).open_offset;
+    }
+    size_t offset = (*file).disk_offset + (*file).open_offset;
+    size_t bytes = ramdisk_write(buf, offset, len);
+    (*file).open_offset += bytes;
+    return bytes;
+  }
+  else {
+    return -1;
+  }
 }
 
 size_t fs_lseek(int fd, size_t offset, int wnehce) {
-  if (fd > 2 && fd < LENGTH(file_table)) {
+  if (fd > 2) {
     Finfo *file = &file_table[fd];
     switch (wnehce) {
       case SEEK_SET: {
@@ -89,7 +106,7 @@ size_t fs_lseek(int fd, size_t offset, int wnehce) {
     }
     (*file).open_offset = ((*file).open_offset < (*file).size) ?
                            (*file).open_offset : (*file).size;
-    return 0;
+    return (*file).open_offset;
   }
   else {
     return -1;

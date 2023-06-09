@@ -5,10 +5,10 @@
 
 #define STRACE_COND_PROCESS
 
-intptr_t sys_write(int fd, const void *buf, size_t count) {
+intptr_t sys_write(int fd, const void *buf, size_t len) {
   intptr_t i = 0;
   if (fd == 1 || fd == 2) {
-    for(; count > 0; count--) {
+    for(; len > 0; len--) {
       putch(((char*)buf)[i]);
       i++;
     }
@@ -46,7 +46,8 @@ void do_syscall(Context *c) {
       break;
     }
     case SYS_write: {
-      c->GPRx = sys_write(a[1], (void *)a[2], a[3]);
+      // c->GPRx = sys_write(a[1], (void *)a[2], a[3]);
+      c->GPRx = fs_write(a[1], (void *)a[2], a[3]);
       break;
     }
     case SYS_close: {
