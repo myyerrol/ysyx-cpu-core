@@ -91,13 +91,13 @@ int printf(const char *fmt, ...) {
     if (*fmt == '%') {
       fmt++;
       switch (*fmt) {
-        case 'c': printfChar(va_arg(va_ptr, int)); break;
-        case 's': printfStr(va_arg(va_ptr, char*)); break;
-        case 'd': printfDec(va_arg(va_ptr, int)); break;
-        case 'o': printfOct(va_arg(va_ptr, uint32_t)); break;
-        case 'x': printfHex(va_arg(va_ptr, uint32_t)); break;
-        case 'p': printfAddr(va_arg(va_ptr, uint64_t)); break;
-        case 'f': printfFloat(va_arg(va_ptr, double)); break;
+        case 'c': printfChar (va_arg(va_ptr, int));      break;
+        case 's': printfStr  (va_arg(va_ptr, char*));    break;
+        case 'd': printfDec  (va_arg(va_ptr, int));      break;
+        case 'o': printfOct  (va_arg(va_ptr, uint32_t)); break;
+        case 'x': printfHex  (va_arg(va_ptr, uint32_t)); break;
+        case 'p': printfAddr (va_arg(va_ptr, uint64_t)); break;
+        case 'f': printfFloat(va_arg(va_ptr, double));   break;
         default: break;
       }
     }

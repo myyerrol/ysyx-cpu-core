@@ -1,3 +1,4 @@
+#include <sys/time.h>
 #include <common.h>
 #include <fs.h>
 
@@ -13,6 +14,16 @@ intptr_t sys_write(int fd, const void *buf, size_t len) {
       i++;
     }
     return i;
+  }
+  else {
+    return -1;
+  }
+}
+
+intptr_t sys_gettimeofday(struct timeval *tv, struct timezone *tz) {
+  if (tv != NULL) {
+    tv->tv_sec = io_read(AM_TIMER_UPTIME).us / 1000000;
+    return 0;
   }
   else {
     return -1;
@@ -62,6 +73,11 @@ void do_syscall(Context *c) {
       c->GPRx = 0;
       break;
     }
+    case SYS_gettimeofday: {
+      c->GPRx = sys_gettimeofday((struct timeval  *)a[1],
+                                 (struct timezone *)a[2]);
+      break;
+    }
     default: {
       panic("Unhandled syscall ID = %d", a[0]);
       break;
@@ -69,24 +85,26 @@ void do_syscall(Context *c) {
   }
 
 #ifdef STRACE_COND_PROCESS
-  char *type = (a[0] ==  SYS_exit) ? " SYS_EXIT" :
-               (a[0] == SYS_yield) ? "SYS_YIELD" :
-               (a[0] ==  SYS_open) ? " SYS_OPEN" :
-               (a[0] ==  SYS_read) ? " SYS_READ" :
-               (a[0] == SYS_write) ? "SYS_WRITE" :
-               (a[0] == SYS_close) ? "SYS_CLOSE" :
-               (a[0] == SYS_lseek) ? "SYS_LSEEK" :
-               (a[0] ==   SYS_brk) ? "  SYS_BRK" : "";
-  char *file = ((a[0] !=  SYS_exit) &&
-                (a[0] != SYS_yield) &&
-                (a[0] !=   SYS_brk) &&
-                (a[0] !=  SYS_open)) ? fs_get(a[1]).name : "            none";
+  char *type = (a[0] ==         SYS_exit) ? " SYS_EXIT" :
+               (a[0] ==        SYS_yield) ? "SYS_YIELD" :
+               (a[0] ==         SYS_open) ? " SYS_OPEN" :
+               (a[0] ==         SYS_read) ? " SYS_READ" :
+               (a[0] ==        SYS_write) ? "SYS_WRITE" :
+               (a[0] ==        SYS_close) ? "SYS_CLOSE" :
+               (a[0] ==        SYS_lseek) ? "SYS_LSEEK" :
+               (a[0] ==          SYS_brk) ? "  SYS_BRK" :
+               (a[0] == SYS_gettimeofday) ? "SYS_GETTIMEOFDAY" : "";
+  char *file = ((a[0] !=         SYS_exit) &&
+                (a[0] !=        SYS_yield) &&
+                (a[0] !=         SYS_open) &&
+                (a[0] !=          SYS_brk) &&
+                (a[0] != SYS_gettimeofday)) ? fs_get(a[1]).name : "none";
   printf("[strace] file: %s, type: %s, a0 = %x, a1 = %x, a2 = %x, ret: %x\n",
-        file,
-        type,
-        a[1],
-        a[2],
-        a[3],
-        c->GPRx);
+         file,
+         type,
+         a[1],
+         a[2],
+         a[3],
+         c->GPRx);
 #endif
 }
