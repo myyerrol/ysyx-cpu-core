@@ -77,10 +77,16 @@ void do_syscall(Context *c) {
                (a[0] == SYS_close) ? "SYS_CLOSE" :
                (a[0] == SYS_lseek) ? "SYS_LSEEK" :
                (a[0] ==   SYS_brk) ? "  SYS_BRK" : "";
-  printf("[strace] type: %s, a0 = %x, a1 = %x, a2 = %x, ret: %x\n", type,
-                                                                    a[1],
-                                                                    a[2],
-                                                                    a[3],
-                                                                    c->GPRx);
+  char *file = ((a[0] !=  SYS_exit) &&
+                (a[0] != SYS_yield) &&
+                (a[0] !=   SYS_brk) &&
+                (a[0] !=  SYS_open)) ? fs_get(a[1]).name : "            none";
+  printf("[strace] file: %s, type: %s, a0 = %x, a1 = %x, a2 = %x, ret: %x\n",
+        file,
+        type,
+        a[1],
+        a[2],
+        a[3],
+        c->GPRx);
 #endif
 }

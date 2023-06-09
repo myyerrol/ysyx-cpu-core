@@ -21,6 +21,7 @@ typedef struct {
   size_t open_offset;
 } Finfo;
 
+Finfo fs_get(int fd);
 int fs_open(const char *pathname, int flags, int mode);
 int fs_close(int fd);
 size_t fs_read(int fd, void *buf, size_t len);
