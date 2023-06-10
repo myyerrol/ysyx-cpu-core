@@ -6,8 +6,51 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
+int  num_place_i = 0;
+char num_place_arr[256];
+
+int getNumLen(int num) {
+  int len = 0;
+  if (num == 0) {
+    len = 1;
+  }
+  else {
+    for (; num > 0; ++len) {
+      num /= 10;
+    }
+  }
+  return len;
+}
+
 void printfChar(char ch) {
   putch(ch);
+}
+
+void printfCharPlace(int num_real) {
+  char num_place_char = '0';
+  int  num_place_len  =  0;
+
+  int i = 0;
+  // 计算占位数字的大小（代表需要占几位数）
+  while (num_place_i != 0) {
+    int num_place = num_place_arr[i] - '0';
+    int k = (num_place_i == 5) ? 10000 :
+            (num_place_i == 4) ? 1000  :
+            (num_place_i == 3) ? 100   :
+            (num_place_i == 2) ? 10    :
+            (num_place_i == 1) ? 1     : 0;
+    num_place_len = num_place_len + num_place * k;
+    i++;
+    num_place_i--;
+  }
+
+  // 获取原始数字的位数
+  int num_real_len = getNumLen(num_real);
+  int num_delta = num_place_len - num_real_len;
+  while (num_delta > 0) {
+    putch(num_place_char);
+    num_delta--;
+  }
 }
 
 void printfStr(char *str) {
@@ -29,6 +72,9 @@ void printfDec(int dec) {
     putch('-');
     dec = -dec;
   }
+
+  printfCharPlace(dec);
+
   if (dec != 0) {
     printfNum(dec, 10);
   }
@@ -38,22 +84,24 @@ void printfDec(int dec) {
 }
 
 void printfOct(uint32_t oct) {
+  printfCharPlace(oct);
+
   if (oct != 0) {
     printfNum(oct, 8);
   }
   else {
     putch('0');
-    return;
   }
 }
 
 void printfHex(uint32_t hex) {
+  printfCharPlace(hex);
+
   if (hex != 0) {
     printfNum(hex, 16);
   }
   else {
     putch('0');
-    return;
   }
 }
 
@@ -87,9 +135,17 @@ int printf(const char *fmt, ...) {
   va_list va_ptr;
   va_start(va_ptr, fmt);
 
+  num_place_i = 0;
+  memset(num_place_arr, -1, 256);
+
   while (*fmt != '\0') {
     if (*fmt == '%') {
       fmt++;
+      while (*fmt >= '0' && *fmt <= '9') {
+        num_place_arr[num_place_i] = *fmt;
+        num_place_i++;
+        fmt++;
+      }
       switch (*fmt) {
         case 'c': printfChar (va_arg(va_ptr, int));      break;
         case 's': printfStr  (va_arg(va_ptr, char*));    break;
@@ -127,7 +183,6 @@ void printfNumS(uint64_t num, int base) {
   else {
     printfNumS(num / base, base);
     char num_ch = "0123456789abcdef"[num % base];
-    // printf("num_ch: %c\n", num_ch);
     *num_arr_p = num_ch;
     num_arr_p++;
   }
@@ -163,7 +218,7 @@ int sprintf(char *out, const char *fmt, ...) {
       fmt++;
       switch (*fmt) {
         case 's': printfStrS(va_arg(va_ptr, char*)); break;
-        case 'd': printfDecS(va_arg(va_ptr, int)); break;
+        case 'd': printfDecS(va_arg(va_ptr, int));   break;
         default: break;
       }
     }
