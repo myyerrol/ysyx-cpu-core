@@ -85,14 +85,14 @@ void do_syscall(Context *c) {
   }
 
 #ifdef STRACE_COND_PROCESS
-  char *type = (a[0] ==         SYS_exit) ? " SYS_EXIT" :
+  char *type = (a[0] ==         SYS_exit) ? "SYS_EXIT" :
                (a[0] ==        SYS_yield) ? "SYS_YIELD" :
-               (a[0] ==         SYS_open) ? " SYS_OPEN" :
-               (a[0] ==         SYS_read) ? " SYS_READ" :
+               (a[0] ==         SYS_open) ? "SYS_OPEN" :
+               (a[0] ==         SYS_read) ? "SYS_READ" :
                (a[0] ==        SYS_write) ? "SYS_WRITE" :
                (a[0] ==        SYS_close) ? "SYS_CLOSE" :
                (a[0] ==        SYS_lseek) ? "SYS_LSEEK" :
-               (a[0] ==          SYS_brk) ? "  SYS_BRK" :
+               (a[0] ==          SYS_brk) ? "SYS_BRK" :
                (a[0] == SYS_gettimeofday) ? "SYS_GETTIMEOFDAY" : "";
   char *file = ((a[0] !=         SYS_exit) &&
                 (a[0] !=        SYS_yield) &&
