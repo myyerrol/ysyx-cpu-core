@@ -6,245 +6,408 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-int  num_place_i = 0;
-char num_place_arr[256];
+// int  num_place_i = 0;
+// char num_place_arr[256];
 
-int getNumLen(int num) {
-  int len = 0;
-  if (num == 0) {
-    len = 1;
-  }
-  else {
-    for (; num > 0; ++len) {
-      num /= 10;
-    }
-  }
-  return len;
-}
+// int getNumLen(int num) {
+//   int len = 0;
+//   if (num == 0) {
+//     len = 1;
+//   }
+//   else {
+//     for (; num > 0; ++len) {
+//       num /= 10;
+//     }
+//   }
+//   return len;
+// }
 
-void printfChar(char ch) {
-  putch(ch);
-}
+// void printfChar(char ch) {
+//   putch(ch);
+// }
 
-void printfCharPlace(int num_real) {
-  char num_place_char = '0';
-  int  num_place_len  =  0;
+// void printfCharPlace(int num_real) {
+//   char num_place_char = '0';
+//   int  num_place_len  =  0;
 
-  int i = 0;
-  // 计算占位数字的大小（代表需要占几位数）
-  while (num_place_i != 0) {
-    int num_place = num_place_arr[i] - '0';
-    int k = (num_place_i == 5) ? 10000 :
-            (num_place_i == 4) ? 1000  :
-            (num_place_i == 3) ? 100   :
-            (num_place_i == 2) ? 10    :
-            (num_place_i == 1) ? 1     : 0;
-    num_place_len = num_place_len + num_place * k;
-    i++;
-    num_place_i--;
-  }
+//   int i = 0;
+//   // 计算占位数字的大小（代表需要占几位数）
+//   while (num_place_i != 0) {
+//     int num_place = num_place_arr[i] - '0';
+//     int k = (num_place_i == 5) ? 10000 :
+//             (num_place_i == 4) ? 1000  :
+//             (num_place_i == 3) ? 100   :
+//             (num_place_i == 2) ? 10    :
+//             (num_place_i == 1) ? 1     : 0;
+//     num_place_len = num_place_len + num_place * k;
+//     i++;
+//     num_place_i--;
+//   }
 
-  // 获取原始数字的位数
-  int num_real_len = getNumLen(num_real);
-  int num_delta = num_place_len - num_real_len;
-  while (num_delta > 0) {
-    putch(num_place_char);
-    num_delta--;
-  }
-}
+//   // 获取原始数字的位数
+//   int num_real_len = getNumLen(num_real);
+//   int num_delta = num_place_len - num_real_len;
+//   while (num_delta > 0) {
+//     putch(num_place_char);
+//     num_delta--;
+//   }
+// }
 
-void printfStr(char *str) {
-  putstr(str);
-}
+// void printfStr(char *str) {
+//   putstr(str);
+// }
 
-void printfNum(uint64_t num, int base) {
-  if (num == 0) {
-    return;
-  }
-  else {
-    printfNum(num / base, base);
-    putch("0123456789abcdef"[num % base]);
-  }
-}
+// void printfNum(uint64_t num, int base) {
+//   if (num == 0) {
+//     return;
+//   }
+//   else {
+//     printfNum(num / base, base);
+//     putch("0123456789abcdef"[num % base]);
+//   }
+// }
 
-void printfDec(int dec) {
-  if (dec < 0) {
-    putch('-');
-    dec = -dec;
-  }
+// void printfDec(int dec) {
+//   if (dec < 0) {
+//     putch('-');
+//     dec = -dec;
+//   }
 
-  printfCharPlace(dec);
+//   printfCharPlace(dec);
 
-  if (dec != 0) {
-    printfNum(dec, 10);
-  }
-  else {
-    putch('0');
-  }
-}
+//   if (dec != 0) {
+//     printfNum(dec, 10);
+//   }
+//   else {
+//     putch('0');
+//   }
+// }
 
-void printfOct(uint32_t oct) {
-  printfCharPlace(oct);
+// void printfOct(uint32_t oct) {
+//   printfCharPlace(oct);
 
-  if (oct != 0) {
-    printfNum(oct, 8);
-  }
-  else {
-    putch('0');
-  }
-}
+//   if (oct != 0) {
+//     printfNum(oct, 8);
+//   }
+//   else {
+//     putch('0');
+//   }
+// }
 
-void printfHex(uint32_t hex) {
-  printfCharPlace(hex);
+// void printfHex(uint32_t hex) {
+//   printfCharPlace(hex);
 
-  if (hex != 0) {
-    printfNum(hex, 16);
-  }
-  else {
-    putch('0');
-  }
-}
+//   if (hex != 0) {
+//     printfNum(hex, 16);
+//   }
+//   else {
+//     putch('0');
+//   }
+// }
 
-void printfAddr(uint64_t addr) {
-  putch('0');
-  putch('x');
-  printfNum(addr, 16);
-}
+// void printfAddr(uint64_t addr) {
+//   putch('0');
+//   putch('x');
+//   printfNum(addr, 16);
+// }
 
-void printfFloat(double num) {
-  int num_int;
+// void printfFloat(double num) {
+//   int num_int;
 
-  num_int = (int)num;
-  printfNum(num_int, 10);
+//   num_int = (int)num;
+//   printfNum(num_int, 10);
 
-  putch('.');
+//   putch('.');
 
-  num -= num_int;
-  if (num != 0) {
-    num_int = (int)(num * 1000000);
-    printfNum(num_int, 10);
-  }
-  else {
-    for (num_int = 0; num_int < 6; num_int++) {
-      putch('0');
-    }
-  }
-}
+//   num -= num_int;
+//   if (num != 0) {
+//     num_int = (int)(num * 1000000);
+//     printfNum(num_int, 10);
+//   }
+//   else {
+//     for (num_int = 0; num_int < 6; num_int++) {
+//       putch('0');
+//     }
+//   }
+// }
+
+// int printf(const char *fmt, ...) {
+//   va_list va_ptr;
+//   va_start(va_ptr, fmt);
+
+//   num_place_i = 0;
+//   memset(num_place_arr, -1, 256);
+
+//   while (*fmt != '\0') {
+//     if (*fmt == '%') {
+//       fmt++;
+//       while (*fmt >= '0' && *fmt <= '9') {
+//         num_place_arr[num_place_i] = *fmt;
+//         num_place_i++;
+//         fmt++;
+//       }
+//       switch (*fmt) {
+//         case 'c': printfChar (va_arg(va_ptr, int));      break;
+//         case 's': printfStr  (va_arg(va_ptr, char*));    break;
+//         case 'd': printfDec  (va_arg(va_ptr, int));      break;
+//         case 'o': printfOct  (va_arg(va_ptr, uint32_t)); break;
+//         case 'x': printfHex  (va_arg(va_ptr, uint32_t)); break;
+//         case 'p': printfAddr (va_arg(va_ptr, uint64_t)); break;
+//         case 'f': printfFloat(va_arg(va_ptr, double));   break;
+//         default: break;
+//       }
+//     }
+//     else {
+//       putch(*fmt);
+//     }
+//     fmt++;
+//   }
+
+//   va_end(va_ptr);
+//   return 0;
+// }
+
+// char *out_g = NULL;
+// char  num_arr[256];
+// char *num_arr_p = NULL;
+
+// void printfStrS(char *str) {
+//   memcpy(out_g, str, strlen(str));
+//   out_g += strlen(str);
+// }
+
+// void printfNumS(uint64_t num, int base) {
+//   if (num == 0) {
+//     return;
+//   }
+//   else {
+//     printfNumS(num / base, base);
+//     char num_ch = "0123456789abcdef"[num % base];
+//     *num_arr_p = num_ch;
+//     num_arr_p++;
+//   }
+// }
+
+// void printfDecS(int dec) {
+//   if (dec < 0) {
+//     *out_g = '-';
+//     out_g++;
+//     dec = -dec;
+//   }
+//   if (dec != 0) {
+//     memset(num_arr, '\0', 256);
+//     num_arr_p = num_arr;
+//     printfNumS(dec, 10);
+//     memcpy(out_g, num_arr, strlen(num_arr));
+//     out_g += strlen(num_arr);
+//   }
+//   else {
+//     *out_g = '0';
+//     out_g++;
+//   }
+// }
+
+// int sprintf(char *out, const char *fmt, ...) {
+//   va_list va_ptr;
+//   va_start(va_ptr, fmt);
+
+//   out_g = out;
+
+//   while (*fmt != '\0') {
+//     if (*fmt == '%') {
+//       fmt++;
+//       switch (*fmt) {
+//         case 's': printfStrS(va_arg(va_ptr, char*)); break;
+//         case 'd': printfDecS(va_arg(va_ptr, int));   break;
+//         default: break;
+//       }
+//     }
+//     else {
+//       *out_g = *fmt;
+//       out_g++;
+//     }
+//     fmt++;
+//   }
+
+//   *out_g = '\0';
+//   va_end(va_ptr);
+//   return 0;
+// }
+
+// int vsprintf(char *out, const char *fmt, va_list va_ptr) {
+//   panic("Not implemented");
+// }
+
+// int snprintf(char *out, size_t n, const char *fmt, ...) {
+//   panic("Not implemented");
+// }
+
+// int vsnprintf(char *out, size_t n, const char *fmt, va_list va_ptr) {
+//   panic("Not implemented");
+// }
 
 int printf(const char *fmt, ...) {
-  va_list va_ptr;
-  va_start(va_ptr, fmt);
-
-  num_place_i = 0;
-  memset(num_place_arr, -1, 256);
-
-  while (*fmt != '\0') {
-    if (*fmt == '%') {
-      fmt++;
-      while (*fmt >= '0' && *fmt <= '9') {
-        num_place_arr[num_place_i] = *fmt;
-        num_place_i++;
-        fmt++;
-      }
-      switch (*fmt) {
-        case 'c': printfChar (va_arg(va_ptr, int));      break;
-        case 's': printfStr  (va_arg(va_ptr, char*));    break;
-        case 'd': printfDec  (va_arg(va_ptr, int));      break;
-        case 'o': printfOct  (va_arg(va_ptr, uint32_t)); break;
-        case 'x': printfHex  (va_arg(va_ptr, uint32_t)); break;
-        case 'p': printfAddr (va_arg(va_ptr, uint64_t)); break;
-        case 'f': printfFloat(va_arg(va_ptr, double));   break;
-        default: break;
-      }
-    }
-    else {
-      putch(*fmt);
-    }
-    fmt++;
+  va_list ap;
+  va_start(ap, fmt);
+  char out[4096];
+  int length = vsprintf(out, fmt, ap);
+  for (int i = 0; i < length; i++) {
+    putch(out[i]);
   }
-
-  va_end(va_ptr);
-  return 0;
-}
-
-char *out_g = NULL;
-char  num_arr[256];
-char *num_arr_p = NULL;
-
-void printfStrS(char *str) {
-  memcpy(out_g, str, strlen(str));
-  out_g += strlen(str);
-}
-
-void printfNumS(uint64_t num, int base) {
-  if (num == 0) {
-    return;
-  }
-  else {
-    printfNumS(num / base, base);
-    char num_ch = "0123456789abcdef"[num % base];
-    *num_arr_p = num_ch;
-    num_arr_p++;
-  }
-}
-
-void printfDecS(int dec) {
-  if (dec < 0) {
-    *out_g = '-';
-    out_g++;
-    dec = -dec;
-  }
-  if (dec != 0) {
-    memset(num_arr, '\0', 256);
-    num_arr_p = num_arr;
-    printfNumS(dec, 10);
-    memcpy(out_g, num_arr, strlen(num_arr));
-    out_g += strlen(num_arr);
-  }
-  else {
-    *out_g = '0';
-    out_g++;
-  }
+  va_end(ap);
+  return length;
 }
 
 int sprintf(char *out, const char *fmt, ...) {
-  va_list va_ptr;
-  va_start(va_ptr, fmt);
-
-  out_g = out;
-
-  while (*fmt != '\0') {
-    if (*fmt == '%') {
-      fmt++;
-      switch (*fmt) {
-        case 's': printfStrS(va_arg(va_ptr, char*)); break;
-        case 'd': printfDecS(va_arg(va_ptr, int));   break;
-        default: break;
-      }
-    }
-    else {
-      *out_g = *fmt;
-      out_g++;
-    }
-    fmt++;
-  }
-
-  *out_g = '\0';
-  va_end(va_ptr);
-  // printf("out: %s\n", out);
-  return 0;
-}
-
-int vsprintf(char *out, const char *fmt, va_list va_ptr) {
-  panic("Not implemented");
+  va_list ap;
+  va_start(ap, fmt);
+  int length = vsprintf(out, fmt, ap);
+  va_end(ap);
+  return length;
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
-  panic("Not implemented");
+  va_list ap;
+  va_start(ap, fmt);
+  int length = vsnprintf(out, n, fmt, ap);
+  va_end(ap);
+  return length;
 }
 
-int vsnprintf(char *out, size_t n, const char *fmt, va_list va_ptr) {
-  panic("Not implemented");
+int vsprintf(char *out, const char *fmt, va_list ap) {
+  return vsnprintf(out, -1, fmt, ap);
+}
+
+int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
+  int pos = 0;
+
+  for (; *fmt != '\0'; fmt++) {
+    while (*fmt != '%' && *fmt != '\0') {
+      out[pos++] = *fmt++;
+      if (pos > n) {
+        return n;
+      }
+    }
+
+    if (*fmt == '%') {
+      fmt++;
+    }
+    else if (*fmt == '\0') {
+      break;
+    }
+
+    char padding = ' ';
+    if (*fmt == '0') {
+      padding = '0';
+      fmt++;
+    }
+
+    int width = 0;
+    while (*fmt >= '0' && *fmt <= '9') {
+      width = width * 10 + *fmt++ - '0';
+    }
+
+    switch (*fmt) {
+      case 's': {
+        char *s = va_arg(ap, char *);
+        while (*s != '\0') {
+          out[pos++] = *s++;
+          if (pos > n) {
+            return n;
+          }
+        }
+        break;
+      }
+      case 'd': {
+        int d = va_arg(ap, int);
+        if (d < 0) {
+            d = -d;
+            out[pos++] = '-';
+            if (pos > n) {
+              return n;
+            }
+        }
+        char num[20] = {0};
+        int rem = 0;
+        int length = 0;
+
+        do {
+          rem = d % 10;
+          d = d / 10;
+          num[length++] = rem + '0';
+        } while (d > 0);
+
+        while (length < width) {
+          out[pos++] = padding;
+          width--;
+          if (pos > n) {
+            return n;
+          }
+        }
+
+        length--;
+        for (; length >= 0; length--) {
+          out[pos++] = num[length];
+          if (pos > n) {
+              return n;
+          }
+        }
+        break;
+      }
+      case 'p':
+      case 'x': {
+          uint64_t d = va_arg(ap, uint64_t);
+          char num[20] = {0};
+          int rem = 0;
+          int length = 0;
+
+          do {
+            rem = d % 16;
+            d = d / 16;
+            if (rem <= 9) {
+              num[length++] = rem + '0';
+            }
+            else {
+              num[length++] = rem - 10 + 'a';
+            }
+          } while (d > 0);
+
+          while (length < width) {
+            out[pos++] = padding;
+            width--;
+            if (pos > n) {
+              return n;
+            }
+          }
+
+          out[pos++] = '0';
+          if (pos > n) {
+            return n;
+          }
+
+          out[pos++] = 'x';
+          if (pos > n) {
+            return n;
+          }
+
+          length--;
+          for (; length >= 0; length--) {
+            out[pos++] = num[length];
+            if (pos > n) {
+              return n;
+            }
+          }
+          break;
+        }
+      }
+    }
+
+  if (pos > n) {
+    return n;
+  }
+
+  out[pos] = '\0';
+  return pos;
 }
 
 #endif
