@@ -4,7 +4,7 @@
 
 #include "syscall.h"
 
-#define STRACE_COND_PROCESS
+// #define STRACE_COND_PROCESS
 
 intptr_t sys_write(int fd, const void *buf, size_t len) {
   intptr_t i = 0;
