@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <assert.h>
 
 static int evtdev = -1;
 static int fbdev = -1;
@@ -28,26 +29,43 @@ int NDL_PollEvent(char *buf, int len) {
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
-  if (getenv("NWM_APP")) {
-    int fbctl = 4;
-    fbdev = 5;
-    screen_w = *w; screen_h = *h;
-    char buf[64];
-    int len = sprintf(buf, "%d %d", screen_w, screen_h);
-    // let NWM resize the window and create the frame buffer
-    write(fbctl, buf, len);
-    while (1) {
-      // 3 = evtdev
-      int nread = read(3, buf, sizeof(buf) - 1);
-      if (nread <= 0) continue;
-      buf[nread] = '\0';
-      if (strcmp(buf, "mmap ok") == 0) break;
+  int fd = open("/proc/dispinfo", 0, 0);
+  char buf[64];
+  if (read(fd, buf, sizeof(buf))) {
+    sscanf(buf, "width: %d, height: %d", &screen_w, &screen_h);
+    assert(screen_w >= *w && screen_h >= *h);
+    if(*w == 0 && *h == 0) {
+      *w = screen_w;
+      *h = screen_h;
     }
-    close(fbctl);
+    printf("width: %d, height: %d\n", screen_w, screen_h);
   }
+  close(fd);
+
+  // if (getenv("NWM_APP")) {
+  //   int fbctl = 4;
+  //   fbdev = 5;
+  //   screen_w = *w; screen_h = *h;
+  //   char buf[64];
+  //   int len = sprintf(buf, "%d %d", screen_w, screen_h);
+  //   // let NWM resize the window and create the frame buffer
+  //   write(fbctl, buf, len);
+  //   while (1) {
+  //     // 3 = evtdev
+  //     int nread = read(3, buf, sizeof(buf) - 1);
+  //     if (nread <= 0) continue;
+  //     buf[nread] = '\0';
+  //     if (strcmp(buf, "mmap ok") == 0) break;
+  //   }
+  //   close(fbctl);
+  // }
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
+  int fd = open("/dev/fb", 0, 0);
+  lseek(fd, x * y, SEEK_SET);
+  write(fd, pixels, ((size_t)w << 32) | ((size_t)h & 0x00000000FFFFFFFF));
+  close(fd);
 }
 
 void NDL_OpenAudio(int freq, int channels, int samples) {
