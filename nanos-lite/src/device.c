@@ -57,7 +57,7 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   ctl.w = len >> 32;
   ctl.h = len & 0x00000000FFFFFFFF;
 
-  printf("ctl.x: %d, ctl.y: %d\n", ctl.x, ctl.y);
+  // printf("ctl.x: %d, ctl.y: %d\n", ctl.x, ctl.y);
 
   io_write(AM_GPU_FBDRAW, ctl.x, ctl.y, ctl.pixels, ctl.w, ctl.h, ctl.sync);
 
