@@ -72,9 +72,11 @@ static inline void update_screen() {
 #endif
 
 void vga_update_screen() {
-  if (paddr_read(CONFIG_VGA_CTL_MMIO + 4, 4) != 0) {
+  if (vgactl_port_base[1] != 0) {
+  // if (paddr_read(CONFIG_VGA_CTL_MMIO + 4, 4) != 0) {
     update_screen();
-    paddr_write(CONFIG_VGA_CTL_MMIO + 4, 4, 0);
+    // paddr_write(CONFIG_VGA_CTL_MMIO + 4, 4, 0);
+    vgactl_port_base[1] = 0;
   }
 }
 
