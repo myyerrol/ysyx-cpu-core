@@ -148,6 +148,7 @@ void cpu_exec(uint64_t n) {
 #ifdef CONFIG_FTRACE_COND_RESULT
       printf("\n");
       ftrace_display("result", NULL, NULL, 0, 0);
+      ftrace_free();
 #endif
 
       Log("nemu: %s at pc = " FMT_WORD,
