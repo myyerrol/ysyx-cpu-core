@@ -97,10 +97,15 @@ void mtrace_display(char *type,
 
 #define ARR_LEN 1024 * 1024
 
+// 存储ELF符号表中的函数名称
+static char  *func_name_arr[ARR_LEN];
+// 存储指令调用和返回过程中的函数名称
 static int    inst_func_call_depth = -1;
 static char  *inst_func_name_arr[ARR_LEN];
 static char **inst_func_name_head = inst_func_name_arr;
-static char  *func_name_arr[ARR_LEN];
+// 存储指令调用和返回过程中的调试信息
+char  *ftrace_info_arr[ARR_LEN];
+char **ftrace_info_head = ftrace_info_arr;
 
 static int ftrace_is_elf_64(FILE *fp) {
   char buf[16];
@@ -200,9 +205,6 @@ void ftrace_init(const char *elf_file) {
   }
 }
 
-char  *ftrace_info_arr[ARR_LEN];
-char **ftrace_info_head = ftrace_info_arr;
-
 void ftrace_display(char *type,
                     bool inst_func_call,
                     bool inst_func_ret,
@@ -217,9 +219,9 @@ void ftrace_display(char *type,
     return;
   }
 
-  char buf[256];
-  char buf_head[128];
-  char buf_tail[128];
+  char buf[1024];
+  char buf_head[512];
+  char buf_tail[512];
 
   // 如果程序在函数内部进行跳转，则不需要记录调用信息
   if (inst_func_call && strcmp(ftrace_get_func(dnpc), "") == 0) {
@@ -260,7 +262,7 @@ void ftrace_display(char *type,
   if (inst_func_call || inst_func_ret) {
     sprintf(buf, "%s%s", buf_head, buf_tail);
     if (*ftrace_info_head == NULL) {
-      *ftrace_info_head = (char *)malloc(sizeof(char *) * 256);
+      *ftrace_info_head = (char *)malloc(sizeof(char *) * 1024);
     }
     strcpy(*ftrace_info_head, buf);
     ftrace_info_head++;

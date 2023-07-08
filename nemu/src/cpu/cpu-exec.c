@@ -141,12 +141,18 @@ void cpu_exec(uint64_t n) {
       printf("\n");
       itrace_display();
 #endif
+
 #ifdef CONFIG_MTRACE_COND_RESULT
+#ifndef CONFIG_ITRACE_COND_PROCESS
       printf("\n");
+#endif
       mtrace_display("result", NULL, 0, 0, 16);
 #endif
+
 #ifdef CONFIG_FTRACE_COND_RESULT
+#ifndef CONFIG_ITRACE_COND_PROCESS
       printf("\n");
+#endif
       ftrace_display("result", NULL, NULL, 0, 0);
       ftrace_free();
 #endif
