@@ -26,18 +26,52 @@ void itrace_record(char *logbuf) {
   iringbuf_curr = iringbuf_head;
 }
 
-void itrace_display() {
-  iringbuf_head = iringbuf;
-  while (*iringbuf_head != NULL && iringbuf_head != iringbuf_tail) {
-    if (iringbuf_head == iringbuf_curr) {
-      printf("[itrace] ----> %s\n", *iringbuf_head);
+void itrace_display(char *type,
+                    int inst_num,
+                    char *op,
+                    Decode *s,
+                    int rd,
+                    int rs1,
+                    int rs2,
+                    word_t src1,
+                    word_t src2,
+                    word_t imm,
+                    word_t rd_val) {
+  if (strcmp(type, "process") == 0) {
+    _Log("[itrace] num:         %d\n", inst_num);
+    _Log("[itrace] pc:          " FMT_WORD "\n", s->pc);
+    _Log("[itrace] dnpc:        " FMT_WORD "\n", s->dnpc);
+    _Log("[itrace] format hex:  " FMT_WORD "\n", (uint64_t)s->isa.inst.val);
+    // _Log("[itrace] format bin:  " PRINTF_BIN_PATTERN_INST "\n",
+    //                               PRINTF_BIN_INT32(s->isa.inst.val));
+    _Log("[itrace] name:        %s\n",  op);
+    _Log("[itrace] rs1 addr:    %d\n", rs1);
+    _Log("[itrace] rs2 addr:    %d\n", rs2);
+    _Log("[itrace] rd  addr:    %d\n", rd);
+    _Log("[itrace] rs1 val hex: " FMT_WORD "\n", src1);
+    _Log("[itrace] rs2 val hex: " FMT_WORD "\n", src2);
+    // _Log("[itrace] rs1 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
+    //       PRINTF_BIN_INT64(src1));
+    // _Log("[itrace] rs2 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
+    //       PRINTF_BIN_INT64(src2));
+    _Log("[itrace] imm val hex: " FMT_WORD "\n", imm);
+    // _Log("[itrace] imm val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
+    //       PRINTF_BIN_INT64(imm));
+    _Log("[itrace] rd  val hex: " FMT_WORD "\n\n", rd_val);
+  }
+  else if (strcmp(type, "result") == 0) {
+    iringbuf_head = iringbuf;
+    while (*iringbuf_head != NULL && iringbuf_head != iringbuf_tail) {
+      if (iringbuf_head == iringbuf_curr) {
+        _Log("[itrace] ----> %s\n", *iringbuf_head);
+      }
+      else {
+        _Log("[itrace]       %s\n", *iringbuf_head);
+      }
+      char *iringbuf_temp = *iringbuf_head;
+      free(iringbuf_temp);
+      iringbuf_head++;
     }
-    else {
-      printf("[itrace]       %s\n", *iringbuf_head);
-    }
-    char *iringbuf_temp = *iringbuf_head;
-    free(iringbuf_temp);
-    iringbuf_head++;
   }
 }
 
@@ -47,16 +81,16 @@ void mtrace_display(char *type,
                     word_t data,
                     word_t len) {
   if (strcmp(type, "process") == 0) {
-    printf("[mtrace] addr: " FMT_WORD " data: " FMT_WORD " %s\n", addr,
-                                                                  data,
-                                                                  dir);
+    _Log("[mtrace] addr: " FMT_WORD " data: " FMT_WORD " %s\n", addr,
+                                                                data,
+                                                                dir);
   }
   else if (strcmp(type, "result") == 0) {
     word_t addr_base = (addr != 0) ? addr : CONFIG_MBASE;
     for (word_t i = 0; i < len; i++) {
       addr = addr_base + i * 4;
       data = paddr_read(addr, 8);
-      printf("[mtrace] addr: " FMT_WORD " data: " FMT_WORD "\n", addr, data);
+      _Log("[mtrace] addr: " FMT_WORD " data: " FMT_WORD "\n", addr, data);
     }
   }
 }
@@ -156,8 +190,8 @@ void ftrace_init(const char *elf_file) {
         }
         strcpy(func_name_arr[offset], func_name);
 #ifdef CONFIG_FTRACE_ELF
-        printf("[ftrace] symb addr: " FMT_WORD "\n", st_value);
-        printf("[ftrace] func name:  %s\n\n", func_name);
+        _Log("[ftrace] symb addr: " FMT_WORD "\n", st_value);
+        _Log("[ftrace] func name:  %s\n\n", func_name);
 #endif
       }
     }
@@ -173,13 +207,11 @@ void ftrace_display(char *type,
                     bool inst_func_call,
                     bool inst_func_ret,
                     word_t pc,
-                    word_t dpnc) {
+                    word_t dnpc) {
   if (strcmp(type, "result") == 0) {
     ftrace_info_head = ftrace_info_arr;
     while (*ftrace_info_head != NULL) {
-      printf("%s", *ftrace_info_head);
-      char *ftrace_info_temp = *ftrace_info_head;
-      free(ftrace_info_temp);
+      _Log("%s", *ftrace_info_head);
       ftrace_info_head++;
     }
     return;
@@ -188,6 +220,11 @@ void ftrace_display(char *type,
   char buf[256];
   char buf_head[128];
   char buf_tail[128];
+
+  // 如果程序在函数内部进行跳转，则不需要记录调用信息
+  if (inst_func_call && strcmp(ftrace_get_func(dnpc), "") == 0) {
+    return;
+  }
 
   if (inst_func_call || inst_func_ret) {
     sprintf(buf_head, "[ftrace] addr: 0x%08" PRIx32, (uint32_t)pc);
@@ -199,14 +236,14 @@ void ftrace_display(char *type,
     if (*inst_func_name_head == NULL) {
       *inst_func_name_head = (char *)malloc(sizeof(char *) * 256);
     }
-    strcpy(*inst_func_name_head, ftrace_get_func(dpnc));
+    strcpy(*inst_func_name_head, ftrace_get_func(dnpc));
     char printf_format[] = " call %*s[%s@" "0x%08" PRIx32 "]\n";
     sprintf(buf_tail,
             printf_format,
             inst_func_call_depth * 2,
             "",
             *inst_func_name_head,
-            (uint32_t)dpnc);
+            (uint32_t)dnpc);
   }
 
   if (inst_func_ret) {
@@ -229,14 +266,22 @@ void ftrace_display(char *type,
     ftrace_info_head++;
 
     if (strcmp(type, "process") == 0) {
-      printf("%s", buf);
+      _Log("%s", buf);
     }
   }
 }
 
 void ftrace_free() {
   for (int i = 0; i < ARR_LEN; i++) {
-    free(func_name_arr[i]);
+    if (func_name_arr[i] != NULL) {
+      free(func_name_arr[i]);
+    }
+    if (ftrace_info_arr[i] != NULL) {
+      free(ftrace_info_arr[i]);
+    }
+    if (inst_func_name_arr[i] != NULL) {
+      free(inst_func_name_arr[i]);
+    }
   }
 }
 
@@ -246,10 +291,10 @@ void dtrace_display(char *type,
                     word_t addr,
                     word_t data) {
   if (strcmp(type, "process") == 0) {
-    printf("[dtrace] addr: " FMT_WORD " data: " FMT_WORD " %s %s\n", addr,
-                                                                     data,
-                                                                     dir,
-                                                                     name);
+    _Log("[dtrace] addr: " FMT_WORD " data: " FMT_WORD " %s %s\n", addr,
+                                                                   data,
+                                                                   dir,
+                                                                   name);
   }
   else if (strcmp(type, "result") == 0) {
   }

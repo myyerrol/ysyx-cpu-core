@@ -1,12 +1,24 @@
 #ifndef __TRACE_H__
 #define __TRACE_H__
 
-#include <common.h>
-#include <memory/paddr.h>
 #include <elf.h>
 
+#include <common.h>
+#include <cpu/decode.h>
+#include <memory/paddr.h>
+
 void itrace_record(char *logbuf);
-void itrace_display();
+void itrace_display(char *type,
+                    int inst_num,
+                    char *op,
+                    Decode *s,
+                    int rd,
+                    int rs1,
+                    int rs2,
+                    word_t src1,
+                    word_t src2,
+                    word_t imm,
+                    word_t rd_val);
 
 void mtrace_display(char *type,
                     char *dir,

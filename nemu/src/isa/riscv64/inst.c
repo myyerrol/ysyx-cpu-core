@@ -79,24 +79,10 @@ static void decode_operand(char *op,
     case TYPE_U:                   immU(); break;
     case TYPE_J:                   immJ(); break;
   }
-#ifdef CONFIG_ITRACE_COND_PROCESS
-  printf("[itrace] name:        %s\n", op);
-  printf("[itrace] rs1 addr:    %d\n", *rs1);
-  printf("[itrace] rs2 addr:    %d\n", *rs2);
-  printf("[itrace] rd  addr:    %d\n", *rd);
-  printf("[itrace] rs1 val hex: " FMT_WORD "\n", *src1);
-  printf("[itrace] rs2 val hex: " FMT_WORD "\n", *src2);
-  // printf("[itrace] rs1 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
-  //        PRINTF_BIN_INT64(*src1));
-  // printf("[itrace] rs2 val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
-  //        PRINTF_BIN_INT64(*src2));
-  printf("[itrace] imm val hex: " FMT_WORD "\n", *imm);
-  // printf("[itrace] imm val bin: " PRINTF_BIN_PATTERN_INT64 "\n",
-  //        PRINTF_BIN_INT64(*imm));
-#endif
 }
 
 static int decode_exec(Decode *s) {
+  char *op = "inv";
   int rd = 0;
   int rs1 = 0;
   int rs2 = 0;
@@ -105,20 +91,12 @@ static int decode_exec(Decode *s) {
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
+  op = str(name); \
   decode_operand(str(name), s, &rd, &rs1, &rs2, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
   INSTPAT_START();
-
-#ifdef CONFIG_ITRACE_COND_PROCESS
-  printf("[itrace] num:         %d\n", inst_num);
-  printf("[itrace] pc:          " FMT_WORD "\n", s->pc);
-  printf("[itrace] dnpc:        " FMT_WORD "\n", s->dnpc);
-  printf("[itrace] format hex:  " FMT_WORD "\n", (uint64_t)s->isa.inst.val);
-  // printf("[itrace] format bin:  " PRINTF_BIN_PATTERN_INST "\n",
-  //        PRINTF_BIN_INT32(s->isa.inst.val));
-#endif
 
   INSTPAT("0000000 ????? ????? 001 ????? 01100 11", sll,    R, R(rd) = src1 << BITS(src2, 5, 0));
   INSTPAT("000000? ????? ????? 001 ????? 00100 11", slli,   I, R(rd) = src1 << BITS(imm, 5, 0));
@@ -198,7 +176,7 @@ static int decode_exec(Decode *s) {
   R(0) = 0;
 
 #ifdef CONFIG_ITRACE_COND_PROCESS
-    printf("[itrace] rd  val hex: " FMT_WORD "\n\n", R(rd));
+  itrace_display("process", inst_num, op, s, rd, rs1, rs2, src1, src2, imm, R(rd));
 #endif
 
   inst_num++;
