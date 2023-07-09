@@ -19,14 +19,16 @@ size_t invalid_write(const void *buf, size_t offset, size_t len) {
 
 /* This is the information about all files in disk. */
 static Finfo file_table[] __attribute__((used)) = {
-  [FD_STDIN]    = { "stdin",          0, 0, invalid_read,  invalid_write, 0 },
-  [FD_STDOUT]   = { "stdout",         0, 0, invalid_read,  serial_write,  0 },
-  [FD_STDERR]   = { "stderr",         0, 0, invalid_read,  serial_write,  0 },
-  [FD_EVENTS]   = { "/dev/events",    0, 0, events_read,   invalid_write, 0 },
-  [FD_DISPINFO] = { "/proc/dispinfo", 0, 0, dispinfo_read, invalid_write, 0 },
-  [FD_FB]       = { "/dev/fb",        0, 0, invalid_read,  fb_write,      0 },
+  [FD_STDIN]    = { "stdin",          0, 0, invalid_read,  invalid_write },
+  [FD_STDOUT]   = { "stdout",         0, 0, invalid_read,  serial_write  },
+  [FD_STDERR]   = { "stderr",         0, 0, invalid_read,  serial_write  },
+  [FD_EVENTS]   = { "/dev/events",    0, 0, events_read,   invalid_write },
+  [FD_DISPINFO] = { "/proc/dispinfo", 0, 0, dispinfo_read, invalid_write },
+  [FD_FB]       = { "/dev/fb",        0, 0, invalid_read,  fb_write,     },
 #include "files.h"
 };
+
+size_t open_offset = 0;
 
 void init_fs() {
   AM_GPU_CONFIG_T cfg = io_read(AM_GPU_CONFIG);
@@ -42,51 +44,51 @@ int fs_open(const char *pathname, int flags, int mode) {
   for (int i = 0; i < LENGTH(file_table); i++) {
     if (strcmp(file_table[i].name, pathname) == 0) {
       fd = i;
+      open_offset = 0;
       break;
     }
   }
   if (fd == -1) {
-    assert(0);
+    panic("Can not open file");
   }
   return fd;
 }
 
 int fs_close(int fd) {
+  open_offset = 0;
   return 0;
 }
 
 size_t fs_read(int fd, void *buf, size_t len) {
-  // if (fd == 0 || fd > 2) {
+    // if (fd == 0 || fd > 2) {
   //   Finfo *file = &file_table[fd];
-  //   if ((file->open_offset + len) > file->size) {
-  //     len = file->size - file->open_offset;
+  //   if ((open_offset + len) > file->size) {
+  //     len = file->size - open_offset;
   //   }
-  //   size_t offset = file->disk_offset + file->open_offset;
+  //   size_t offset = file->disk_offset + open_offset;
   //   size_t bytes = ramdisk_read(buf, offset, len);
-  //   file->open_offset += bytes;
+  //   open_offset += bytes;
   //   return bytes;
   // }
   // else {
   //   return -1;
   // }
 
-  if (fd != -1) {
-    Finfo *file = &file_table[fd];
-    if (file->read != NULL) {
-      return file->read(buf, 0, len);
-    }
-    else {
-      if ((file->open_offset + len) > file->size) {
-        len = file->size - file->open_offset;
-      }
-      size_t offset = file->disk_offset + file->open_offset;
-      size_t bytes = ramdisk_read(buf, offset, len);
-      file->open_offset += bytes;
-      return bytes;
-    }
+  Finfo *file = &file_table[fd];
+  if (file->read != NULL) {
+    return file->read(buf, 0, len);
   }
   else {
-    return -1;
+    size_t file_size = file_table[fd].size;
+    if (open_offset >= file_size) {
+      return -1;
+    }
+    if ((open_offset + len) > file_size) {
+      len = file_size - open_offset;
+    }
+    ramdisk_read(buf, file->disk_offset + open_offset, len);
+    open_offset = open_offset + len;
+    return len;
   }
 }
 
@@ -101,62 +103,76 @@ size_t fs_write(int fd, const void *buf, size_t len) {
   // }
   // else if (fd != 0) {
   //   Finfo *file = &file_table[fd];
-  //   if (file->open_offset + len > file->size) {
-  //     len = file->size - file->open_offset;
+  //   if (open_offset + len > file->size) {
+  //     len = file->size - open_offset;
   //   }
-  //   size_t offset = file->disk_offset + file->open_offset;
+  //   size_t offset = file->disk_offset + open_offset;
   //   size_t bytes = ramdisk_write(buf, offset, len);
-  //   file->open_offset += bytes;
+  //   open_offset += bytes;
   //   return bytes;
   // }
   // else {
   //   return -1;
   // }
 
-  if (fd != -1) {
-    Finfo *file = &file_table[fd];
-    if (file->write != NULL) {
-      return file->write(buf, file->open_offset, len);
-    }
-    else {
-      if ((file->open_offset + len) > file->size) {
-        len = file->size - file->open_offset;
-      }
-      size_t offset = file->disk_offset + file->open_offset;
-      size_t bytes = ramdisk_write(buf, offset, len);
-      file->open_offset += bytes;
-      return bytes;
-    }
+  Finfo *file = &file_table[fd];
+  if (file->write != NULL) {
+    return file->write(buf, open_offset, len);
   }
   else {
-    return -1;
+    size_t file_size = file->size;
+    if (open_offset >= file_size) {
+      return -1;
+    }
+    if ((open_offset + len) > file_size) {
+      len = file_size - open_offset;
+    }
+    ramdisk_write(buf, file->disk_offset + open_offset, len);
+    open_offset = open_offset + len;
+    return len;
   }
 }
 
 size_t fs_lseek(int fd, size_t offset, int wnehce) {
   if (fd > 2) {
     Finfo *file = &file_table[fd];
+    size_t file_size = file->size;
     switch (wnehce) {
       case SEEK_SET: {
-        file->open_offset = offset;
+        if (offset <= file_size) {
+          open_offset = offset;
+          return open_offset;
+        }
+        else {
+          return -1;
+        }
         break;
       }
       case SEEK_CUR: {
-        file->open_offset += offset;
+        if (open_offset + offset <= file_size) {
+          open_offset = open_offset + offset;
+          return open_offset;
+        }
+        else {
+          return -1;
+        }
         break;
       }
       case SEEK_END: {
-        file->open_offset = file->size - offset;
+        if((signed)offset <= 0) {
+          open_offset = file_size + offset;
+          return open_offset;
+        }
+        else {
+          return -1;
+        }
         break;
       }
       default: {
-        file->open_offset = 0;
+        panic("Not implemented");
         break;
       }
     }
-    file->open_offset = (file->open_offset < file->size) ?
-                         file->open_offset : file->size;
-    return file->open_offset;
   }
   else {
     return -1;

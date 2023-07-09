@@ -25,13 +25,12 @@ size_t serial_write(const void *buf, size_t offset, size_t len) {
 
 size_t events_read(void *buf, size_t offset, size_t len) {
   AM_INPUT_KEYBRD_T kbd = io_read(AM_INPUT_KEYBRD);
-  if (kbd.keycode != 0) {
-    if (kbd.keydown) {
-      snprintf((char *)buf, len, "kd %2d %s", kbd.keycode, keyname[kbd.keycode]);
-    }
-    else {
-      snprintf((char *)buf, len, "ku %2d %s", kbd.keycode, keyname[kbd.keycode]);
-    }
+  if (kbd.keycode != AM_KEY_NONE) {
+    snprintf((char *)buf, len,
+              "%s %2d %s",
+              (kbd.keydown) ? "kd" : "ku",
+              kbd.keycode,
+              keyname[kbd.keycode]);
     return len;
   }
   else {
@@ -42,9 +41,10 @@ size_t events_read(void *buf, size_t offset, size_t len) {
 size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   AM_GPU_CONFIG_T cfg = io_read(AM_GPU_CONFIG);
   snprintf((char *)buf, len, "width: %d, height: %d", cfg.width, cfg.height);
-  return 1;
+  return 0;
 }
 
+extern size_t open_offset;
 size_t fb_write(const void *buf, size_t offset, size_t len) {
   AM_GPU_CONFIG_T cfg = io_read(AM_GPU_CONFIG);
 
@@ -57,9 +57,8 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   ctl.w = len >> 32;
   ctl.h = len & 0x00000000FFFFFFFF;
 
-  // printf("ctl.x: %d, ctl.y: %d\n", ctl.x, ctl.y);
-
   io_write(AM_GPU_FBDRAW, ctl.x, ctl.y, ctl.pixels, ctl.w, ctl.h, ctl.sync);
+  open_offset = offset + len;
 
   return 0;
 }

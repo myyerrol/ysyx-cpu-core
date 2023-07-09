@@ -29,7 +29,6 @@ typedef struct {
   size_t disk_offset;
   ReadFn read;
   WriteFn write;
-  size_t open_offset;
 } Finfo;
 
 Finfo fs_get(int fd);
