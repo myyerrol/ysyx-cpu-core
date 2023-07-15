@@ -22,7 +22,14 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   cpu.csr[CSR_MEPC] = epc;
   cpu.csr[CSR_MCAUSE] = NO;
 
-cpu.csr[CSR_MSTATUS] = 0xa00001800;
+  word_t mstatus = cpu.csr[CSR_MSTATUS];
+  cpu.csr[CSR_MSTATUS] = (SEXT(BITS(mstatus, 63, 13), 51) << 13) |
+                              (BITS(3, 1, 0) << 11) |
+                              (BITS(mstatus, 10, 8) << 8) |
+                              (BITS(mstatus, 3, 3) << 7) |
+                              (BITS(mstatus, 6, 4) << 4) |
+                              (BITS(0, 1, 1) << 3) |
+                              (BITS(mstatus, 2, 0)) ;
 
 #ifdef CONFIG_ETRACE_COND_PROCESS
   printf("[etrace] mcause: " FMT_WORD \
@@ -33,12 +40,26 @@ cpu.csr[CSR_MSTATUS] = 0xa00001800;
           cpu.csr[CSR_MSTATUS],
           cpu.csr[CSR_MEPC],
           cpu.csr[CSR_MTVEC]);
+  printf("[etrace] ecall before: " FMT_WORD ", after: " FMT_WORD "\n",
+           mstatus, cpu.csr[CSR_MSTATUS]);
 #endif
 
   return cpu.csr[CSR_MTVEC];
 }
 
 word_t isa_mret() {
+  word_t mstatus = cpu.csr[CSR_MSTATUS];
+  cpu.csr[CSR_MSTATUS] = (SEXT(BITS(mstatus, 63, 13), 51) << 13) |
+                              (BITS(0, 1, 0) << 11) |
+                              (BITS(mstatus, 10, 8) << 8) |
+                              (BITS(1, 0, 0) << 7)  |
+                              (BITS(mstatus, 6, 4) << 4) |
+                              (BITS(mstatus, 7, 7) << 3) |
+                              (BITS(mstatus, 2, 0)) ;
+#ifdef CONFIG_ETRACE_COND_PROCESS
+  printf("[etrace] mret  before: " FMT_WORD ", after: " FMT_WORD "\n\n",
+           mstatus, cpu.csr[CSR_MSTATUS]);
+#endif
   return cpu.csr[CSR_MEPC];
 }
 
