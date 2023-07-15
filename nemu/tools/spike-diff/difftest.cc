@@ -40,9 +40,11 @@ static debug_module_config_t difftest_dm_config = {
   .support_impebreak = true
 };
 
+#define CSR_ARR_LEN 2048
+
 struct diff_context_t {
   word_t gpr[32];
-  word_t csr[4096];
+  word_t csr[CSR_ARR_LEN];
   word_t pc;
 };
 
@@ -53,6 +55,7 @@ static state_t *state = NULL;
 void sim_t::diff_init(int port) {
   p = get_core("0");
   state = p->get_state();
+  p->put_csr(0x300, 0xa00001800);
 }
 
 void sim_t::diff_step(uint64_t n) {
@@ -61,18 +64,30 @@ void sim_t::diff_step(uint64_t n) {
 
 void sim_t::diff_get_regs(void* diff_context) {
   struct diff_context_t* ctx = (struct diff_context_t*)diff_context;
+  ctx->pc = state->pc;
   for (int i = 0; i < NXPR; i++) {
     ctx->gpr[i] = state->XPR[i];
   }
-  ctx->pc = state->pc;
+  for (int i = 0; i < CSR_ARR_LEN; i++) {
+    if (i == 0x300) { ctx->csr[i] = p->get_csr(i); } // MSTATUS
+    if (i == 0x305) { ctx->csr[i] = p->get_csr(i); } // MTVEC
+    if (i == 0x341) { ctx->csr[i] = p->get_csr(i); } // MEPC
+    if (i == 0x342) { ctx->csr[i] = p->get_csr(i); } // MCAUSE
+  }
 }
 
 void sim_t::diff_set_regs(void* diff_context) {
   struct diff_context_t* ctx = (struct diff_context_t*)diff_context;
+  state->pc = ctx->pc;
   for (int i = 0; i < NXPR; i++) {
     state->XPR.write(i, (sword_t)ctx->gpr[i]);
   }
-  state->pc = ctx->pc;
+  for (int i = 0; i < CSR_ARR_LEN; i++) {
+    if (i == 0x300) { p->put_csr(i, ctx->csr[i]); } // MSTATUS
+    if (i == 0x305) { p->put_csr(i, ctx->csr[i]); } // MTVEC
+    if (i == 0x341) { p->put_csr(i, ctx->csr[i]); } // MEPC
+    if (i == 0x342) { p->put_csr(i, ctx->csr[i]); } // MCAUSE
+  }
 }
 
 void sim_t::diff_memcpy(reg_t dest, void* src, size_t n) {

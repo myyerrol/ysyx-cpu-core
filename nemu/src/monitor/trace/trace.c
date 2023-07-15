@@ -1,10 +1,10 @@
 #include <trace.h>
 
 #define IRING_BUF_LEN 16
-char  *iringbuf[IRING_BUF_LEN];
-char **iringbuf_head = NULL;
-char **iringbuf_tail = iringbuf + (IRING_BUF_LEN - 1);
-char **iringbuf_curr = NULL;
+static char  *iringbuf[IRING_BUF_LEN];
+static char **iringbuf_head = NULL;
+static char **iringbuf_tail = iringbuf + (IRING_BUF_LEN - 1);
+static char **iringbuf_curr = NULL;
 
 void itrace_record(char *logbuf) {
   if (iringbuf_head == NULL) {
@@ -42,8 +42,8 @@ void itrace_display(char *type,
     _Log("[itrace] pc:          " FMT_WORD "\n", s->pc);
     _Log("[itrace] dnpc:        " FMT_WORD "\n", s->dnpc);
     _Log("[itrace] format hex:  " FMT_WORD "\n", (uint64_t)s->isa.inst.val);
-    // _Log("[itrace] format bin:  " PRINTF_BIN_PATTERN_INST "\n",
-    //                               PRINTF_BIN_INT32(s->isa.inst.val));
+    _Log("[itrace] format bin:  " PRINTF_BIN_PATTERN_INST "\n",
+                                  PRINTF_BIN_INT32(s->isa.inst.val));
     _Log("[itrace] name:        %s\n",  op);
     _Log("[itrace] rs1 addr:    %d\n", rs1);
     _Log("[itrace] rs2 addr:    %d\n", rs2);
@@ -95,8 +95,10 @@ void mtrace_display(char *type,
   }
 }
 
-#define ARR_LEN 1024 * 1024
-
+#define ARR_LEN 1024 * 1024 * 100
+#define JUDGE_LEN Assert( \
+  offset < ARR_LEN, \
+  "[ftrace] out of bounds: arr_len = %dKb, off_len = %ldKb", ARR_LEN, offset);
 // 存储ELF符号表中的函数名称
 static char  *func_name_arr[ARR_LEN];
 // 存储指令调用和返回过程中的函数名称
@@ -129,7 +131,7 @@ static int ftrace_is_elf_64(FILE *fp) {
 
 static char *ftrace_get_func(Elf64_Addr addr) {
   Elf64_Addr offset = addr - CONFIG_MBASE;
-  Assert(offset < ARR_LEN, "Out of bounds: %ld", offset);
+  JUDGE_LEN;
   if (func_name_arr[offset] != NULL) {
     return func_name_arr[offset];
   }
@@ -189,7 +191,7 @@ void ftrace_init(const char *elf_file) {
         Elf32_Word st_name = elf_symbol_arr[i].st_name;
         char *func_name = elf_string_name_arr + st_name;
         Elf64_Addr offset = st_value - elf_header.e_entry;
-        Assert(offset < ARR_LEN, "Out of bounds: %ld", offset);
+        JUDGE_LEN;
         if (func_name_arr[offset] == NULL) {
             func_name_arr[offset] = (char *)malloc(sizeof(char) * 256);
         }

@@ -22,6 +22,8 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   cpu.csr[CSR_MEPC] = epc;
   cpu.csr[CSR_MCAUSE] = NO;
 
+cpu.csr[CSR_MSTATUS] = 0xa00001800;
+
 #ifdef CONFIG_ETRACE_COND_PROCESS
   printf("[etrace] mcause: " FMT_WORD \
                 ", mstatus: " FMT_WORD \
@@ -34,6 +36,10 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 #endif
 
   return cpu.csr[CSR_MTVEC];
+}
+
+word_t isa_mret() {
+  return cpu.csr[CSR_MEPC];
 }
 
 word_t isa_query_intr() {
