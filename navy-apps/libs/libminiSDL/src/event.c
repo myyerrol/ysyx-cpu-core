@@ -1,8 +1,10 @@
 #include <NDL.h>
 #include <SDL.h>
 #include "assert.h"
-#define keyname(k) #k,
+#include <stdio.h>
+#include <string.h>
 
+#define keyname(k) #k,
 #define ARRLEN(arr) (int)(sizeof(arr) / sizeof(arr[0]))
 
 static const char *keyname[] = {
@@ -19,35 +21,29 @@ int SDL_PushEvent(SDL_Event *ev) {
 int SDL_PollEvent(SDL_Event *ev) {
   char buf[100];
 
-  if(NDL_PollEvent(buf,ARRLEN(buf)-1) != 0){
-    if(strncmp (buf, "kd ", 3) == 0){
+  if (NDL_PollEvent(buf, ARRLEN(buf) - 1) != 0) {
+    char *kbd_keydown = "kd";
+    int   kbd_keycode = 0;
+    char *kbd_keyname = "";
+
+    sscanf(buf, "%s %2d %s", kbd_keydown, &kbd_keycode, kbd_keyname);
+    printf("%s %2d %s\n", kbd_keydown, kbd_keycode, kbd_keyname);
+
+    if (strcmp(kbd_keydown, "kd") == 0) {
       ev->key.type = SDL_KEYDOWN;
     }
-    else if(strncmp (buf, "ku ", 3) == 0){
+    else if (strcmp (kbd_keydown, "ku ") == 0) {
       ev->key.type = SDL_KEYUP;
     }
-    if(ev->type == SDL_KEYDOWN || ev->type == SDL_KEYUP){
-      //printf("SDL_PollEvent get: %s\n",buf);
-#if !defined(__ISA_NATIVE__)  // direct read keycode.
-      uint8_t keycode = 0;
-      sscanf(buf+3,"%2d %s",&keycode,buf+6);  // buf+3 -> buf+3 means %s do not change.
-      if(keycode != 0){
-        keystate[keycode] = (ev->type == SDL_KEYDOWN) ? 1:0;
-        ev->key.keysym.sym = keycode;
+    if (ev->type == SDL_KEYDOWN || ev->type == SDL_KEYUP) {
+      if (kbd_keycode != 0) {
+        keystate[kbd_keycode] = (ev->type == SDL_KEYDOWN) ? 1 : 0;
+        ev->key.keysym.sym = kbd_keycode;
         return 1;
       }
-#else // use for native, use keyname to match keycode.
-      buf[strlen(buf)-1] = '\0'; // remove '\n'
-      for(int i=0; i<ARRLEN(keyname); i++){
-        if(strcmp (buf+3, keyname[i]) == 0){
-          ev->key.keysym.sym = i;
-          keystate[i] = (ev->type == SDL_KEYDOWN) ? 1:0;
-          return 1;
-        }
-      }
-#endif
     }
   }
+
   return 0;
 }
 
