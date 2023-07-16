@@ -74,10 +74,10 @@ void do_syscall(Context *c) {
       break;
     }
     case SYS_gettimeofday: {
-      // c->GPRx = sys_gettimeofday((struct timeval  *)a[1],
-      //                            (struct timezone *)a[2]);
-      AM_TIMER_UPTIME_T uptime = io_read(AM_TIMER_UPTIME);
-      c->GPRx = uptime.us;
+      c->GPRx = sys_gettimeofday((struct timeval  *)a[1],
+                                 (struct timezone *)a[2]);
+      // AM_TIMER_UPTIME_T uptime = io_read(AM_TIMER_UPTIME);
+      // c->GPRx = uptime.us;
       break;
     }
     default: {
@@ -101,7 +101,7 @@ void do_syscall(Context *c) {
                 (a[0] !=         SYS_open) &&
                 (a[0] !=          SYS_brk) &&
                 (a[0] != SYS_gettimeofday)) ? fs_get(a[1]).name : "none";
-  printf("[strace] file: %s, type: %s, a0 = %x, a1 = %x, a2 = %x, ret: %x\n",
+  printf("[strace] file: %s, type: %s, a1 = %x, a2 = %x, a3 = %x, ret: %x\n",
          file,
          type,
          a[1],

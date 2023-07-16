@@ -15,6 +15,9 @@ uint32_t NDL_GetTicks() {
   struct timeval timer;
   gettimeofday(&timer, NULL);
   return timer.tv_sec * 1000;
+  // struct timeval now;
+  // gettimeofday(&now, NULL);
+  // return now.tv_usec / 1000;
 }
 
 int NDL_PollEvent(char *buf, int len) {
@@ -38,7 +41,6 @@ void NDL_OpenCanvas(int *w, int *h) {
       *w = screen_w;
       *h = screen_h;
     }
-    printf("width: %d, height: %d\n", screen_w, screen_h);
   }
   close(fd);
 

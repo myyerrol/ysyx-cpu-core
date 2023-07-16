@@ -77,6 +77,7 @@ AS        = $(CROSS_COMPILE)gcc
 CC        = $(CROSS_COMPILE)gcc
 CXX       = $(CROSS_COMPILE)g++
 LD        = $(CROSS_COMPILE)ld
+OBJDUMP   = $(CROSS_COMPILE)objdump
 
 ### Compilation flags
 INC_PATH += $(WORK_DIR)/include $(foreach l,$(LIBS_INC),$(NAVY_HOME)/libs/$(l)/include/)
@@ -123,6 +124,7 @@ libs:
 $(APP): $(OBJS) libs
 	@echo + LD "->" $(shell realpath $@ --relative-to .)
 	@$(LD) $(LDFLAGS) -o $@ $(WL)--start-group $(LINKAGE) $(WL)--end-group
+	@$(OBJDUMP) -d $(APP) > $(APP).txt
 
 ### Rule (archive): objects (`*.o`) -> `ARCHIVE.a` (ar)
 $(ARCHIVE): $(OBJS) libs
@@ -149,6 +151,7 @@ install: app
 	@echo + INSTALL "->" $(NAME)
 	@mkdir -p $(NAVY_HOME)/fsimg/bin
 	@cp $(APP) $(NAVY_HOME)/fsimg/bin/$(NAME)
+	@mv $(APP).txt $(NAVY_HOME)/fsimg/bin
 
 .PHONY: install
 
@@ -166,8 +169,8 @@ $(CLEAN_ALL):
 .PHONY: clean-all $(CLEAN_ALL)
 
 ### Build fsimg and ramdisk for Nanos-lite
-APPS =
-TESTS = dummy hello file-test timer-test event-test bmp-test
+APPS = nslider menu nterm bird pal
+TESTS = dummy hello file-test timer-test event-test bmp-test fixedptc-test
 
 fsimg: $(addprefix apps/, $(APPS)) $(addprefix tests/, $(TESTS))
 	-for t in $^; do $(MAKE) -s -C $(NAVY_HOME)/$$t install; done
