@@ -76,8 +76,6 @@ void do_syscall(Context *c) {
     case SYS_gettimeofday: {
       c->GPRx = sys_gettimeofday((struct timeval  *)a[1],
                                  (struct timezone *)a[2]);
-      // AM_TIMER_UPTIME_T uptime = io_read(AM_TIMER_UPTIME);
-      // c->GPRx = uptime.us;
       break;
     }
     default: {
