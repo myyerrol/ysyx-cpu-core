@@ -31,13 +31,13 @@ int NDL_PollEvent(char *buf, int len) {
 void NDL_OpenCanvas(int *w, int *h) {
   int fd = open("/proc/dispinfo", 0, 0);
   char buf[64];
-  if (read(fd, buf, sizeof(buf))) {
+  if (read(fd, buf, sizeof(buf)) == 0) {
     sscanf(buf, "width: %d, height: %d", &screen_w, &screen_h);
-    assert(screen_w >= *w && screen_h >= *h);
-    if(*w == 0 && *h == 0) {
+    if (*w == 0 && *h == 0) {
       *w = screen_w;
       *h = screen_h;
     }
+    assert(screen_w >= *w && screen_h >= *h);
   }
   close(fd);
 
