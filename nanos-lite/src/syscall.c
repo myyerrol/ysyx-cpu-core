@@ -1,10 +1,11 @@
 #include <sys/time.h>
 #include <common.h>
 #include <fs.h>
+#include <proc.h>
 
 #include "syscall.h"
 
-// #define STRACE_COND_PROCESS
+#define STRACE_COND_PROCESS
 
 intptr_t sys_write(int fd, const void *buf, size_t len) {
   intptr_t i = 0;
@@ -39,8 +40,9 @@ void do_syscall(Context *c) {
 
   switch (a[0]) {
     case SYS_exit: {
-      c->GPRx = c->GPR2;
-      halt(c->GPR2);
+      // halt(a[1]);
+      naive_uload(NULL, "/bin/menu");
+      // naive_uload(NULL, "/bin/nterm");
       break;
     }
     case SYS_yield: {
@@ -73,6 +75,10 @@ void do_syscall(Context *c) {
       c->GPRx = 0;
       break;
     }
+    case SYS_execve: {
+      naive_uload(NULL, (const char *)a[1]);
+      break;
+    }
     case SYS_gettimeofday: {
       c->GPRx = sys_gettimeofday((struct timeval  *)a[1],
                                  (struct timezone *)a[2]);
@@ -93,6 +99,7 @@ void do_syscall(Context *c) {
                (a[0] ==        SYS_close) ? "SYS_CLOSE" :
                (a[0] ==        SYS_lseek) ? "SYS_LSEEK" :
                (a[0] ==          SYS_brk) ? "SYS_BRK" :
+               (a[0] ==       SYS_execve) ? "SYS_EXECVE" :
                (a[0] == SYS_gettimeofday) ? "SYS_GETTIMEOFDAY" : "";
   char *file = ((a[0] !=         SYS_exit) &&
                 (a[0] !=        SYS_yield) &&

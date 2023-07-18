@@ -151,7 +151,6 @@ install: app
 	@echo + INSTALL "->" $(NAME)
 	@mkdir -p $(NAVY_HOME)/fsimg/bin
 	@cp $(APP) $(NAVY_HOME)/fsimg/bin/$(NAME)
-	@mv $(APP).txt $(NAVY_HOME)/fsimg/bin
 
 .PHONY: install
 
