@@ -12,9 +12,12 @@ static int fbdev = -1;
 static int screen_w = 0, screen_h = 0;
 
 uint32_t NDL_GetTicks() {
-  struct timeval timer;
-  gettimeofday(&timer, NULL);
-  return timer.tv_sec * 1000;
+  // struct timeval timer;
+  // gettimeofday(&timer, NULL);
+  // return timer.tv_sec * 1000;
+    struct timeval now;
+  gettimeofday(&now, NULL);
+  return now.tv_usec/1000;
 }
 
 int NDL_PollEvent(char *buf, int len) {
@@ -24,15 +27,17 @@ int NDL_PollEvent(char *buf, int len) {
 
 void NDL_OpenCanvas(int *w, int *h) {
   int fd = open("/proc/dispinfo", 0, 0);
+
   char buf[64];
-  if (read(fd, buf, sizeof(buf)) == 0) {
-    sscanf(buf, "width: %d, height: %d", &screen_w, &screen_h);
-    if (*w == 0 && *h == 0) {
-      *w = screen_w;
-      *h = screen_h;
-    }
-    assert(screen_w >= *w && screen_h >= *h);
+  read(fd, buf, sizeof(buf));
+  sscanf(buf, "width: %d, height: %d", &screen_w, &screen_h);
+
+  if (*w == 0 && *h == 0) {
+    *w = screen_w;
+    *h = screen_h;
   }
+  assert(screen_w >= *w && screen_h >= *h);
+
   close(fd);
 
   // if (getenv("NWM_APP")) {
