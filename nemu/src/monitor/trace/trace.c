@@ -102,7 +102,7 @@ void mtrace_display(char *type,
 // 存储ELF符号表中的函数名称
 static char  *func_name_arr[ARR_LEN];
 // 存储指令调用和返回过程中的函数名称
-static int    inst_func_call_depth = -1;
+static int    inst_func_call_depth = 0;
 static char  *inst_func_name_arr[ARR_LEN];
 static char **inst_func_name_head = inst_func_name_arr;
 // 存储指令调用和返回过程中的调试信息
@@ -235,8 +235,6 @@ void ftrace_display(char *type,
   }
 
   if (inst_func_call) {
-    inst_func_name_head++;
-    inst_func_call_depth++;
     if (*inst_func_name_head == NULL) {
       *inst_func_name_head = (char *)malloc(sizeof(char *) * 256);
     }
@@ -248,11 +246,19 @@ void ftrace_display(char *type,
             "",
             *inst_func_name_head,
             (uint32_t)dnpc);
+    inst_func_name_head++;
+    inst_func_call_depth++;
   }
 
   if (inst_func_ret) {
-    inst_func_name_head--;
-    inst_func_call_depth--;
+    if (inst_func_name_head == inst_func_name_arr) {
+      return;
+    }
+    else {
+      inst_func_name_head--;
+      inst_func_call_depth--;
+    }
+
     char printf_format[] = " ret  %*s[%s]\n";
     sprintf(buf_tail,
             printf_format,

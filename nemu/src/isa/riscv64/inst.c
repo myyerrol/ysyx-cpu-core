@@ -100,6 +100,7 @@ static int decode_exec(Decode *s) {
 
   INSTPAT("0000000 ????? ????? 001 ????? 01100 11", sll,    R, R(rd) = src1 << BITS(src2, 5, 0));
   INSTPAT("000000? ????? ????? 001 ????? 00100 11", slli,   I, R(rd) = src1 << BITS(imm, 5, 0));
+  INSTPAT("0000000 ????? ????? 101 ????? 01100 11", srl,    R, R(rd) = src1 >> BITS(src2, 5, 0));
   INSTPAT("000000? ????? ????? 101 ????? 00100 11", srli,   I, R(rd) = src1 >> BITS(imm, 5, 0));
   INSTPAT("0100000 ????? ????? 101 ????? 01100 11", sra,    R, R(rd) = (sword_t)src1 >> BITS(src2, 5, 0));
   INSTPAT("010000? ????? ????? 101 ????? 00100 11", srai,   I, R(rd) = (sword_t)src1 >> BITS( imm, 5, 0));
@@ -185,7 +186,7 @@ static int decode_exec(Decode *s) {
 #ifdef CONFIG_FTRACE
 #ifdef CONFIG_FTRACE_COND_PROCESS
   ftrace_display("process", inst_func_call, inst_func_ret, s->pc, s->dnpc);
-#else
+#elif CONFIG_FTRACE_COND_RESULT
   ftrace_display("", inst_func_call, inst_func_ret, s->pc, s->dnpc);
 #endif
 
