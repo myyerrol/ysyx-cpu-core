@@ -80,9 +80,6 @@ size_t fs_read(int fd, void *buf, size_t len) {
   }
   else {
     size_t file_size = file_table[fd].size;
-    if (open_offset >= file_size) {
-      return -1;
-    }
     if ((open_offset + len) > file_size) {
       len = file_size - open_offset;
     }
@@ -121,9 +118,6 @@ size_t fs_write(int fd, const void *buf, size_t len) {
   }
   else {
     size_t file_size = file->size;
-    if (open_offset >= file_size) {
-      return -1;
-    }
     if ((open_offset + len) > file_size) {
       len = file_size - open_offset;
     }
@@ -133,11 +127,11 @@ size_t fs_write(int fd, const void *buf, size_t len) {
   }
 }
 
-size_t fs_lseek(int fd, size_t offset, int wnehce) {
+size_t fs_lseek(int fd, size_t offset, int whence) {
   if (fd > 2) {
     Finfo *file = &file_table[fd];
     size_t file_size = file->size;
-    switch (wnehce) {
+    switch (whence) {
       case SEEK_SET: {
         if (offset <= file_size) {
           open_offset = offset;

@@ -30,7 +30,7 @@ int SDL_PollEvent(SDL_Event *ev) {
     }
 
     if (ev->type == SDL_KEYDOWN || ev->type == SDL_KEYUP) {
-      printf("%s\n", buf);
+      // printf("%s\n", buf);
       uint8_t keycode = 0;
       sscanf(buf + 3, "%2d %s", &keycode, buf + 6);
       if (keycode != 0) {
