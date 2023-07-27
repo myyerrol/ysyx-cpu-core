@@ -34,7 +34,6 @@ void NDL_OpenCanvas(int *w, int *h) {
     *h = screen_h;
   }
   assert(screen_w >= *w && screen_h >= *h);
-
   close(fd);
 
   // if (getenv("NWM_APP")) {
@@ -57,6 +56,9 @@ void NDL_OpenCanvas(int *w, int *h) {
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
+  x = 1;
+  y = screen_w * ((screen_h - h) / 2) + ((screen_w - w) / 2);
+
   int fd = open("/dev/fb", 0, 0);
   lseek(fd, x * y, SEEK_SET);
   write(fd, pixels, ((size_t)w << 32) | ((size_t)h & 0x00000000FFFFFFFF));
