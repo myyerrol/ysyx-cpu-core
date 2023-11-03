@@ -7,8 +7,8 @@
 static uint64_t boot_time = 0;
 
 static uint64_t read_time() {
-  uint32_t lo = inl(RTC_ADDR + 0);
   uint32_t hi = inl(RTC_ADDR + 4);
+  uint32_t lo = inl(RTC_ADDR + 0);
   uint64_t time = ((uint64_t)hi << 32) | lo;
   return time;
 }
