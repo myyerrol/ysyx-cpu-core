@@ -48,9 +48,14 @@ void writePhyMemData(paddr_t addr, int len, word_t data) {
 void initMem() {
 #ifdef CONFIG_MEM_RANDOM
     uint32_t *pmem_p = (uint32_t *)pmem;
-    for (int i = 0; i < (int)(CONFIG_MSIZE / sizeof(pmem_p[0])); i ++) {
+    for (int i = 0; i < (int)(CONFIG_MSIZE / sizeof(pmem_p[0])); i++) {
         pmem_p[i] = rand();
     }
+#else
+    uint32_t *pmem_p = (uint32_t *)pmem;
+    pmem_p[0] = 0x00100093;
+    pmem_p[1] = 0x00A00193;
+    pmem_p[2] = 0x00100073;
 #endif
     LOG("physical memory area [" FMT_PADDR ", " FMT_PADDR "]",
         PMEM_LEFT,
