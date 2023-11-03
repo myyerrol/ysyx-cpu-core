@@ -98,7 +98,7 @@ void initCPUSim() {
     contextp->traceEverOn(true);
 #ifdef CONFIG_DEBUG_WAVE
     top->trace(tfp, 0);
-    tfp->open("build/cpu/Wave.vcd");
+    tfp->open("build/cpu/wave.vcd");
 #endif
 
 #ifdef CONFIG_ITRACE_COND_PROCESS
