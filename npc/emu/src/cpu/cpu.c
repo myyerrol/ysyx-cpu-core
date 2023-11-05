@@ -126,7 +126,7 @@ void execCPU(uint64_t num) {
         case NPC_END: case NPC_ABORT: {
 #ifdef CONFIG_ITRACE_COND_RESULT
 #ifndef CONFIG_ITRACE_COND_PROCESS
-            // printf("\n");
+            printf("\n");
 #endif
             printfDebugITrace();
 #endif
