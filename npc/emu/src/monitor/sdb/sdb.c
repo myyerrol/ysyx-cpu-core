@@ -207,7 +207,7 @@ void loopSDB() {
     initCPUSim();
     resetCPUSimModule(1);
 
-    if (1) {
+    if (sdb_batch_mode) {
         cmd_c(NULL);
         return;
     }
