@@ -17,6 +17,7 @@
 #include <cpu/cpu.h>
 #include <difftest-def.h>
 #include <memory/paddr.h>
+#include <stdio.h>
 
 void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
   if (direction == DIFFTEST_TO_REF) {
@@ -33,13 +34,11 @@ void difftest_regcpy(void *dut, bool direction) {
     for (int i = 0; i < 32; i++) {
       cpu.gpr[i] = dut_p->gpr[i];
     }
-    cpu.pc = dut_p->pc;
   }
   else if (direction == DIFFTEST_TO_DUT) {
     for (int i = 0; i < 32; i++) {
       dut_p->gpr[i] = cpu.gpr[i];
     }
-    dut_p->pc = cpu.pc;
   }
 }
 
