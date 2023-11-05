@@ -102,15 +102,15 @@ gen: $(SRCVS_PROJECT_GEN)
 	@echo "success"
 run: $(BIN_PROJECT)
 	$(call git_commit, "run NPC")
-	rm -rf $(BUILD_DIR_PROJECT)/Wave.vcd
+	rm -rf $(BUILD_DIR_PROJECT)/wave.vcd
 	$(NPC_EXEC)
 gdb: $(BIN_PROJECT)
 	$(call git_commit, "gdb NPC")
-	rm -rf $(BUILD_DIR_PROJECT)/Wave.vcd
+	rm -rf $(BUILD_DIR_PROJECT)/wave.vcd
 	gdb -s $(BIN_PROJECT) --args $(NPC_EXEC)
 sim: $(BIN_PROJECT)
 	$(call git_commit, "sim NPC")
-	gtkwave $(BUILD_DIR_PROJECT)/Wave.vcd
+	gtkwave $(BUILD_DIR_PROJECT)/wave.vcd
 	@echo "success"
 install_bsp:
 	mill -i mill.bsp.BSP/install
