@@ -5,7 +5,7 @@ import mill.scalalib.TestModule.Utest
 
 import mill.bsp._
 
-object cpu extends ScalaModule with ScalafmtModule { m =>
+trait cpu extends ScalaModule with ScalafmtModule { m =>
     override def scalaVersion = "2.13.8"
     override def scalacOptions = Seq(
         "-language:reflectiveCalls",
@@ -28,3 +28,5 @@ object cpu extends ScalaModule with ScalafmtModule { m =>
         )
     }
 }
+object single extends cpu
+object pipeline extends cpu

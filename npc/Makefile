@@ -1,3 +1,15 @@
+PROJECT      ?=
+PROJECT_TEMP := single
+PROJECT_LIST := single pipeline
+
+ifeq ($(filter $(PROJECT_LIST), $(PROJECT)), )
+    ifneq ($(MAKECMDGOALS), clean)
+        $(error $$PROJECT is incorrect, optional values in [$(PROJECT_LIST)])
+    endif
+else
+    PROJECT_TEMP = $(PROJECT)
+endif
+
 ifeq ($(wildcard $(NPC_HOME)/emu/src/main.c),)
     $(error NPC_HOME=$(NPC_HOME) is not a NPC repo)
 endif
@@ -8,15 +20,14 @@ endif
 export PATH := $(PATH):$(abspath ./utils)
 
 TOPNAME = Top
-PROJECT = cpu
 
 REMOVE_QUOTE = $(patsubst "%",%,$(1))
 GUEST_ISA ?= $(call REMOVE_QUOTE,$(CONFIG_ISA))
 ENGINE ?= $(call REMOVE_QUOTE,$(CONFIG_ENGINE))
-NAME    = $(GUEST_ISA)-npc-$(ENGINE)
+NAME = $(GUEST_ISA)-npc-$(ENGINE)
 
-BUILD_DIR = $(NPC_HOME)/build
-BUILD_DIR_PROJECT = $(BUILD_DIR)/$(PROJECT)
+BUILD_DIR = $(NPC_HOME)/cpu/build
+BUILD_DIR_PROJECT = $(BUILD_DIR)/$(PROJECT_TEMP)
 OBJ_DIR_PROJECT = $(BUILD_DIR_PROJECT)/obj_dir
 BIN_PROJECT = $(BUILD_DIR_PROJECT)/$(NAME)
 
@@ -46,8 +57,8 @@ LDFLAGS += $(CFLAGS_BUILD) \
            $(shell llvm-config-11 --libs) \
            -lSDL2
 
-PROJECT_SRCS_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/src)
-PROJECT_SRCV_DIR = $(abspath $(NPC_HOME)/$(PROJECT)/srcv)
+PROJECT_SRCS_DIR = $(abspath $(NPC_HOME)/cpu/$(PROJECT_TEMP)/src)
+PROJECT_SRCV_DIR = $(abspath $(NPC_HOME)/cpu/$(PROJECT_TEMP)/srcv)
 
 SRCSS_PROJECT     = $(shell find $(PROJECT_SRCS_DIR) -name "*.scala")
 SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
@@ -72,9 +83,9 @@ SRCCS_PROJECT = $(filter-out $(SRCCS_BLACKLIST),$(SRCCS_WHITELIST)) \
                 $(NPC_HOME)/emu/src/utils/disasm.cc
 
 $(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
-	$(call git_commit, "generate verilog")
-	mkdir -p $(BUILD_DIR_PROJECT)
-	mill -i $(PROJECT).test.runMain TopMain -td $(BUILD_DIR_PROJECT)
+	cd cpu && \
+	mkdir -p $(BUILD_DIR_PROJECT) && \
+	mill -i $(PROJECT_TEMP).test.runMain TopMain -td $(BUILD_DIR_PROJECT)
 $(BIN_PROJECT): $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
 	@rm -rf $(OBJ_DIR_PROJECT)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
@@ -94,10 +105,10 @@ override ARGS += $(ARGS_DIFF)
 IMG ?=
 NPC_EXEC := $(BIN_PROJECT) $(ARGS) $(IMG)
 
-.PHONY: test gen build run sim install_bsp reformat check_format clean
+.PHONY: test gen build run sim reformat checkformat clean
 
 test:
-	mill -i $(PROJECT).test
+	mill -i $(PROJECT_TEMP).test
 gen: $(SRCVS_PROJECT_GEN)
 	@echo "success"
 run: $(BIN_PROJECT)
@@ -112,13 +123,11 @@ sim: $(BIN_PROJECT)
 	$(call git_commit, "sim NPC")
 	gtkwave $(BUILD_DIR_PROJECT)/wave.vcd
 	@echo "success"
-install_bsp:
-	mill -i mill.bsp.BSP/install
 reformat:
 	mill -i __.reformat
-check_format:
+checkformat:
 	mill -i __.checkFormat
 clean:
-	rm -rf build
-	rm -rf out
-	rm -rf test_run_dir
+	rm -rf cpu/build
+	rm -rf cpu/out
+	rm -rf cpu/test_run_dir
