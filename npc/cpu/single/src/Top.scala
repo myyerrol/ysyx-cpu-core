@@ -1,11 +1,11 @@
 import chisel3._
 import chisel3.util._
 
-import cpu.comp._
+import cpu.common.Base._
+import cpu.common.Inst._
+import cpu.core._
 import cpu.dpi._
-import cpu.stage._
-import cpu.util.Base._
-import cpu.util.Inst._
+import cpu.modules._
 
 class Top extends Module {
     val io = IO(new Bundle {

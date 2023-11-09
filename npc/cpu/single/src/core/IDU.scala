@@ -1,10 +1,10 @@
-package cpu.stage
+package cpu.core
 
 import chisel3._
 import chisel3.util._
 
-import cpu.util.Base._
-import cpu.util.Inst._
+import cpu.common.Base._
+import cpu.common.Inst._
 
 class IDU extends Module {
     val io = IO(new Bundle {

@@ -1,10 +1,10 @@
-package cpu.stage
+package cpu.core
 
 import chisel3._
 import chisel3.util._
 
-import cpu.comp._
-import cpu.util.Base._
+import cpu.common.Base._
+import cpu.modules._
 
 class EXU extends Module {
     val io = IO(new Bundle {

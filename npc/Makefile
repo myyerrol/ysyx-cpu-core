@@ -35,7 +35,8 @@ VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc \
                     -O3 --x-assign fast --x-initial fast --noassert \
                     --trace \
-                    -Wno-WIDTHEXPAND
+                    -Wno-WIDTHEXPAND \
+                    -Wno-WIDTHTRUNC
 
 INC_PATH += $(NPC_HOME)/emu/include \
             $(NPC_HOME)/emu/include/generated
@@ -61,7 +62,7 @@ PROJECT_SRCS_DIR = $(abspath $(NPC_HOME)/cpu/$(PROJECT_TEMP)/src)
 PROJECT_SRCV_DIR = $(abspath $(NPC_HOME)/cpu/$(PROJECT_TEMP)/srcv)
 
 SRCSS_PROJECT     = $(shell find $(PROJECT_SRCS_DIR) -name "*.scala")
-SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/Top.v
+SRCVS_PROJECT_GEN = $(BUILD_DIR_PROJECT)/$(TOPNAME).v
 SRCVS_PROJECT     = $(shell find $(PROJECT_SRCV_DIR) -name "*.v")
 
 SRCCS_DIR += $(NPC_HOME)/emu/src \

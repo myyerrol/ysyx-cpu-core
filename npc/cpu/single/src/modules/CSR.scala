@@ -1,9 +1,9 @@
-package cpu.comp
+package cpu.modules
 
 import chisel3._
 import chisel3.util._
 
-import cpu.util.Base._
+import cpu.common.Base._
 
 class CSR extends Module {
     val io = IO(new Bundle {

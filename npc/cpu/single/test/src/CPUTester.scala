@@ -3,7 +3,7 @@ import chiseltest._
 
 import utest._
 
-import cpu.util.Base._
+import cpu.common.Base._
 
 object CPUTester extends ChiselUtestTester {
     val tests = Tests {
