@@ -1,6 +1,6 @@
 PROJECT      ?=
 PROJECT_TEMP := single
-PROJECT_LIST := single pipeline
+PROJECT_LIST := single pipeline temp
 
 ifeq ($(filter $(PROJECT_LIST), $(PROJECT)), )
     ifneq ($(MAKECMDGOALS), clean)
