@@ -5,7 +5,7 @@ import chisel3.util._
 
 import cpu.common.Base._
 
-class AMU extends Module {
+class LSU extends Module {
     val io = IO(new Bundle {
         val iMemWrEn   = Input(Bool())
         val iMemWrAddr = Input(UInt(DATA_WIDTH.W))
