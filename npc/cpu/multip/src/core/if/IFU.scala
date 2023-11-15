@@ -10,8 +10,7 @@ class IFU extends Moudule with ConfigInst {
         val oPC = Output(UInt(DATA_WIDTH.W))
     })
 
-    val pc     = RegInit(ADDR_SIM_START)
-    val pcNext = pc + 4.U(DATA_WIDTH.W)
+    val rPC = RegInit(ADDR_SIM_START)
 
-    io.oPC := pcNext
+    io.oPC := rPC
 }

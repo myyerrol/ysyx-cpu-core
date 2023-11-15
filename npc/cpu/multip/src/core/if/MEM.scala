@@ -7,18 +7,19 @@ import cpu.common._
 
 class MEM extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val iEnWr   =  Input(UInt(DATA_WIDTH.W))
-        val iEnRd   =  Input(UInt(DATA_WIDTH.W))
+        val iWrEn   =  Input(UInt(DATA_WIDTH.W))
+        val iRdEn   =  Input(UInt(DATA_WIDTH.W))
         val iAddr   =  Input(UInt(DATA_WIDTH.W))
-        val iDataWr =  Input(UInt(DATA_WIDTH.W))
-        val oDataRd = Output(UInt(DATA_WIDTH.W))
+        val iWrData =  Input(UInt(DATA_WIDTH.W))
+
+        val oRdData = Output(UInt(DATA_WIDTH.W))
     })
 
-    val mem = Mem(4096, UInt(DATA_WIDTH.W))
+    val mMem = Mem(MEM_LENGTH, UInt(DATA_WIDTH.W))
 
-    when (io.iEnWr) {
-        mem(io.iAddr) := io.ioDataWr
+    when (io.iWrEn) {
+        mMem(io.iAddr) := io.iWrData
     }
 
-    io.iDataRd := Mux(iEnRd, mem(io.addr), DATA_ZERO)
+    io.iDataRd := Mux(iRdEn, mMem(io.addr), DATA_ZERO)
 }
