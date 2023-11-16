@@ -5,7 +5,7 @@ import chisel3.util._
 
 import cpu.common._
 
-class IFU extends Moudule with ConfigInst {
+class IFU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val oPC = Output(UInt(DATA_WIDTH.W))
     })

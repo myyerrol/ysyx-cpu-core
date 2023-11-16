@@ -19,7 +19,7 @@ class GPR extends Module with ConfigInst {
 
     val mGPR = Mem(GPR_NUM, UInt(DATA_WIDTH.W))
 
-    when (io.iWrEn) {
+    when (io.iWrEn === SIG_TRUE) {
         mGPR(io.iRDAddr) := io.iWrData
     }
 

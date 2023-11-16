@@ -117,6 +117,7 @@ trait ConfigIO {
     val ALU_RS2_IMM_B = 4.U(SIGS_WIDTH.W)
     val ALU_RS2_IMM_U = 5.U(SIGS_WIDTH.W)
     val ALU_RS2_IMM_J = 6.U(SIGS_WIDTH.W)
+    val ALU_RS2_NPC   = 7.U(SIGS_WIDTH.W)
 
     val MEM_BYT_X   = 0.U(SIGS_WIDTH.W)
     val MEM_BYT_1_U = 1.U(SIGS_WIDTH.W)
