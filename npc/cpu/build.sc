@@ -29,5 +29,5 @@ trait cpu extends ScalaModule with ScalafmtModule { m =>
     }
 }
 object single extends cpu
+object multip extends cpu
 object pipeline extends cpu
-object temp extends cpu
