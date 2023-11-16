@@ -7,13 +7,13 @@ import cpu.common._
 
 class IRU extends Module with ConfigInst {
    val io = IO(new Bundle {
-        val iIREn =  Input(Bool())
-        val iInst =  Input(UInt(DATA_WIDTH.W))
+        val iIRWrEn =  Input(Bool())
+        val iInst   =  Input(UInt(DATA_WIDTH.W))
 
-        val oInst = Output(UInt(DATA_WIDTH.W))
+        val oInst   = Output(UInt(DATA_WIDTH.W))
     })
 
-    val rInst = RegEnable(io.iInst, DATA_ZERO, io.iIREn === SIG_TRUE)
+    val rInst = RegEnable(io.iInst, DATA_ZERO, io.iIRWrEn)
 
     io.oInst := rInst
 }

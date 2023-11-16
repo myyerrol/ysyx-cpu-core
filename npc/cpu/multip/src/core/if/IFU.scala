@@ -7,10 +7,44 @@ import cpu.common._
 
 class IFU extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val oPC = Output(UInt(DATA_WIDTH.W))
+        val iPCWrEn    =  Input(Bool())
+        val iPCWrConEn =  Input(Bool())
+        val iPCWrSrc   =  Input(UInt(SIGS_WIDTH.W))
+        val iIRWrEn    =  Input(Bool())
+
+        val iZero      =  Input(Bool())
+        val iInst      =  Input(UInt(DATA_WIDTH.W))
+        val iImm       =  Input(UInt(DATA_WIDTH.W))
+        val iNPC       =  Input(UInt(DATA_WIDTH.W))
+        val iALUOut    =  Input(UInt(DATA_WIDTH.W))
+
+        val oPC        = Output(UInt(DATA_WIDTH.W))
+        val oInst      = Output(UInt(DATA_WIDTH.W))
     })
 
     val rPC = RegInit(ADDR_SIM_START)
+    val wNPC = MuxLookup(
+        io.iPCWrSrc,
+        ADDR_SIM_START,
+        Seq(
+            PC_WR_SRC_IMM -> io.iImm,
+            PC_WR_SRC_NPC -> io.iNPC,
+            PC_WR_SRC_ALU -> io.iALUOut
+        )
+    )
 
-    io.oPC := rPC
+    val wPCWr = io.iPCWrEn || (io.iPCWrConEn && io.iZero)
+
+    when (wPCWr) {
+        rPC    := wNPC
+        io.oPC := rPC
+    }.otherwise {
+        io.oPC := rPC
+    }
+
+    val mIRU = Module(new IRU())
+    mIRU.io.iIRWrEn := io.iIRWrEn
+    mIRU.io.iInst   := io.iInst
+
+    io.oInst := mIRU.io.oInst
 }

@@ -5,7 +5,7 @@ import chisel3.util._
 
 import cpu.common._
 
-class IDU extends Module with ConfigInstPattern {
+class IDU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val iPC     = Input(UInt(DATA_WIDTH.W))
         val iInst   = Input(UInt(DATA_WIDTH.W))
@@ -13,9 +13,14 @@ class IDU extends Module with ConfigInstPattern {
 
         val ctrio = new CTRIO
 
-        val oRS1Data = Output(UInt(DATA_WIDTH.W))
-        val oRS2Data = Output(UInt(DATA_WIDTH.W))
-        val oImmData = Output(UInt(DATA_WIDTH.W))
+        val oRS1Addr   = Output(UInt(DATA_WIDTH.W))
+        val oRS2Addr   = Output(UInt(DATA_WIDTH.W))
+        val oRDAddr    = Output(UInt(DATA_WIDTH.W))
+
+        val oRS1Data   = Output(UInt(DATA_WIDTH.W))
+        val oRS2Data   = Output(UInt(DATA_WIDTH.W))
+        val oRdEndData = Output(UInt(DATA_WIDTH.W))
+        val oImmData   = Output(UInt(DATA_WIDTH.W))
     })
 
     val mCTR = Module(new CTR())
@@ -26,16 +31,26 @@ class IDU extends Module with ConfigInstPattern {
     val wInst = io.iInst
 
     val mGPR = Module(new GPR())
-    mGPR.io.iWrEn    := mCTR.io.ctrio.oGPRWrEn
-    mGPR.io.iRS1Addr := wInst(19, 15)
-    mGPR.io.iRS2Addr := wInst(24, 20)
-    mGPR.io.iRDAddr  := wInst(11, 07)
+    mGPR.io.iWrEn    := io.ctrio.oGPRWrEn
+
+    val wRS1Addr = wInst(19, 15)
+    val wRS2Addr = wInst(24, 20)
+    val wRDAddr  = wInst(11, 07)
+
+    io.oRS1Addr  := wRS1Addr
+    io.oRS2Addr  := wRS2Addr
+    io.oRDAddr   := wRDAddr
+
+    mGPR.io.iRS1Addr := wRS1Addr
+    mGPR.io.iRS2Addr := wRS2Addr
+    mGPR.io.iRDAddr  := wRDAddr
     mGPR.io.iWrData  := io.iWrData
 
     val rRS1Data = RegNext(mGPR.io.oRS1Data, DATA_ZERO)
     val rRS2Data = RegNext(mGPR.io.oRS2Data, DATA_ZERO)
-    io.oRS1Data := rRS1Data
-    io.oRS2Data := rRS2Data
+    io.oRS1Data   := rRS1Data
+    io.oRS2Data   := rRS2Data
+    io.oRdEndData := mGPR.io.oRdEndData
 
     val wImmI     = wInst(31, 20)
     val wImmISext = Cat(Fill(52, wImmI(11)), wImmI)
@@ -49,7 +64,7 @@ class IDU extends Module with ConfigInstPattern {
     val wImmJSext = Cat(Fill(43, wImmJ(19)), wImmJ, 0.U(1.U))
 
     io.oImmData := MuxLookup(
-        mCTR.io.ctrio.oALURS2,
+        io.ctrio.oALURS2,
         DATA_ZERO,
         Seq(
             ALU_RS2_IMM_I -> wImmISext,

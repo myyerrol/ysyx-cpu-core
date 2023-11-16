@@ -9,11 +9,17 @@ trait ConfigIO {
     val GPRS_WIDTH = 5
     val SIGS_WIDTH = 10
 
-    val GPR_NUM = 1 << GPRS_WIDTH
-    val MEM_NUM = 4096
+    val GPRS_NUM = 1 << GPRS_WIDTH
+    val MEMS_NUM = 4096
+}
 
-    val SIG_FALSE = 0.U(SIGS_WIDTH.W)
-    val SIG_TRUE  = 1.U(SIGS_WIDTH.W)
+trait ConfigInst extends ConfigIO {
+    val ADDR_SIM_START = "x80000000".U(DATA_WIDTH.W)
+    val DATA_ZERO      = "x00000000".U(DATA_WIDTH.W)
+    val GPRS_10        = 10.U(GPRS_WIDTH.W)
+
+    val EN_TRUE  = true.B
+    val EN_FALSE = false.B
 
     val INST_NAME_X      =  0.U(SIGS_WIDTH.W)
     val INST_NAME_SLL    =  1.U(SIGS_WIDTH.W)
@@ -117,7 +123,7 @@ trait ConfigIO {
     val ALU_RS2_IMM_B = 4.U(SIGS_WIDTH.W)
     val ALU_RS2_IMM_U = 5.U(SIGS_WIDTH.W)
     val ALU_RS2_IMM_J = 6.U(SIGS_WIDTH.W)
-    val ALU_RS2_NPC   = 7.U(SIGS_WIDTH.W)
+    val ALU_RS2_4     = 7.U(SIGS_WIDTH.W)
 
     val MEM_BYT_X   = 0.U(SIGS_WIDTH.W)
     val MEM_BYT_1_U = 1.U(SIGS_WIDTH.W)
@@ -141,11 +147,6 @@ trait ConfigIO {
     val PC_WR_SRC_IMM = 1.U(SIGS_WIDTH.W)
     val PC_WR_SRC_NPC = 2.U(SIGS_WIDTH.W)
     val PC_WR_SRC_ALU = 3.U(SIGS_WIDTH.W)
-}
-
-trait ConfigInst extends ConfigIO {
-    val ADDR_SIM_START = "x80000000".U(DATA_WIDTH.W)
-    val DATA_ZERO      = "x00000000".U(DATA_WIDTH.W)
 }
 
 trait ConfigInstPattern extends ConfigInst {

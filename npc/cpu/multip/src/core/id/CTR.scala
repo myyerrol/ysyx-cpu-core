@@ -7,16 +7,16 @@ import cpu.common._
 
 class CTRIO extends Bundle with ConfigIO {
     val oInstName   = Output(UInt(SIGS_WIDTH.W))
-
-    val oPCWrEn     = Output(UInt(SIGS_WIDTH.W))
-    val oPCWrConEn  = Output(UInt(SIGS_WIDTH.W))
+    val oStateCurr  = Output(UInt(SIGS_WIDTH.W))
+    val oPCWrEn     = Output(Bool())
+    val oPCWrConEn  = Output(Bool())
     val oPCWrSrc    = Output(UInt(SIGS_WIDTH.W))
-    val oMemWrEn    = Output(UInt(SIGS_WIDTH.W))
-    val oMemRdEn    = Output(UInt(SIGS_WIDTH.W))
+    val oMemWrEn    = Output(Bool())
+    val oMemRdEn    = Output(Bool())
     val oMemByt     = Output(UInt(SIGS_WIDTH.W))
     val oMemAddrSrc = Output(UInt(SIGS_WIDTH.W))
-    val oIRWrEn     = Output(UInt(SIGS_WIDTH.W))
-    val oGPRWrEn    = Output(UInt(SIGS_WIDTH.W))
+    val oIRWrEn     = Output(Bool())
+    val oGPRWrEn    = Output(Bool())
     val oGPRWrSrc   = Output(UInt(SIGS_WIDTH.W))
     val oALUType    = Output(UInt(SIGS_WIDTH.W))
     val oALURS1     = Output(UInt(SIGS_WIDTH.W))
@@ -97,53 +97,61 @@ class CTR extends Module with ConfigInstPattern {
             DIVW   -> List(INST_NAME_DIVW ),
             DIVUW  -> List(INST_NAME_DIVUW),
             REMU   -> List(INST_NAME_REMU ),
-            REMW   -> List(INST_NAME_REMW ))
+            REMW   -> List(INST_NAME_REMW )
+        )
     )
 
     val wInstName = lInst(0)
-    when (wInstName === INST_NAME_X) {
-        assert(false.B, "Invalid instruction at 0x%x", io.iPC)
-    }
-
     io.ctrio.oInstName := wInstName
 
-    val stateRS :: stateIF :: stateID :: stateEX :: stateLS :: stateWB :: Nil = Enum(6)
-    val rStateCurr = RegInit(stateRS)
+    val stateIF :: stateID :: stateEX :: stateLS :: stateWB :: Nil = Enum(5)
+    val rStateCurr = RegInit(stateIF)
+
+    io.ctrio.oStateCurr := rStateCurr
+
+    val wPCWrEn     = WireInit(EN_FALSE)
+    val wPCWrConEn  = WireInit(EN_FALSE)
+    val wPCWrSrc    = WireInit(PC_WR_SRC_X)
+    val wMemWrEn    = WireInit(EN_FALSE)
+    val wMemRdEn    = WireInit(EN_FALSE)
+    val wMemByt     = WireInit(MEM_BYT_X)
+    val wMemAddrSrc = WireInit(MEM_ADDR_SRC_X)
+    val wIRWrEn     = WireInit(EN_FALSE)
+    val wGPRWrEn    = WireInit(EN_FALSE)
+    val wGPRWrSrc   = WireInit(GPR_WR_SRC_X)
+    val wALUType    = WireInit(ALU_TYPE_X)
+    val wALURS1     = WireInit(ALU_RS1_X)
+    val wALURS2     = WireInit(ALU_RS2_X)
 
     switch (rStateCurr) {
-        is (stateRS) {
-            rStateCurr := stateIF
-
-            io.ctrio.oPCWrEn     := SIG_FALSE
-            io.ctrio.oPCWrConEn  := SIG_FALSE
-            io.ctrio.oPCWrSrc    := PC_WR_SRC_X
-            io.ctrio.oMemWrEn    := SIG_FALSE
-            io.ctrio.oMemRdEn    := SIG_TRUE
-            io.ctrio.oMemByt     := MEM_BYT_X
-            io.ctrio.oMemAddrSrc := MEM_ADDR_SRC_X
-            io.ctrio.oIRWrEn     := SIG_FALSE
-            io.ctrio.oGPRWrEn    := SIG_FALSE
-            io.ctrio.oGPRWrSrc   := GPR_WR_SRC_X
-            io.ctrio.oALUType    := ALU_TYPE_X
-            io.ctrio.oALURS1     := ALU_RS1_X
-            io.ctrio.oALURS2     := ALU_RS2_X
-        }
         is (stateIF) {
             rStateCurr := stateID
 
-            io.ctrio.oPCWrEn := SIG_FALSE
-            io.ctrio.oMemByt := MEM_BYT_4_U
-            io.ctrio.oIRWrEn := SIG_TRUE
+            wPCWrEn  := EN_FALSE
+            wMemByt  := MEM_BYT_4_U
+            wIRWrEn  := EN_TRUE
+            // 复用ALU，默认在取指阶段先计算一次PC+4
+            wALUType := ALU_TYPE_ADD
+            wALURS1  := ALU_RS1_PC
+            wALURS2  := ALU_RS2_4
         }
         is (stateID) {
             switch (wInstName) {
                 is (INST_NAME_ADD) {
                     rStateCurr := stateEX
 
-                    io.ctrio.oIRWrEn  := SIG_FALSE
-                    io.ctrio.oALUType := ALU_TYPE_ADD
-                    io.ctrio.oALURS1  := ALU_RS1_GPR
-                    io.ctrio.oALURS2  := ALU_RS2_GPR
+                    wIRWrEn  := EN_FALSE
+                    wALUType := ALU_TYPE_ADD
+                    wALURS1  := ALU_RS1_GPR
+                    wALURS2  := ALU_RS2_GPR
+                }
+                is (INST_NAME_ADDI) {
+                    rStateCurr := stateEX
+
+                    wIRWrEn  := EN_FALSE
+                    wALUType := ALU_TYPE_ADD
+                    wALURS1  := ALU_RS1_GPR
+                    wALURS2  := ALU_RS2_IMM_I
                 }
             }
         }
@@ -155,10 +163,24 @@ class CTR extends Module with ConfigInstPattern {
         is (stateWB) {
             rStateCurr := stateIF
 
-            io.ctrio.oPCWrEn   := SIG_TRUE
-            io.ctrio.oPCWrSrc  := PC_WR_SRC_NPC
-            io.ctrio.oGPRWrEn  := SIG_TRUE
-            io.ctrio.oGPRWrSrc := GPR_WR_SRC_ALU
+            wPCWrEn   := EN_TRUE
+            wPCWrSrc  := PC_WR_SRC_NPC
+            wGPRWrEn  := EN_TRUE
+            wGPRWrSrc := GPR_WR_SRC_ALU
         }
     }
+
+    io.ctrio.oPCWrEn     := wPCWrEn
+    io.ctrio.oPCWrConEn  := wPCWrConEn
+    io.ctrio.oPCWrSrc    := wPCWrSrc
+    io.ctrio.oMemWrEn    := wMemWrEn
+    io.ctrio.oMemRdEn    := wMemRdEn
+    io.ctrio.oMemByt     := wMemByt
+    io.ctrio.oMemAddrSrc := wMemAddrSrc
+    io.ctrio.oIRWrEn     := wIRWrEn
+    io.ctrio.oGPRWrEn    := wGPRWrEn
+    io.ctrio.oGPRWrSrc   := wGPRWrSrc
+    io.ctrio.oALUType    := wALUType
+    io.ctrio.oALURS1     := wALURS1
+    io.ctrio.oALURS2     := wALURS2
 }

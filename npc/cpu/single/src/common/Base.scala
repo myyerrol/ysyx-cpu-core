@@ -6,7 +6,7 @@ import chisel3.util._
 object Base {
     val REG_NUM      = 32
     val CSR_NUM      = 4096
-    val MEM_NUM      = 4096
+    val MEMS_NUM      = 4096
 
     val REG_WIDTH    = 5
     val BYTE_WIDTH   = 8
