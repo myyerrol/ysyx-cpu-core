@@ -129,14 +129,13 @@ void runCPUSimModule() {
         sim_snpc = sim_pc + 4;
         sim_inst = top->io_oInst;
 
-        bool inst_func_call = top->io_oInstCall;
-        bool inst_func_ret  = top->io_oInstRet;
-
         runCPUSimModuleCycle();
 
         sim_dnpc = top->io_oPC;
 
 #ifdef CONFIG_FTRACE
+        bool inst_func_call = top->io_oInstCall;
+        bool inst_func_ret  = top->io_oInstRet;
 #ifdef CONFIG_FTRACE_COND_PROCESS
         printfDebugFTrace((char *)"process",
                           inst_func_call,
