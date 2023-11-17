@@ -6,7 +6,7 @@
 #include <debug/trace.h>
 #include <device/device.h>
 #include <isa/isa.h>
-#include <isa/reg.h>
+#include <isa/gpr.h>
 #include <monitor/sdb/watch.h>
 #include <state.h>
 #include <utils/disasm.h>
@@ -151,6 +151,6 @@ void execCPU(uint64_t num) {
 }
 
 void printfCPUAssertFailMsg() {
-    printfISARegData();
+    printfISAGPRData();
     printfCPUStat();
 }

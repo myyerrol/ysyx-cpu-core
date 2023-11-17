@@ -125,7 +125,7 @@ uint64_t sim_inst = 0;
 
 void runCPUSimModule() {
     if (!sim_ebreak) {
-        sim_pc = top->io_oPC;
+        sim_pc   = top->io_oPC;
         sim_snpc = sim_pc + 4;
         sim_inst = top->io_oInst;
 
@@ -153,7 +153,7 @@ void runCPUSimModule() {
     }
 
     if (sim_ebreak) {
-        setNPCState(NPC_END, sim_pc, top->io_oRegRdEndData);
+        setNPCState(NPC_END, sim_pc, top->io_oEndData);
     }
 }
 

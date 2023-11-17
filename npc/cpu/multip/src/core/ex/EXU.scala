@@ -7,17 +7,18 @@ import cpu.common._
 
 class EXU extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val iALUType =  Input(UInt(SIGS_WIDTH.W))
-        val iALURS1  =  Input(UInt(SIGS_WIDTH.W))
-        val iALURS2  =  Input(UInt(SIGS_WIDTH.W))
-        val iPC      =  Input(UInt(DATA_WIDTH.W))
-        val iRS1Data =  Input(UInt(DATA_WIDTH.W))
-        val iRS2Data =  Input(UInt(DATA_WIDTH.W))
-        val iImmData =  Input(UInt(DATA_WIDTH.W))
+        val iALUType   =  Input(UInt(SIGS_WIDTH.W))
+        val iALURS1    =  Input(UInt(SIGS_WIDTH.W))
+        val iALURS2    =  Input(UInt(SIGS_WIDTH.W))
+        val iPC        =  Input(UInt(DATA_WIDTH.W))
+        val iRS1Data   =  Input(UInt(DATA_WIDTH.W))
+        val iRS2Data   =  Input(UInt(DATA_WIDTH.W))
+        val iImmData   =  Input(UInt(DATA_WIDTH.W))
 
-        val oZero    = Output(Bool())
-        val oNPC     = Output(UInt(DATA_WIDTH.W))
-        val oALUOut  = Output(UInt(DATA_WIDTH.W))
+        val oNPC       = Output(UInt(DATA_WIDTH.W))
+        val oALUZero   = Output(Bool())
+        val oALUOut    = Output(UInt(DATA_WIDTH.W))
+        val oMemWrData = Output(UInt(DATA_WIDTH.W))
     })
 
     val wRS1Data = MuxLookup(
@@ -44,16 +45,20 @@ class EXU extends Module with ConfigInst {
     )
 
     val mALU = Module(new ALU())
-    mALU.io.iALUType := io.iALUType
+    mALU.io.iType    := io.iALUType
     mALU.io.iRS1Data := wRS1Data
     mALU.io.iRS2Data := wRS2Data
 
-    io.oZero := mALU.io.oZero
+    val rNPC = RegEnable(mALU.io.oOut,
+                         DATA_ZERO,
+                         io.iALURS2 === ALU_RS2_4 ||
+                         io.iALURS2 === ALU_RS2_IMM_J)
 
-    val rNPC = RegEnable(mALU.io.oALUOut, DATA_ZERO, io.iALURS2 === ALU_RS2_4)
-    io.oNPC := rNPC
+    val mALUOut = Module(new ALUOut())
+    mALUOut.io.iData := mALU.io.oOut
 
-    val rALUOut = RegNext(mALU.io.oALUOut)
-    io.oALUOut := rALUOut
+    io.oNPC       := rNPC
+    io.oALUZero   := mALU.io.oZero
+    io.oALUOut    := mALUOut.io.oData
+    io.oMemWrData := wRS2Data
 }
-

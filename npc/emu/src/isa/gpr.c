@@ -1,20 +1,20 @@
 #include <cpu/sim.h>
-#include <isa/reg.h>
+#include <isa/gpr.h>
 
-const char *reg_name_arr[] = {
+const char *gpr_name_arr[] = {
     "$0", "ra", "sp",  "gp",  "tp", "t0", "t1", "t2",
     "s0", "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
     "a6", "a7", "s2",  "s3",  "s4", "s5", "s6", "s7",
     "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
-static int checkISARegIsValid(int id) {
+static int checkISAGPRIsValid(int id) {
     IFDEF(CONFIG_RT_CHECK, assert(id >= 0 && id < 32));
     return id;
 }
 
-word_t getISAReg(int id) {
-    id = checkISARegIsValid(id);
+word_t getISAGPR(int id) {
+    id = checkISAGPRIsValid(id);
     switch (id) {
         // case 0:  return top->io_oRegData0;
         // case 1:  return top->io_oRegData1;
@@ -52,12 +52,12 @@ word_t getISAReg(int id) {
     }
 }
 
-word_t getISARegData(const char *reg, bool *success) {
+word_t getISAGPRData(const char *gpr, bool *success) {
     word_t val = 0;
 
-    for (int i = 0; i < ARRLEN(reg_name_arr); i++) {
-        if (strcmp(reg_name_arr[i], reg) == 0) {
-            val = getISAReg(i);
+    for (int i = 0; i < ARRLEN(gpr_name_arr); i++) {
+        if (strcmp(gpr_name_arr[i], gpr) == 0) {
+            val = getISAGPR(i);
             *success = true;
             break;
         }
@@ -66,27 +66,27 @@ word_t getISARegData(const char *reg, bool *success) {
     return val;
 }
 
-const char *getISARegName(int id) {
-    return reg_name_arr[checkISARegIsValid(id)];
+const char *getISAGPRName(int id) {
+    return gpr_name_arr[checkISAGPRIsValid(id)];
 }
 
-void printfISARegData() {
+void printfISAGPRData() {
     char *space_num = (char *)"";
-    char *space_reg = (char *)"";
+    char *space_gpr = (char *)"";
     char *exist_str = (char *)"";
-    for (int i = 0; i < ARRLEN(reg_name_arr); i++) {
+    for (int i = 0; i < ARRLEN(gpr_name_arr); i++) {
         space_num = (i < 10) ? (char *)" " : (char *)"";
-        space_reg = (strcmp(reg_name_arr[i], "s10") != 0 &&
-                     strcmp(reg_name_arr[i], "s11") != 0) ? (char *)" " :
+        space_gpr = (strcmp(gpr_name_arr[i], "s10") != 0 &&
+                     strcmp(gpr_name_arr[i], "s11") != 0) ? (char *)" " :
                                                             (char *)"";
-        exist_str = (getISAReg(i) != 0) ? (char *)ANSI_FMT("*", ANSI_FG_GREEN) :
+        exist_str = (getISAGPR(i) != 0) ? (char *)ANSI_FMT("*", ANSI_FG_GREEN) :
                                           (char *)"";
-        printf("[sdb reg] i: %d%s val: %s%s = " FMT_WORD "%s\n",
+        printf("[sdb gpr] i: %d%s val: %s%s = " FMT_WORD "%s\n",
                i,
                space_num,
-               space_reg,
-               reg_name_arr[i],
-               getISAReg(i),
+               space_gpr,
+               gpr_name_arr[i],
+               getISAGPR(i),
                exist_str);
     }
 }

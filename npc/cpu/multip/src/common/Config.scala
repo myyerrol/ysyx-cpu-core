@@ -135,18 +135,13 @@ trait ConfigInst extends ConfigIO {
     val MEM_BYT_4_S = 7.U(SIGS_WIDTH.W)
     val MEM_BYT_8_S = 8.U(SIGS_WIDTH.W)
 
-    val MEM_ADDR_SRC_X   = 0.U(SIGS_WIDTH.W)
-    val MEM_ADDR_SRC_PC  = 1.U(SIGS_WIDTH.W)
-    val MEM_ADDR_SRC_ALU = 2.U(SIGS_WIDTH.W)
-
     val GPR_WR_SRC_X   = 0.U(SIGS_WIDTH.W)
     val GPR_WR_SRC_ALU = 1.U(SIGS_WIDTH.W)
     val GPR_WR_SRC_MEM = 2.U(SIGS_WIDTH.W)
 
     val PC_WR_SRC_X   = 0.U(SIGS_WIDTH.W)
-    val PC_WR_SRC_IMM = 1.U(SIGS_WIDTH.W)
-    val PC_WR_SRC_NPC = 2.U(SIGS_WIDTH.W)
-    val PC_WR_SRC_ALU = 3.U(SIGS_WIDTH.W)
+    val PC_WR_SRC_NPC = 1.U(SIGS_WIDTH.W)
+    val PC_WR_SRC_ALU = 2.U(SIGS_WIDTH.W)
 }
 
 trait ConfigInstPattern extends ConfigInst {

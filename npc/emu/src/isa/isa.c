@@ -3,8 +3,8 @@
 
 void initISA() {
     const uint32_t img[] = {
-        0x00100093, // addi r1 r0 1
-        0x00A00193, // addi r3 r0 10
+        0x00500093, // addi r1 r0 5
+        0x00A08113, // addi r2 r1 10
         0x00100073  // ebreak
     };
     memcpy(convertGuestToHost(RESET_VECTOR), img, sizeof(img));

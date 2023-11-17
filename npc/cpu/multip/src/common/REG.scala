@@ -10,5 +10,6 @@ class REG extends Module with ConfigInst {
     })
 
     val rData = RegNext(io.iData, DATA_ZERO)
+
     io.oData := rData
 }

@@ -6,11 +6,11 @@ module DPI(
     input wire[63:0] iMemWrAddr,
     input wire[63:0] iMemWrData,
     input wire[07:0] iMemWrLen,
-    input wire[63:0] iRegData,
+    input wire[63:0] iGPRData,
 
     output reg[63:0] oMemRdDataInst,
     output reg[63:0] oMemRdDataLoad,
-    output reg[63:0] oRegAddr
+    output reg[63:0] oGPRAddr
 );
 
 import "DPI-C" context function void judgeIsEbreak(input byte unsigned flag);
@@ -24,11 +24,11 @@ import "DPI-C" context function void writeMemData(input longint unsigned addr,
                                                   input longint unsigned data,
                                                   input byte unsigned len);
 
-export "DPI-C" function getISARegData;
+export "DPI-C" function getISAGPRData;
 
-function longint unsigned getISARegData(longint unsigned addr);
-    oRegAddr = addr;
-    return iRegData;
+function longint unsigned getISAGPRData(longint unsigned addr);
+    oGPRAddr = addr;
+    return iGPRData;
 endfunction
 
 always @(iEbreakFlag) begin

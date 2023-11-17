@@ -4,7 +4,7 @@
 #include <cpu/cpu.h>
 #include <cpu/sim.h>
 #include <device/device.h>
-#include <isa/reg.h>
+#include <isa/gpr.h>
 #include <memory/memory.h>
 #include <monitor/sdb/expr.h>
 #include <monitor/sdb/watch.h>
@@ -58,7 +58,7 @@ static int cmd_i(char *args) {
     char *args_t = strtok(args, " ");
     if (args_t != NULL) {
         if (strcmp(args_t, "r") == 0) {
-            printfISARegData();
+            printfISAGPRData();
         }
         else if (strcmp(args_t, "w") == 0) {
             printfSDBWatch();

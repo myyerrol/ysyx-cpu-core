@@ -4,7 +4,7 @@
 #include <common.h>
 #include <isa/isa.h>
 
-bool checkISADifftestRegs(CPUState *cpu_ref, vaddr_t pc);
+bool checkISADifftestGPR(CPUState *cpu_ref, vaddr_t pc);
 void printfISADifftest(CPUState *cpu_ref, vaddr_t pc);
 
 #endif

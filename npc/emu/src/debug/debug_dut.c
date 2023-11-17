@@ -27,7 +27,7 @@ static bool difftest_skip_ref = false;
 static int difftest_skip_dut_num = 0;
 
 static void checkDebugDifftestRegs(CPUState *cpu_ref, vaddr_t pc) {
-    if (!checkISADifftestRegs(cpu_ref, pc)) {
+    if (!checkISADifftestGPR(cpu_ref, pc)) {
         npc_state.state = NPC_ABORT;
         npc_state.halt_pc = pc;
         printfISADifftest(cpu_ref, pc);
