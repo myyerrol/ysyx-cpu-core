@@ -142,7 +142,7 @@ class Top extends Module with ConfigInst {
         printf("[itrace] [idu ctr] pc wr en:       %d\n", mIDU.io.ctrio.oPCWrEn)
         printf("[itrace] [idu ctr] pc wr con en:   %d\n", mIDU.io.ctrio.oPCWrConEn)
         printf("[itrace] [idu ctr] pc wr src:   %d\n", mIDU.io.ctrio.oPCWrSrc)
-        printf("[itrace] [idu ctr] pc next en:  %d\n", mIDU.io.ctrio.oPCNextEn)
+        printf("[itrace] [idu ctr] pc next en:     %d\n", mIDU.io.ctrio.oPCNextEn)
         printf("[itrace] [idu ctr] mem wr en:      %d\n", mIDU.io.ctrio.oMemWrEn)
         printf("[itrace] [idu ctr] mem byt:     %d\n", mIDU.io.ctrio.oMemByt)
         printf("[itrace] [idu ctr] ir wr en:       %d\n", mIDU.io.ctrio.oIRWrEn)

@@ -45,7 +45,8 @@ class LSU extends Module with ConfigInst {
                 MEM_BYT_8_U -> 8.U(BYTE_WIDTH.W),
             )
         )
-    }.otherwise {
+    }
+    .otherwise {
         io.oMemWrEn   := false.B
         io.oMemWrAddr := 0.U(DATA_WIDTH.W)
         io.oMemWrData := 0.U(DATA_WIDTH.W)

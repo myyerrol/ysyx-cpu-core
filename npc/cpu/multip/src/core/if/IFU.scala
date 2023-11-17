@@ -35,7 +35,8 @@ class IFU extends Module with ConfigInst {
     when (wPCWr) {
         rPC    := wNPC
         io.oPC := rPC
-    }.otherwise {
+    }
+    .otherwise {
         io.oPC := rPC
     }
 

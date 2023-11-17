@@ -33,44 +33,44 @@ class CTR extends Module with ConfigInstPattern {
         io.iInst,
         List(INST_NAME_X),
         Array(
-            SLL    -> List(INST_NAME_SLL),
-            SLLI   -> List(INST_NAME_SLLI),
-            SRLI   -> List(INST_NAME_SRLI),
-            SRA    -> List(INST_NAME_SRA),
-            SRAI   -> List(INST_NAME_SRAI),
-            SLLW   -> List(INST_NAME_SLLW),
-            SLLIW  -> List(INST_NAME_SLLIW),
-            SRLW   -> List(INST_NAME_SRLW),
-            SRLIW  -> List(INST_NAME_SRLIW),
-            SRAW   -> List(INST_NAME_SRAW),
-            SRAIW  -> List(INST_NAME_SRAIW),
+            // SLL    -> List(INST_NAME_SLL),
+            // SLLI   -> List(INST_NAME_SLLI),
+            // SRLI   -> List(INST_NAME_SRLI),
+            // SRA    -> List(INST_NAME_SRA),
+            // SRAI   -> List(INST_NAME_SRAI),
+            // SLLW   -> List(INST_NAME_SLLW),
+            // SLLIW  -> List(INST_NAME_SLLIW),
+            // SRLW   -> List(INST_NAME_SRLW),
+            // SRLIW  -> List(INST_NAME_SRLIW),
+            // SRAW   -> List(INST_NAME_SRAW),
+            // SRAIW  -> List(INST_NAME_SRAIW),
 
             ADD    -> List(INST_NAME_ADD),
             ADDI   -> List(INST_NAME_ADDI),
             SUB    -> List(INST_NAME_SUB),
-            LUI    -> List(INST_NAME_LUI),
+            // LUI    -> List(INST_NAME_LUI),
             AUIPC  -> List(INST_NAME_AUIPC),
-            ADDW   -> List(INST_NAME_ADDW),
-            ADDIW  -> List(INST_NAME_ADDIW),
-            SUBW   -> List(INST_NAME_SUBW),
+            // ADDW   -> List(INST_NAME_ADDW),
+            // ADDIW  -> List(INST_NAME_ADDIW),
+            // SUBW   -> List(INST_NAME_SUBW),
 
-            XOR    -> List(INST_NAME_XOR),
-            XORI   -> List(INST_NAME_XORI),
-            OR     -> List(INST_NAME_OR),
-            ORI    -> List(INST_NAME_ORI),
-            AND    -> List(INST_NAME_AND),
-            ANDI   -> List(INST_NAME_ANDI),
+            // XOR    -> List(INST_NAME_XOR),
+            // XORI   -> List(INST_NAME_XORI),
+            // OR     -> List(INST_NAME_OR),
+            // ORI    -> List(INST_NAME_ORI),
+            // AND    -> List(INST_NAME_AND),
+            // ANDI   -> List(INST_NAME_ANDI),
 
-            SLT    -> List(INST_NAME_SLT),
-            SLTU   -> List(INST_NAME_SLTU),
-            SLTIU  -> List(INST_NAME_SLTIU),
+            // SLT    -> List(INST_NAME_SLT),
+            // SLTU   -> List(INST_NAME_SLTU),
+            // SLTIU  -> List(INST_NAME_SLTIU),
 
-            BEQ    -> List(INST_NAME_BEQ),
-            BNE    -> List(INST_NAME_BNE),
-            BLT    -> List(INST_NAME_BLT),
-            BGE    -> List(INST_NAME_BGE),
-            BLTU   -> List(INST_NAME_BLTU),
-            BGEU   -> List(INST_NAME_BGEU),
+            // BEQ    -> List(INST_NAME_BEQ),
+            // BNE    -> List(INST_NAME_BNE),
+            // BLT    -> List(INST_NAME_BLT),
+            // BGE    -> List(INST_NAME_BGE),
+            // BLTU   -> List(INST_NAME_BLTU),
+            // BGEU   -> List(INST_NAME_BGEU),
 
             JAL    -> List(INST_NAME_JAL),
             JALR   -> List(INST_NAME_JALR),
@@ -90,13 +90,13 @@ class CTR extends Module with ConfigInstPattern {
 
             EBREAK -> List(INST_NAME_EBREAK),
 
-            MUL    -> List(INST_NAME_MUL),
-            MULW   -> List(INST_NAME_MULW),
-            DIVU   -> List(INST_NAME_DIVU),
-            DIVW   -> List(INST_NAME_DIVW),
-            DIVUW  -> List(INST_NAME_DIVUW),
-            REMU   -> List(INST_NAME_REMU),
-            REMW   -> List(INST_NAME_REMW)
+            // MUL    -> List(INST_NAME_MUL),
+            // MULW   -> List(INST_NAME_MULW),
+            // DIVU   -> List(INST_NAME_DIVU),
+            // DIVW   -> List(INST_NAME_DIVW),
+            // DIVUW  -> List(INST_NAME_DIVUW),
+            // REMU   -> List(INST_NAME_REMU),
+            // REMW   -> List(INST_NAME_REMW)
         )
     )
 
@@ -129,70 +129,112 @@ class CTR extends Module with ConfigInstPattern {
         }
         is (stateID) {
             rStateCurr := stateEX
-            switch (wInstName) {
-                is (INST_NAME_JAL) {
-                    wPCNextEn  := EN_TRUE
-                    wALUType   := ALU_TYPE_ADD
-                    wALURS1    := ALU_RS1_PC
-                    wALURS2    := ALU_RS2_IMM_J
-                }
+            when (wInstName === INST_NAME_JAL) {
+                wPCNextEn  := EN_TRUE
+                wALUType   := ALU_TYPE_ADD
+                wALURS1    := ALU_RS1_PC
+                wALURS2    := ALU_RS2_IMM_J
             }
         }
         is (stateEX) {
             rStateCurr := stateWB
-
-            switch (wInstName) {
-                is (INST_NAME_ADD) {
-                    wALUType := ALU_TYPE_ADD
-                    wALURS1  := ALU_RS1_GPR
-                    wALURS2  := ALU_RS2_GPR
-                }
-                is (INST_NAME_ADDI) {
-                    wALUType := ALU_TYPE_ADD
-                    wALURS1  := ALU_RS1_GPR
-                    wALURS2  := ALU_RS2_IMM_I
-                }
-                is (INST_NAME_AUIPC) {
-                    wALUType := ALU_TYPE_ADD
-                    wALURS1  := ALU_RS1_PC
-                    wALURS2  := ALU_RS2_IMM_U
-                }
-                is (INST_NAME_JAL) {
-                    wALUType := ALU_TYPE_ADD
-                    wALURS1  := ALU_RS1_PC
-                    wALURS2  := ALU_RS2_4
-                }
-                is (INST_NAME_SD) {
-                    rStateCurr := stateLS
-                    wALUType := ALU_TYPE_ADD
-                    wALURS1  := ALU_RS1_GPR
-                    wALURS2  := ALU_RS2_IMM_S
-                }
-                is (INST_NAME_JALR) {
-                    rStateCurr := stateLS
-                    wPCNextEn  := EN_TRUE
-                    wALUType   := ALU_TYPE_JALR
-                    wALURS1    := ALU_RS1_GPR
-                    wALURS2    := ALU_RS2_IMM_I
-                }
+            when (wInstName === INST_NAME_ADD ||
+                  wInstName === INST_NAME_SUB) {
+                wALURS1  := ALU_RS1_GPR
+                wALURS2  := ALU_RS2_GPR
+                wALUType := MuxLookup(
+                    wInstName,
+                    ALU_TYPE_X,
+                    Seq(
+                        INST_NAME_ADD -> ALU_TYPE_ADD,
+                        INST_NAME_SUB -> ALU_TYPE_SUB
+                    )
+                )
             }
+            .elsewhen (wInstName === INST_NAME_ADDI) {
+                wALUType := ALU_TYPE_ADD
+                wALURS1  := ALU_RS1_GPR
+                wALURS2  := ALU_RS2_IMM_I
+            }
+            .elsewhen (wInstName === INST_NAME_AUIPC) {
+                wALUType := ALU_TYPE_ADD
+                wALURS1  := ALU_RS1_PC
+                wALURS2  := ALU_RS2_IMM_U
+            }
+
+
+            .elsewhen (wInstName === INST_NAME_JAL) {
+                wALUType := ALU_TYPE_ADD
+                wALURS1  := ALU_RS1_PC
+                wALURS2  := ALU_RS2_4
+            }
+            .elsewhen (wInstName === INST_NAME_JALR) {
+                rStateCurr := stateLS
+                wPCNextEn  := EN_TRUE
+                wALUType   := ALU_TYPE_JALR
+                wALURS1    := ALU_RS1_GPR
+                wALURS2    := ALU_RS2_IMM_I
+            }
+            .elsewhen (wInstName === INST_NAME_LB  ||
+                       wInstName === INST_NAME_LH  ||
+                       wInstName === INST_NAME_LBU ||
+                       wInstName === INST_NAME_LHU ||
+                       wInstName === INST_NAME_LW  ||
+                       wInstName === INST_NAME_LWU ||
+                       wInstName === INST_NAME_LD) {
+                rStateCurr := stateLS
+                wALUType   := ALU_TYPE_ADD
+                wALURS1    := ALU_RS1_GPR
+                wALURS2    := ALU_RS2_IMM_I
+            }
+            .elsewhen (wInstName === INST_NAME_SB ||
+                       wInstName === INST_NAME_SH ||
+                       wInstName === INST_NAME_SW ||
+                       wInstName === INST_NAME_SD) {
+                rStateCurr := stateLS
+                wALUType   := ALU_TYPE_ADD
+                wALURS1    := ALU_RS1_GPR
+                wALURS2    := ALU_RS2_IMM_S
+            }
+
+
         }
         is (stateLS) {
-            switch (wInstName) {
-                is (INST_NAME_SD) {
-                    rStateCurr := stateIF
-                    wPCWrEn    := EN_TRUE
-                    wPCWrSrc   := PC_WR_SRC_NPC
-                    wMemWrEn   := EN_TRUE
-                    wMemByt    := MEM_BYT_8_U
-                }
-                // 临时
-                is (INST_NAME_JALR) {
-                    rStateCurr := stateWB
-                    wALUType := ALU_TYPE_ADD
-                    wALURS1  := ALU_RS1_PC
-                    wALURS2  := ALU_RS2_4
-                }
+            // 无条件跳转指令本来不应有LS阶段，但为了满足EX阶段计算PC的时序要求，
+            // 暂时添加一个虚拟的LS阶段
+            when (wInstName === INST_NAME_JALR) {
+                rStateCurr := stateWB
+                wALUType   := ALU_TYPE_ADD
+                wALURS1    := ALU_RS1_PC
+                wALURS2    := ALU_RS2_4
+            }
+            .elsewhen (wInstName === INST_NAME_LB  ||
+                       wInstName === INST_NAME_LH  ||
+                       wInstName === INST_NAME_LBU ||
+                       wInstName === INST_NAME_LHU ||
+                       wInstName === INST_NAME_LW  ||
+                       wInstName === INST_NAME_LWU ||
+                       wInstName === INST_NAME_LD) {
+                rStateCurr := stateWB
+            }
+            .elsewhen (wInstName === INST_NAME_SB ||
+                       wInstName === INST_NAME_SH ||
+                       wInstName === INST_NAME_SW ||
+                       wInstName === INST_NAME_SD) {
+                rStateCurr := stateIF
+                wPCWrEn    := EN_TRUE
+                wPCWrSrc   := PC_WR_SRC_NPC
+                wMemWrEn   := EN_TRUE
+                wMemByt    := MuxLookup(
+                    wInstName,
+                    MEM_BYT_X,
+                    Seq(
+                        INST_NAME_SB -> MEM_BYT_1_U,
+                        INST_NAME_SH -> MEM_BYT_2_U,
+                        INST_NAME_SW -> MEM_BYT_4_U,
+                        INST_NAME_SD -> MEM_BYT_8_U
+                    )
+                )
             }
         }
         is (stateWB) {
@@ -201,6 +243,29 @@ class CTR extends Module with ConfigInstPattern {
             wPCWrSrc   := PC_WR_SRC_NPC
             wGPRWrEn   := EN_TRUE
             wGPRWrSrc  := GPR_WR_SRC_ALU
+
+            when (wInstName === INST_NAME_LB  ||
+                  wInstName === INST_NAME_LH  ||
+                  wInstName === INST_NAME_LBU ||
+                  wInstName === INST_NAME_LHU ||
+                  wInstName === INST_NAME_LW  ||
+                  wInstName === INST_NAME_LWU ||
+                  wInstName === INST_NAME_LD) {
+                wGPRWrSrc := GPR_WR_SRC_MEM
+                wMemByt   := MuxLookup(
+                    wInstName,
+                    MEM_BYT_X,
+                    Seq(
+                        INST_NAME_LB  -> MEM_BYT_1_S,
+                        INST_NAME_LH  -> MEM_BYT_2_S,
+                        INST_NAME_LBU -> MEM_BYT_1_U,
+                        INST_NAME_LHU -> MEM_BYT_2_U,
+                        INST_NAME_LW  -> MEM_BYT_4_S,
+                        INST_NAME_LWU -> MEM_BYT_4_U,
+                        INST_NAME_LD  -> MEM_BYT_8_S
+                    )
+                )
+            }
         }
     }
 

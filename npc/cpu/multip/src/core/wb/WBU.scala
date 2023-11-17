@@ -35,9 +35,11 @@ class WBU extends Module with ConfigInst {
             )
         )
         io.oGPRWrData := wMemDataMux
-    }.elsewhen (io.iGPRWrSrc === GPR_WR_SRC_ALU) {
+    }
+    .elsewhen (io.iGPRWrSrc === GPR_WR_SRC_ALU) {
         io.oGPRWrData := io.iALUOut
-    }.otherwise {
+    }
+    .otherwise {
         io.oGPRWrData := DATA_ZERO
     }
 
