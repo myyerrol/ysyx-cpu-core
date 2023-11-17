@@ -7,6 +7,7 @@ import cpu.common._
 
 class EXU extends Module with ConfigInst {
     val io = IO(new Bundle {
+        val iPCNextEn  =  Input(Bool())
         val iALUType   =  Input(UInt(SIGS_WIDTH.W))
         val iALURS1    =  Input(UInt(SIGS_WIDTH.W))
         val iALURS2    =  Input(UInt(SIGS_WIDTH.W))
@@ -49,10 +50,7 @@ class EXU extends Module with ConfigInst {
     mALU.io.iRS1Data := wRS1Data
     mALU.io.iRS2Data := wRS2Data
 
-    val rNPC = RegEnable(mALU.io.oOut,
-                         DATA_ZERO,
-                         io.iALURS2 === ALU_RS2_4 ||
-                         io.iALURS2 === ALU_RS2_IMM_J)
+    val rNPC = RegEnable(mALU.io.oOut, DATA_ZERO, io.iPCNextEn)
 
     val mALUOut = Module(new ALUOut())
     mALUOut.io.iData := mALU.io.oOut

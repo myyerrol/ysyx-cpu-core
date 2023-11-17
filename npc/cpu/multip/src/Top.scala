@@ -50,13 +50,14 @@ class Top extends Module with ConfigInst {
     mIDU.io.iInst      := mIFU.io.oInst
     mIDU.io.iGPRWrData := mWBU.io.oGPRWrData
 
-    mEXU.io.iALUType := mIDU.io.ctrio.oALUType
-    mEXU.io.iALURS1  := mIDU.io.ctrio.oALURS1
-    mEXU.io.iALURS2  := mIDU.io.ctrio.oALURS2
-    mEXU.io.iPC      := mIFU.io.oPC
-    mEXU.io.iRS1Data := mIDU.io.oRS1Data
-    mEXU.io.iRS2Data := mIDU.io.oRS2Data
-    mEXU.io.iImmData := mIDU.io.oImmData
+    mEXU.io.iPCNextEn := mIDU.io.ctrio.oPCNextEn
+    mEXU.io.iALUType  := mIDU.io.ctrio.oALUType
+    mEXU.io.iALURS1   := mIDU.io.ctrio.oALURS1
+    mEXU.io.iALURS2   := mIDU.io.ctrio.oALURS2
+    mEXU.io.iPC       := mIFU.io.oPC
+    mEXU.io.iRS1Data  := mIDU.io.oRS1Data
+    mEXU.io.iRS2Data  := mIDU.io.oRS2Data
+    mEXU.io.iImmData  := mIDU.io.oImmData
 
     mLSU.io.iPC        := mIFU.io.oPC
     mLSU.io.iALUOut    := mEXU.io.oALUOut
@@ -141,6 +142,7 @@ class Top extends Module with ConfigInst {
         printf("[itrace] [idu ctr] pc wr en:       %d\n", mIDU.io.ctrio.oPCWrEn)
         printf("[itrace] [idu ctr] pc wr con en:   %d\n", mIDU.io.ctrio.oPCWrConEn)
         printf("[itrace] [idu ctr] pc wr src:   %d\n", mIDU.io.ctrio.oPCWrSrc)
+        printf("[itrace] [idu ctr] pc next en:  %d\n", mIDU.io.ctrio.oPCNextEn)
         printf("[itrace] [idu ctr] mem wr en:      %d\n", mIDU.io.ctrio.oMemWrEn)
         printf("[itrace] [idu ctr] mem byt:     %d\n", mIDU.io.ctrio.oMemByt)
         printf("[itrace] [idu ctr] ir wr en:       %d\n", mIDU.io.ctrio.oIRWrEn)
