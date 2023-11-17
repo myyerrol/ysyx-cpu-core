@@ -5,4 +5,4 @@ import chisel3.util._
 
 import cpu.common._
 
-class MRU extends REG
+class GPRRS1 extends REG
