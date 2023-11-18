@@ -61,16 +61,16 @@ class CTR extends Module with ConfigInstPattern {
             // AND    -> List(INST_NAME_AND),
             // ANDI   -> List(INST_NAME_ANDI),
 
-            // SLT    -> List(INST_NAME_SLT),
-            // SLTU   -> List(INST_NAME_SLTU),
-            // SLTIU  -> List(INST_NAME_SLTIU),
+            SLT    -> List(INST_NAME_SLT),
+            SLTU   -> List(INST_NAME_SLTU),
+            SLTIU  -> List(INST_NAME_SLTIU),
 
-            // BEQ    -> List(INST_NAME_BEQ),
-            // BNE    -> List(INST_NAME_BNE),
-            // BLT    -> List(INST_NAME_BLT),
-            // BGE    -> List(INST_NAME_BGE),
-            // BLTU   -> List(INST_NAME_BLTU),
-            // BGEU   -> List(INST_NAME_BGEU),
+            BEQ    -> List(INST_NAME_BEQ),
+            BNE    -> List(INST_NAME_BNE),
+            BLT    -> List(INST_NAME_BLT),
+            BGE    -> List(INST_NAME_BGE),
+            BLTU   -> List(INST_NAME_BLTU),
+            BGEU   -> List(INST_NAME_BGEU),
 
             JAL    -> List(INST_NAME_JAL),
             JALR   -> List(INST_NAME_JALR),
@@ -140,8 +140,6 @@ class CTR extends Module with ConfigInstPattern {
             rStateCurr := stateWB
             when (wInstName === INST_NAME_ADD ||
                   wInstName === INST_NAME_SUB) {
-                wALURS1  := ALU_RS1_GPR
-                wALURS2  := ALU_RS2_GPR
                 wALUType := MuxLookup(
                     wInstName,
                     ALU_TYPE_X,
@@ -150,6 +148,8 @@ class CTR extends Module with ConfigInstPattern {
                         INST_NAME_SUB -> ALU_TYPE_SUB
                     )
                 )
+                wALURS1  := ALU_RS1_GPR
+                wALURS2  := ALU_RS2_GPR
             }
             .elsewhen (wInstName === INST_NAME_ADDI) {
                 wALUType := ALU_TYPE_ADD
@@ -162,7 +162,36 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS2  := ALU_RS2_IMM_U
             }
 
-
+            .elsewhen (wInstName === INST_NAME_SLT  ||
+                       wInstName === INST_NAME_SLTU ||
+                       wInstName === INST_NAME_SLTIU) {
+                wALUType := Mux(wInstName === INST_NAME_SLT, ALU_TYPE_SLT,
+                                                             ALU_TYPE_SLTU)
+                wALURS1  := ALU_RS1_GPR
+                wALURS2  := Mux(wInstName === INST_NAME_SLTIU, ALU_RS2_IMM_I,
+                                                               ALU_RS2_GPR)
+            }
+            .elsewhen (wInstName === INST_NAME_BEQ  ||
+                       wInstName === INST_NAME_BNE  ||
+                       wInstName === INST_NAME_BLT  ||
+                       wInstName === INST_NAME_BGE  ||
+                       wInstName === INST_NAME_BLTU ||
+                       wInstName === INST_NAME_BGEU) {
+                wALUType := MuxLookup(
+                    wInstName,
+                    ALU_TYPE_X,
+                    Seq(
+                        INST_NAME_BEQ  -> ALU_TYPE_BEQ,
+                        INST_NAME_BNE  -> ALU_TYPE_BNE,
+                        INST_NAME_BLT  -> ALU_TYPE_BLT,
+                        INST_NAME_BGE  -> ALU_TYPE_BGE,
+                        INST_NAME_BLTU -> ALU_TYPE_BLTU,
+                        INST_NAME_BGEU -> ALU_TYPE_BGEU
+                    )
+                )
+                wALURS1  := ALU_RS1_PC
+                wALURS2  := ALU_RS2_I
+            }
             .elsewhen (wInstName === INST_NAME_JAL) {
                 wALUType := ALU_TYPE_ADD
                 wALURS1  := ALU_RS1_PC
@@ -196,8 +225,6 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS1    := ALU_RS1_GPR
                 wALURS2    := ALU_RS2_IMM_S
             }
-
-
         }
         is (stateLS) {
             // 无条件跳转指令本来不应有LS阶段，但为了满足EX阶段计算PC的时序要求，
@@ -244,14 +271,24 @@ class CTR extends Module with ConfigInstPattern {
             wGPRWrEn   := EN_TRUE
             wGPRWrSrc  := GPR_WR_SRC_ALU
 
-            when (wInstName === INST_NAME_LB  ||
+            when (wInstName === INST_NAME_BEQ  ||
+                  wInstName === INST_NAME_BNE  ||
+                  wInstName === INST_NAME_BLT  ||
+                  wInstName === INST_NAME_BGE  ||
+                  wInstName === INST_NAME_BLTU ||
+                  wInstName === INST_NAME_BGEU) {
+                wPCWrConEn := EN_TRUE
+                wPCWrSrc   := PC_WR_SRC_ALU
+                wGPRWrEn   := EN_FALSE
+                wGPRWrSrc  := GPR_WR_SRC_X
+            }
+            .elsewhen (wInstName === INST_NAME_LB  ||
                   wInstName === INST_NAME_LH  ||
                   wInstName === INST_NAME_LBU ||
                   wInstName === INST_NAME_LHU ||
                   wInstName === INST_NAME_LW  ||
                   wInstName === INST_NAME_LWU ||
                   wInstName === INST_NAME_LD) {
-                wGPRWrSrc := GPR_WR_SRC_MEM
                 wMemByt   := MuxLookup(
                     wInstName,
                     MEM_BYT_X,
@@ -265,6 +302,7 @@ class CTR extends Module with ConfigInstPattern {
                         INST_NAME_LD  -> MEM_BYT_8_S
                     )
                 )
+                wGPRWrSrc := GPR_WR_SRC_MEM
             }
         }
     }

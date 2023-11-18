@@ -51,6 +51,6 @@ class ALU extends Module with ConfigInst {
         )
     )
 
-    io.oZero := Mux(wOut === DATA_ZERO, EN_TRUE, EN_FALSE)
+    io.oZero := Mux(wOut === DATA_ZERO, 0.U, 1.U)
     io.oOut  := wOut
 }
