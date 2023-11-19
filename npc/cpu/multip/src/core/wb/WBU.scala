@@ -7,6 +7,7 @@ import cpu.common._
 
 class WBU extends Module with ConfigInst {
     val io = IO(new Bundle {
+        val iInstName  =  Input(UInt(SIGS_WIDTH.W))
         val iMemByt    =  Input(UInt(SIGS_WIDTH.W))
         val iGPRWrSrc  =  Input(UInt(SIGS_WIDTH.W))
         val iALUOut    =  Input(UInt(DATA_WIDTH.W))
@@ -37,7 +38,25 @@ class WBU extends Module with ConfigInst {
         io.oGPRWrData := wMemDataMux
     }
     .elsewhen (io.iGPRWrSrc === GPR_WR_SRC_ALU) {
-        io.oGPRWrData := io.iALUOut
+        when (io.iInstName === INST_NAME_ADDW  ||
+              io.iInstName === INST_NAME_ADDIW ||
+              io.iInstName === INST_NAME_SUBW  ||
+              io.iInstName === INST_NAME_SLLW  ||
+              io.iInstName === INST_NAME_SLLIW ||
+              io.iInstName === INST_NAME_SRLW  ||
+              io.iInstName === INST_NAME_SRLIW ||
+              io.iInstName === INST_NAME_SRAW  ||
+              io.iInstName === INST_NAME_SRAIW ||
+              io.iInstName === INST_NAME_MULW  ||
+              io.iInstName === INST_NAME_DIVW  ||
+              io.iInstName === INST_NAME_DIVUW ||
+              io.iInstName === INST_NAME_REMW) {
+            val wALUOutByt4 = io.iALUOut(31, 0)
+            io.oGPRWrData := Cat(Fill(32, wALUOutByt4(31)), wALUOutByt4)
+        }
+        .otherwise {
+            io.oGPRWrData := io.iALUOut
+        }
     }
     .otherwise {
         io.oGPRWrData := DATA_ZERO

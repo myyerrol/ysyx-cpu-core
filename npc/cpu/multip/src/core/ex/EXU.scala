@@ -8,15 +8,18 @@ import cpu.common._
 class EXU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val iPCNextEn  =  Input(Bool())
+        val iPCJumpEn  =  Input(Bool())
         val iALUType   =  Input(UInt(SIGS_WIDTH.W))
         val iALURS1    =  Input(UInt(SIGS_WIDTH.W))
         val iALURS2    =  Input(UInt(SIGS_WIDTH.W))
+
         val iPC        =  Input(UInt(DATA_WIDTH.W))
         val iRS1Data   =  Input(UInt(DATA_WIDTH.W))
         val iRS2Data   =  Input(UInt(DATA_WIDTH.W))
         val iImmData   =  Input(UInt(DATA_WIDTH.W))
 
-        val oNPC       = Output(UInt(DATA_WIDTH.W))
+        val oPCNext    = Output(UInt(DATA_WIDTH.W))
+        val oPCJump    = Output(UInt(DATA_WIDTH.W))
         val oALUZero   = Output(Bool())
         val oALUOut    = Output(UInt(DATA_WIDTH.W))
         val oMemWrData = Output(UInt(DATA_WIDTH.W))
@@ -50,12 +53,14 @@ class EXU extends Module with ConfigInst {
     mALU.io.iRS1Data := wRS1Data
     mALU.io.iRS2Data := wRS2Data
 
-    val rNPC = RegEnable(mALU.io.oOut, DATA_ZERO, io.iPCNextEn)
+    val rPCNext = RegEnable(mALU.io.oOut, DATA_ZERO, io.iPCNextEn)
+    val rPCJump = RegEnable(mALU.io.oOut, DATA_ZERO, io.iPCJumpEn)
 
     val mALUOut = Module(new ALUOut())
     mALUOut.io.iData := mALU.io.oOut
 
-    io.oNPC       := rNPC
+    io.oPCNext    := rPCNext
+    io.oPCJump    := rPCJump
     io.oALUZero   := mALU.io.oZero
     io.oALUOut    := mALUOut.io.oData
     io.oMemWrData := wRS2Data

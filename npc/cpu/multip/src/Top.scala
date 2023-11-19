@@ -12,6 +12,8 @@ class Top extends Module with ConfigInst {
         val oPC      = Output(UInt(DATA_WIDTH.W))
         val oInst    = Output(UInt(DATA_WIDTH.W ))
         val oEndData = Output(UInt(DATA_WIDTH.W))
+
+        val gprio    = new GPRIO
     })
 
     val mDPI = Module(new DPI())
@@ -24,6 +26,7 @@ class Top extends Module with ConfigInst {
     io.oPC      := mIFU.io.oPC
     io.oInst    := mLSU.io.iMemRdDataInst
     io.oEndData := mIDU.io.oEndData
+    io.gprio    <> mIDU.io.gprio
 
     mDPI.io.iMemRdAddrInst := mLSU.io.oMemRdAddrInst
     mDPI.io.iMemRdAddrLoad := mLSU.io.oMemRdAddrLoad
@@ -37,13 +40,13 @@ class Top extends Module with ConfigInst {
         mDPI.io.iEbreakFlag := 0.U
     }
 
+    mIFU.io.iInstName  := mIDU.io.ctrio.oInstName
     mIFU.io.iPCWrEn    := mIDU.io.ctrio.oPCWrEn
-    mIFU.io.iPCWrConEn := mIDU.io.ctrio.oPCWrConEn
     mIFU.io.iPCWrSrc   := mIDU.io.ctrio.oPCWrSrc
     mIFU.io.iIRWrEn    := mIDU.io.ctrio.oIRWrEn
-    mIFU.io.iNPC       := mEXU.io.oNPC
+    mIFU.io.iPCNext    := mEXU.io.oPCNext
+    mIFU.io.iPCJump    := mEXU.io.oPCJump
     mIFU.io.iALUZero   := mEXU.io.oALUZero
-    mIFU.io.iALUOut    := mEXU.io.oALUOut
     mIFU.io.iInst      := mLSU.io.iMemRdDataInst
 
     mIDU.io.iPC        := mIFU.io.oPC
@@ -51,6 +54,7 @@ class Top extends Module with ConfigInst {
     mIDU.io.iGPRWrData := mWBU.io.oGPRWrData
 
     mEXU.io.iPCNextEn := mIDU.io.ctrio.oPCNextEn
+    mEXU.io.iPCJumpEn := mIDU.io.ctrio.oPCJumpEn
     mEXU.io.iALUType  := mIDU.io.ctrio.oALUType
     mEXU.io.iALURS1   := mIDU.io.ctrio.oALURS1
     mEXU.io.iALURS2   := mIDU.io.ctrio.oALURS2
@@ -68,12 +72,14 @@ class Top extends Module with ConfigInst {
     mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
     mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
 
+    mWBU.io.iInstName := mIDU.io.ctrio.oInstName
     mWBU.io.iMemByt   := mIDU.io.ctrio.oMemByt
     mWBU.io.iGPRWrSrc := mIDU.io.ctrio.oGPRWrSrc
     mWBU.io.iALUOut   := mEXU.io.oALUOut
     mWBU.io.iMemData  := mLSU.io.oMemRdData
 
     when (io.iItrace) {
+        // printf("[itrace]           num:            %d\n", count)
         printf("[itrace] [ifu]     pc:             0x%x\n", mIFU.io.oPC)
         printf("[itrace] [ifu]     inst:           0x%x\n", mIFU.io.oInst)
         switch (mIDU.io.ctrio.oInstName) {
@@ -140,9 +146,9 @@ class Top extends Module with ConfigInst {
             is (4.U) { printf(p"[itrace] [idu ctr] state curr:     STATE_WB\n")}
         }
         printf("[itrace] [idu ctr] pc wr en:       %d\n", mIDU.io.ctrio.oPCWrEn)
-        printf("[itrace] [idu ctr] pc wr con en:   %d\n", mIDU.io.ctrio.oPCWrConEn)
         printf("[itrace] [idu ctr] pc wr src:   %d\n", mIDU.io.ctrio.oPCWrSrc)
         printf("[itrace] [idu ctr] pc next en:     %d\n", mIDU.io.ctrio.oPCNextEn)
+        printf("[itrace] [idu ctr] pc jump en:     %d\n", mIDU.io.ctrio.oPCJumpEn)
         printf("[itrace] [idu ctr] mem wr en:      %d\n", mIDU.io.ctrio.oMemWrEn)
         printf("[itrace] [idu ctr] mem byt:     %d\n", mIDU.io.ctrio.oMemByt)
         printf("[itrace] [idu ctr] ir wr en:       %d\n", mIDU.io.ctrio.oIRWrEn)
@@ -160,7 +166,8 @@ class Top extends Module with ConfigInst {
         printf("[itrace] [idu]     end data:       0x%x\n", mIDU.io.oEndData)
         printf("[itrace] [idu]     imm data:       0x%x\n", mIDU.io.oImmData)
 
-        printf("[itrace] [exu]     npc:            0x%x\n", mEXU.io.oNPC)
+        printf("[itrace] [exu]     pc next:        0x%x\n", mEXU.io.oPCNext)
+        printf("[itrace] [exu]     pc jump:        0x%x\n", mEXU.io.oPCJump)
         printf("[itrace] [exu]     alu zero:       %d\n", mEXU.io.oALUZero)
         printf("[itrace] [exu]     alu out:        0x%x\n", mEXU.io.oALUOut)
 

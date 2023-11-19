@@ -9,9 +9,10 @@ class CTRIO extends Bundle with ConfigIO {
     val oInstName  = Output(UInt(SIGS_WIDTH.W))
     val oStateCurr = Output(UInt(SIGS_WIDTH.W))
     val oPCWrEn    = Output(Bool())
-    val oPCWrConEn = Output(Bool())
+    // val oPCWrConEn = Output(Bool())
     val oPCWrSrc   = Output(UInt(SIGS_WIDTH.W))
     val oPCNextEn  = Output(Bool())
+    val oPCJumpEn  = Output(Bool())
     val oMemWrEn   = Output(Bool())
     val oMemByt    = Output(UInt(SIGS_WIDTH.W))
     val oIRWrEn    = Output(Bool())
@@ -39,7 +40,7 @@ class CTR extends Module with ConfigInstPattern {
             // SRA    -> List(INST_NAME_SRA),
             // SRAI   -> List(INST_NAME_SRAI),
             // SLLW   -> List(INST_NAME_SLLW),
-            // SLLIW  -> List(INST_NAME_SLLIW),
+            SLLIW  -> List(INST_NAME_SLLIW),
             // SRLW   -> List(INST_NAME_SRLW),
             // SRLIW  -> List(INST_NAME_SRLIW),
             // SRAW   -> List(INST_NAME_SRAW),
@@ -50,8 +51,8 @@ class CTR extends Module with ConfigInstPattern {
             SUB    -> List(INST_NAME_SUB),
             // LUI    -> List(INST_NAME_LUI),
             AUIPC  -> List(INST_NAME_AUIPC),
-            // ADDW   -> List(INST_NAME_ADDW),
-            // ADDIW  -> List(INST_NAME_ADDIW),
+            ADDW   -> List(INST_NAME_ADDW),
+            ADDIW  -> List(INST_NAME_ADDIW),
             // SUBW   -> List(INST_NAME_SUBW),
 
             // XOR    -> List(INST_NAME_XOR),
@@ -109,6 +110,7 @@ class CTR extends Module with ConfigInstPattern {
     val wPCWrConEn = WireInit(EN_FALSE)
     val wPCWrSrc   = WireInit(PC_WR_SRC_X)
     val wPCNextEn  = WireInit(EN_FALSE)
+    val wPCJumpEn  = WireInit(EN_FALSE)
     val wMemWrEn   = WireInit(EN_FALSE)
     val wMemByt    = WireInit(MEM_BYT_X)
     val wIRWrEn    = WireInit(EN_FALSE)
@@ -129,8 +131,19 @@ class CTR extends Module with ConfigInstPattern {
         }
         is (stateID) {
             rStateCurr := stateEX
+            when (wInstName === INST_NAME_BEQ  ||
+                  wInstName === INST_NAME_BNE  ||
+                  wInstName === INST_NAME_BLT  ||
+                  wInstName === INST_NAME_BGE  ||
+                  wInstName === INST_NAME_BLTU ||
+                  wInstName === INST_NAME_BGEU) {
+                wPCJumpEn  := EN_TRUE
+                wALUType   := ALU_TYPE_ADD
+                wALURS1    := ALU_RS1_PC
+                wALURS2    := ALU_RS2_IMM_B
+            }
             when (wInstName === INST_NAME_JAL) {
-                wPCNextEn  := EN_TRUE
+                wPCJumpEn  := EN_TRUE
                 wALUType   := ALU_TYPE_ADD
                 wALURS1    := ALU_RS1_PC
                 wALURS2    := ALU_RS2_IMM_J
@@ -161,6 +174,18 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS1  := ALU_RS1_PC
                 wALURS2  := ALU_RS2_IMM_U
             }
+            .elsewhen (wInstName === INST_NAME_ADDW) {
+                wALUType := ALU_TYPE_ADD
+                wALURS1  := ALU_RS1_GPR
+                wALURS1  := ALU_RS2_GPR
+            }
+            .elsewhen (wInstName === INST_NAME_SLLIW) {
+                wALUType := ALU_TYPE_SLL
+                wALURS1  := ALU_RS1_GPR
+                wALURS1  := ALU_RS2_IMM_I
+            }
+
+
 
             .elsewhen (wInstName === INST_NAME_SLT  ||
                        wInstName === INST_NAME_SLTU ||
@@ -177,6 +202,9 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_BGE  ||
                        wInstName === INST_NAME_BLTU ||
                        wInstName === INST_NAME_BGEU) {
+                rStateCurr := stateIF
+                wPCWrEn  := EN_TRUE
+                wPCWrSrc := PC_WR_SRC_JUMP
                 wALUType := MuxLookup(
                     wInstName,
                     ALU_TYPE_X,
@@ -189,8 +217,8 @@ class CTR extends Module with ConfigInstPattern {
                         INST_NAME_BGEU -> ALU_TYPE_BGEU
                     )
                 )
-                wALURS1  := ALU_RS1_PC
-                wALURS2  := ALU_RS2_I
+                wALURS1  := ALU_RS1_GPR
+                wALURS2  := ALU_RS2_GPR
             }
             .elsewhen (wInstName === INST_NAME_JAL) {
                 wALUType := ALU_TYPE_ADD
@@ -199,7 +227,7 @@ class CTR extends Module with ConfigInstPattern {
             }
             .elsewhen (wInstName === INST_NAME_JALR) {
                 rStateCurr := stateLS
-                wPCNextEn  := EN_TRUE
+                wPCJumpEn  := EN_TRUE
                 wALUType   := ALU_TYPE_JALR
                 wALURS1    := ALU_RS1_GPR
                 wALURS2    := ALU_RS2_IMM_I
@@ -250,7 +278,7 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_SD) {
                 rStateCurr := stateIF
                 wPCWrEn    := EN_TRUE
-                wPCWrSrc   := PC_WR_SRC_NPC
+                wPCWrSrc   := PC_WR_SRC_NEXT
                 wMemWrEn   := EN_TRUE
                 wMemByt    := MuxLookup(
                     wInstName,
@@ -267,28 +295,21 @@ class CTR extends Module with ConfigInstPattern {
         is (stateWB) {
             rStateCurr := stateIF
             wPCWrEn    := EN_TRUE
-            wPCWrSrc   := PC_WR_SRC_NPC
+            wPCWrSrc   := PC_WR_SRC_NEXT
             wGPRWrEn   := EN_TRUE
             wGPRWrSrc  := GPR_WR_SRC_ALU
 
-            when (wInstName === INST_NAME_BEQ  ||
-                  wInstName === INST_NAME_BNE  ||
-                  wInstName === INST_NAME_BLT  ||
-                  wInstName === INST_NAME_BGE  ||
-                  wInstName === INST_NAME_BLTU ||
-                  wInstName === INST_NAME_BGEU) {
-                wPCWrConEn := EN_TRUE
-                wPCWrSrc   := PC_WR_SRC_ALU
-                wGPRWrEn   := EN_FALSE
-                wGPRWrSrc  := GPR_WR_SRC_X
+            when (wInstName === INST_NAME_JAL ||
+                  wInstName === INST_NAME_JALR) {
+                wPCWrSrc := PC_WR_SRC_JUMP
             }
             .elsewhen (wInstName === INST_NAME_LB  ||
-                  wInstName === INST_NAME_LH  ||
-                  wInstName === INST_NAME_LBU ||
-                  wInstName === INST_NAME_LHU ||
-                  wInstName === INST_NAME_LW  ||
-                  wInstName === INST_NAME_LWU ||
-                  wInstName === INST_NAME_LD) {
+                       wInstName === INST_NAME_LH  ||
+                       wInstName === INST_NAME_LBU ||
+                       wInstName === INST_NAME_LHU ||
+                       wInstName === INST_NAME_LW  ||
+                       wInstName === INST_NAME_LWU ||
+                       wInstName === INST_NAME_LD) {
                 wMemByt   := MuxLookup(
                     wInstName,
                     MEM_BYT_X,
@@ -310,9 +331,10 @@ class CTR extends Module with ConfigInstPattern {
     io.ctrio.oInstName  := wInstName
     io.ctrio.oStateCurr := rStateCurr
     io.ctrio.oPCWrEn    := wPCWrEn
-    io.ctrio.oPCWrConEn := wPCWrConEn
+    // io.ctrio.oPCWrConEn := wPCWrConEn
     io.ctrio.oPCWrSrc   := wPCWrSrc
     io.ctrio.oPCNextEn  := wPCNextEn
+    io.ctrio.oPCJumpEn  := wPCJumpEn
     io.ctrio.oMemWrEn   := wMemWrEn
     io.ctrio.oMemByt    := wMemByt
     io.ctrio.oIRWrEn    := wIRWrEn

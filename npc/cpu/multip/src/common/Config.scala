@@ -139,9 +139,9 @@ trait ConfigInst extends ConfigIO {
     val GPR_WR_SRC_ALU = 1.U(SIGS_WIDTH.W)
     val GPR_WR_SRC_MEM = 2.U(SIGS_WIDTH.W)
 
-    val PC_WR_SRC_X   = 0.U(SIGS_WIDTH.W)
-    val PC_WR_SRC_NPC = 1.U(SIGS_WIDTH.W)
-    val PC_WR_SRC_ALU = 2.U(SIGS_WIDTH.W)
+    val PC_WR_SRC_X    = 0.U(SIGS_WIDTH.W)
+    val PC_WR_SRC_NEXT = 1.U(SIGS_WIDTH.W)
+    val PC_WR_SRC_JUMP = 2.U(SIGS_WIDTH.W)
 }
 
 trait ConfigInstPattern extends ConfigInst {

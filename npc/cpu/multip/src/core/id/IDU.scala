@@ -12,6 +12,7 @@ class IDU extends Module with ConfigInst {
         val iGPRWrData =  Input(UInt(DATA_WIDTH.W))
 
         val ctrio      = new CTRIO
+        val gprio      = new GPRIO
 
         val oRS1Addr   = Output(UInt(DATA_WIDTH.W))
         val oRS2Addr   = Output(UInt(DATA_WIDTH.W))
@@ -35,24 +36,25 @@ class IDU extends Module with ConfigInst {
     val wRS2Addr = wInst(24, 20)
     val wRDAddr  = wInst(11, 07)
 
-    mGPR.io.iWrEn    := io.ctrio.oGPRWrEn
-    mGPR.io.iRS1Addr := wRS1Addr
-    mGPR.io.iRS2Addr := wRS2Addr
-    mGPR.io.iRDAddr  := wRDAddr
-    mGPR.io.iWrData  := io.iGPRWrData
+    mGPR.io.iWrEn      := io.ctrio.oGPRWrEn
+    mGPR.io.iRd1Addr   := wRS1Addr
+    mGPR.io.iRd2Addr   := wRS2Addr
+    mGPR.io.iWrAddr    := wRDAddr
+    mGPR.io.iWrData    := io.iGPRWrData
 
-    io.oRS1Addr  := wRS1Addr
-    io.oRS2Addr  := wRS2Addr
-    io.oRDAddr   := wRDAddr
+    io.gprio    <> mGPR.io.gprio
+    io.oRS1Addr := wRS1Addr
+    io.oRS2Addr := wRS2Addr
+    io.oRDAddr  := wRDAddr
 
     val mGPRRS1 = Module(new GPRRS1())
     val mGPRRS2 = Module(new GPRRS2())
-    mGPRRS1.io.iData := mGPR.io.oRS1Data
-    mGPRRS2.io.iData := mGPR.io.oRS2Data
+    mGPRRS1.io.iData := mGPR.io.oRd1Data
+    mGPRRS2.io.iData := mGPR.io.oRd2Data
 
     io.oRS1Data := mGPRRS1.io.oData
     io.oRS2Data := mGPRRS2.io.oData
-    io.oEndData := mGPR.io.oEndData
+    io.oEndData := mGPR.io.oRdEndData
 
     val wImmI     = wInst(31, 20)
     val wImmISext = Cat(Fill(52, wImmI(11)), wImmI)

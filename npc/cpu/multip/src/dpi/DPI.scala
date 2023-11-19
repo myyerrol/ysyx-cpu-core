@@ -14,10 +14,10 @@ class DPI extends BlackBox with ConfigInst {
         val iMemWrAddr     = Input(UInt(DATA_WIDTH.W))
         val iMemWrData     = Input(UInt(DATA_WIDTH.W))
         val iMemWrLen      = Input(UInt(BYTE_WIDTH.W))
-        val iGPRData       = Input(UInt(DATA_WIDTH.W))
+        // val iGPRData       = Input(UInt(DATA_WIDTH.W))
 
         val oMemRdDataInst = Output(UInt(DATA_WIDTH.W))
         val oMemRdDataLoad = Output(UInt(DATA_WIDTH.W))
-        val oGPRAddr       = Output(UInt(DATA_WIDTH.W))
+        // val oGPRAddr       = Output(UInt(DATA_WIDTH.W))
     })
 }
