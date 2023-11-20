@@ -81,12 +81,13 @@ void printfISAGPRData() {
                                                             (char *)"";
         exist_str = (getISAGPR(i) != 0) ? (char *)ANSI_FMT("*", ANSI_FG_GREEN) :
                                           (char *)"";
-        printf("[sdb gpr] i: %d%s val: %s%s = " FMT_WORD "%s\n",
-               i,
-               space_num,
-               space_gpr,
-               gpr_name_arr[i],
-               getISAGPR(i),
-               exist_str);
+        LOG_BRIEF("[sdb gpr] i: %d%s val: %s%s = " FMT_WORD "%s\n",
+                  i,
+                  space_num,
+                  space_gpr,
+                  gpr_name_arr[i],
+                  getISAGPR(i),
+                  exist_str);
     }
+    LOG_BRIEF("\n");
 }

@@ -28,6 +28,8 @@ uint64_t cpu_guest_inst = 0;
 CPUState cpu = {};
 
 static void execCPUTraceAndDifftest() {
+    printfISAGPRData();
+
 #ifdef CONFIG_ITRACE_COND_PROCESS
     writeLog("%s\n", cpu_logbuf);
 #endif

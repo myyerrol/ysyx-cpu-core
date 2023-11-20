@@ -7,7 +7,11 @@
 
 #define LOG(format, ...) \
     _LOG(ANSI_FMT("[%s:%d %s] " format, ANSI_FG_BLUE) "\n", \
-        __FILE__, __LINE__, __func__, ## __VA_ARGS__)
+         __FILE__, __LINE__, __func__, ## __VA_ARGS__)
+
+#define LOG_BRIEF(format, ...) \
+    _LOG(format, \
+         ## __VA_ARGS__)
 
 #define ASSERT(cond, format, ...) \
     do { \

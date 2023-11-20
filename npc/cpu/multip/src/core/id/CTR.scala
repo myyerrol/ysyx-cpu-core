@@ -9,7 +9,6 @@ class CTRIO extends Bundle with ConfigIO {
     val oInstName  = Output(UInt(SIGS_WIDTH.W))
     val oStateCurr = Output(UInt(SIGS_WIDTH.W))
     val oPCWrEn    = Output(Bool())
-    // val oPCWrConEn = Output(Bool())
     val oPCWrSrc   = Output(UInt(SIGS_WIDTH.W))
     val oPCNextEn  = Output(Bool())
     val oPCJumpEn  = Output(Bool())
@@ -177,12 +176,12 @@ class CTR extends Module with ConfigInstPattern {
             .elsewhen (wInstName === INST_NAME_ADDW) {
                 wALUType := ALU_TYPE_ADD
                 wALURS1  := ALU_RS1_GPR
-                wALURS1  := ALU_RS2_GPR
+                wALURS2  := ALU_RS2_GPR
             }
             .elsewhen (wInstName === INST_NAME_SLLIW) {
                 wALUType := ALU_TYPE_SLL
                 wALURS1  := ALU_RS1_GPR
-                wALURS1  := ALU_RS2_IMM_I
+                wALURS2  := ALU_RS2_IMM_I
             }
 
 
@@ -290,6 +289,7 @@ class CTR extends Module with ConfigInstPattern {
                         INST_NAME_SD -> MEM_BYT_8_U
                     )
                 )
+                wALURS2    := ALU_RS2_GPR
             }
         }
         is (stateWB) {
@@ -331,7 +331,6 @@ class CTR extends Module with ConfigInstPattern {
     io.ctrio.oInstName  := wInstName
     io.ctrio.oStateCurr := rStateCurr
     io.ctrio.oPCWrEn    := wPCWrEn
-    // io.ctrio.oPCWrConEn := wPCWrConEn
     io.ctrio.oPCWrSrc   := wPCWrSrc
     io.ctrio.oPCNextEn  := wPCNextEn
     io.ctrio.oPCJumpEn  := wPCJumpEn
