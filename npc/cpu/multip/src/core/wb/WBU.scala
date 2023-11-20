@@ -22,7 +22,7 @@ class WBU extends Module with ConfigInst {
         val wMemDataByt2 = wMemData(15, 0)
         val wMemDataByt4 = wMemData(31, 0)
         val wMemDataByt8 = wMemData(63, 0)
-        val wMemDataMux = MuxLookup(
+        val wMemDataMux  = MuxLookup(
             io.iMemByt,
             DATA_ZERO,
             Seq(
