@@ -106,28 +106,35 @@ override ARGS += $(ARGS_DIFF)
 IMG ?=
 NPC_EXEC := $(BIN_PROJECT) $(ARGS) $(IMG)
 
-.PHONY: test gen build run sim reformat checkformat clean
+.PHONY: test gen run gdb sim reformat checkformat clean
 
 test:
 	mill -i $(PROJECT_TEMP).test
+
 gen: $(SRCVS_PROJECT_GEN)
 	@echo "success"
+
 run: $(BIN_PROJECT)
 	$(call git_commit, "run NPC")
 	rm -rf $(BUILD_DIR_PROJECT)/wave.vcd
 	$(NPC_EXEC)
+
 gdb: $(BIN_PROJECT)
 	$(call git_commit, "gdb NPC")
 	rm -rf $(BUILD_DIR_PROJECT)/wave.vcd
 	gdb -s $(BIN_PROJECT) --args $(NPC_EXEC)
+
 sim: $(BIN_PROJECT)
 	$(call git_commit, "sim NPC")
 	gtkwave $(BUILD_DIR_PROJECT)/wave.vcd
 	@echo "success"
+
 reformat:
 	mill -i __.reformat
+
 checkformat:
 	mill -i __.checkFormat
+
 clean:
 	rm -rf cpu/build
 	rm -rf cpu/out
