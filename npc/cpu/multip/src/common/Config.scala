@@ -82,6 +82,24 @@ trait ConfigInst extends ConfigIO {
     val INST_NAME_REMU   = 58.U(SIGS_WIDTH.W)
     val INST_NAME_REMW   = 59.U(SIGS_WIDTH.W)
 
+    val PC_WR_SRC_X    = 0.U(SIGS_WIDTH.W)
+    val PC_WR_SRC_NEXT = 1.U(SIGS_WIDTH.W)
+    val PC_WR_SRC_JUMP = 2.U(SIGS_WIDTH.W)
+
+    val MEM_BYT_X   = 0.U(SIGS_WIDTH.W)
+    val MEM_BYT_1_U = 1.U(SIGS_WIDTH.W)
+    val MEM_BYT_2_U = 2.U(SIGS_WIDTH.W)
+    val MEM_BYT_4_U = 3.U(SIGS_WIDTH.W)
+    val MEM_BYT_8_U = 4.U(SIGS_WIDTH.W)
+    val MEM_BYT_1_S = 5.U(SIGS_WIDTH.W)
+    val MEM_BYT_2_S = 6.U(SIGS_WIDTH.W)
+    val MEM_BYT_4_S = 7.U(SIGS_WIDTH.W)
+    val MEM_BYT_8_S = 8.U(SIGS_WIDTH.W)
+
+    val GPR_WR_SRC_X   = 0.U(SIGS_WIDTH.W)
+    val GPR_WR_SRC_ALU = 1.U(SIGS_WIDTH.W)
+    val GPR_WR_SRC_MEM = 2.U(SIGS_WIDTH.W)
+
     val ALU_TYPE_X     =  0.U(SIGS_WIDTH.W)
     val ALU_TYPE_ADD   =  1.U(SIGS_WIDTH.W)
     val ALU_TYPE_SUB   =  2.U(SIGS_WIDTH.W)
@@ -124,24 +142,6 @@ trait ConfigInst extends ConfigIO {
     val ALU_RS2_IMM_U = 5.U(SIGS_WIDTH.W)
     val ALU_RS2_IMM_J = 6.U(SIGS_WIDTH.W)
     val ALU_RS2_4     = 7.U(SIGS_WIDTH.W)
-
-    val MEM_BYT_X   = 0.U(SIGS_WIDTH.W)
-    val MEM_BYT_1_U = 1.U(SIGS_WIDTH.W)
-    val MEM_BYT_2_U = 2.U(SIGS_WIDTH.W)
-    val MEM_BYT_4_U = 3.U(SIGS_WIDTH.W)
-    val MEM_BYT_8_U = 4.U(SIGS_WIDTH.W)
-    val MEM_BYT_1_S = 5.U(SIGS_WIDTH.W)
-    val MEM_BYT_2_S = 6.U(SIGS_WIDTH.W)
-    val MEM_BYT_4_S = 7.U(SIGS_WIDTH.W)
-    val MEM_BYT_8_S = 8.U(SIGS_WIDTH.W)
-
-    val GPR_WR_SRC_X   = 0.U(SIGS_WIDTH.W)
-    val GPR_WR_SRC_ALU = 1.U(SIGS_WIDTH.W)
-    val GPR_WR_SRC_MEM = 2.U(SIGS_WIDTH.W)
-
-    val PC_WR_SRC_X    = 0.U(SIGS_WIDTH.W)
-    val PC_WR_SRC_NEXT = 1.U(SIGS_WIDTH.W)
-    val PC_WR_SRC_JUMP = 2.U(SIGS_WIDTH.W)
 }
 
 trait ConfigInstPattern extends ConfigInst {
