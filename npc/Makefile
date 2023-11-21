@@ -2,8 +2,8 @@ PROJECT      ?=
 PROJECT_TEMP := single
 PROJECT_LIST := single pipeline multip
 
-ifeq ($(filter $(PROJECT_LIST), $(PROJECT)), )
-    ifneq ($(MAKECMDGOALS), clean)
+ifeq ($(filter $(PROJECT_LIST), $(PROJECT)),)
+    ifeq ($(findstring $(MAKECMDGOALS), config|clean),)
         $(error $$PROJECT is incorrect, optional values in [$(PROJECT_LIST)])
     endif
 else
@@ -82,22 +82,25 @@ SRCCS_BLACKLIST += $(SRCCS_SRC_BLACKLIST) \
 SRCCS_WHITELIST += $(shell find $(SRCCS_DIR) -name "*.c")
 SRCCS_PROJECT = $(filter-out $(SRCCS_BLACKLIST),$(SRCCS_WHITELIST)) \
                 $(NPC_HOME)/emu/src/utils/disasm.cc
+SRCS = $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
+
+CONFIG = $(NPC_HOME)/emu/.config
 
 $(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
 	cd cpu && \
 	mkdir -p $(BUILD_DIR_PROJECT) && \
 	mill -i $(PROJECT_TEMP).test.runMain TopMain -td $(BUILD_DIR_PROJECT)
-$(BIN_PROJECT): $(SRCVS_PROJECT_GEN) $(SRCVS_PROJECT) $(SRCCS_PROJECT)
+$(BIN_PROJECT): $(SRCS) $(CONFIG)
 	@rm -rf $(OBJ_DIR_PROJECT)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
-	--top-module $(TOPNAME) $^ \
+	--top-module $(TOPNAME) $(SRCS) \
 	$(addprefix -CFLAGS , $(CFLAGS)) \
 	$(addprefix -LDFLAGS , $(LDFLAGS)) \
 	--Mdir $(OBJ_DIR_PROJECT) --exe -o \
 	$(abspath $(BIN_PROJECT))
 
 ifdef CONFIG_DIFFTEST
-ARGS_DIFF = --diff=$(NEMU_HOME)/build/riscv64-nemu-interpreter-so
+    ARGS_DIFF = --diff=$(NEMU_HOME)/build/riscv64-nemu-interpreter-so
 endif
 
 override ARGS ?= --log=$(BUILD_DIR)/npc-log.txt
@@ -107,6 +110,9 @@ IMG ?=
 NPC_EXEC := $(BIN_PROJECT) $(ARGS) $(IMG)
 
 .PHONY: test gen run gdb sim reformat checkformat clean
+
+config:
+	cd emu && make menuconfig
 
 test:
 	mill -i $(PROJECT_TEMP).test

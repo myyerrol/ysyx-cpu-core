@@ -40,8 +40,8 @@ savedefconfig: $(CONF)
 .PHONY: menuconfig savedefconfig defconfig
 
 help:
-	@echo  '  menuconfig	  - Update current config utilising a menu based program'
-	@echo  '  savedefconfig   - Save current config as configs/defconfig (minimal config)'
+	@echo  'menuconfig    - Update current config utilising a menu based program'
+	@echo  'savedefconfig - Save current config as configs/defconfig (minimal config)'
 
 clean-configs: clean
 	-@rm -rf $(KCONFIG_GEN)
