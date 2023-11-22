@@ -102,8 +102,7 @@ class CTR extends Module with ConfigInstPattern {
 
     val wInstName = lInst(0)
 
-    val stateIF :: stateID :: stateEX :: stateLS :: stateWB :: Nil = Enum(5)
-    val rStateCurr = RegInit(stateIF)
+    val rStateCurr = RegInit(STATE_RS)
 
     val wPCWrEn    = WireInit(EN_FALSE)
     val wPCWrConEn = WireInit(EN_FALSE)
@@ -120,16 +119,19 @@ class CTR extends Module with ConfigInstPattern {
     val wALURS2    = WireInit(ALU_RS2_X)
 
     switch (rStateCurr) {
-        is (stateIF) {
-            rStateCurr := stateID
+        is (STATE_RS) {
+            rStateCurr := STATE_IF
+        }
+        is (STATE_IF) {
+            rStateCurr := STATE_ID
             wPCNextEn  := EN_TRUE
             wIRWrEn    := EN_TRUE
             wALUType   := ALU_TYPE_ADD
             wALURS1    := ALU_RS1_PC
             wALURS2    := ALU_RS2_4
         }
-        is (stateID) {
-            rStateCurr := stateEX
+        is (STATE_ID) {
+            rStateCurr := STATE_EX
             when (wInstName === INST_NAME_BEQ  ||
                   wInstName === INST_NAME_BNE  ||
                   wInstName === INST_NAME_BLT  ||
@@ -148,8 +150,8 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS2    := ALU_RS2_IMM_J
             }
         }
-        is (stateEX) {
-            rStateCurr := stateWB
+        is (STATE_EX) {
+            rStateCurr := STATE_WB
             when (wInstName === INST_NAME_SLL   ||
                   wInstName === INST_NAME_SLLI  ||
                   wInstName === INST_NAME_SRLI  ||
@@ -289,7 +291,7 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_BGE  ||
                        wInstName === INST_NAME_BLTU ||
                        wInstName === INST_NAME_BGEU) {
-                rStateCurr := stateIF
+                rStateCurr := STATE_IF
                 wPCWrEn  := EN_TRUE
                 wPCWrSrc := PC_WR_SRC_JUMP
                 wALUType := MuxLookup(
@@ -313,7 +315,7 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS2  := ALU_RS2_4
             }
             .elsewhen (wInstName === INST_NAME_JALR) {
-                rStateCurr := stateLS
+                rStateCurr := STATE_LS
                 wPCJumpEn  := EN_TRUE
                 wALUType   := ALU_TYPE_JALR
                 wALURS1    := ALU_RS1_GPR
@@ -326,7 +328,7 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_LW  ||
                        wInstName === INST_NAME_LWU ||
                        wInstName === INST_NAME_LD) {
-                rStateCurr := stateLS
+                rStateCurr := STATE_LS
                 wALUType   := ALU_TYPE_ADD
                 wALURS1    := ALU_RS1_GPR
                 wALURS2    := ALU_RS2_IMM_I
@@ -335,7 +337,7 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_SH ||
                        wInstName === INST_NAME_SW ||
                        wInstName === INST_NAME_SD) {
-                rStateCurr := stateLS
+                rStateCurr := STATE_LS
                 wALUType   := ALU_TYPE_ADD
                 wALURS1    := ALU_RS1_GPR
                 wALURS2    := ALU_RS2_IMM_S
@@ -364,11 +366,9 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS2  := ALU_RS2_GPR
             }
         }
-        is (stateLS) {
-            // 无条件跳转指令本来不应有LS阶段，但为了满足EX阶段计算PC的时序要求，
-            // 暂时添加一个虚拟的LS阶段
+        is (STATE_LS) {
             when (wInstName === INST_NAME_JALR) {
-                rStateCurr := stateWB
+                rStateCurr := STATE_WB
                 wALUType   := ALU_TYPE_ADD
                 wALURS1    := ALU_RS1_PC
                 wALURS2    := ALU_RS2_4
@@ -380,13 +380,13 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_LW  ||
                        wInstName === INST_NAME_LWU ||
                        wInstName === INST_NAME_LD) {
-                rStateCurr := stateWB
+                rStateCurr := STATE_WB
             }
             .elsewhen (wInstName === INST_NAME_SB ||
                        wInstName === INST_NAME_SH ||
                        wInstName === INST_NAME_SW ||
                        wInstName === INST_NAME_SD) {
-                rStateCurr := stateIF
+                rStateCurr := STATE_IF
                 wPCWrEn    := EN_TRUE
                 wPCWrSrc   := PC_WR_SRC_NEXT
                 wMemWrEn   := EN_TRUE
@@ -403,8 +403,8 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS2    := ALU_RS2_GPR
             }
         }
-        is (stateWB) {
-            rStateCurr := stateIF
+        is (STATE_WB) {
+            rStateCurr := STATE_IF
             wPCWrEn    := EN_TRUE
             wPCWrSrc   := PC_WR_SRC_NEXT
             wGPRWrEn   := EN_TRUE

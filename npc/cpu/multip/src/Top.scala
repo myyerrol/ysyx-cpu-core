@@ -93,7 +93,7 @@ class Top extends Module with ConfigInst {
     mDPI.io.iMemWrLen      := mLSU.io.oMemWrLen
 
     val rInstName = RegNext(mIDU.io.ctrio.oInstName, INST_NAME_X)
-    when (rInstName === INST_NAME_X && mIDU.io.ctrio.oStateCurr === 2.U) {
+    when (rInstName === INST_NAME_X && mIDU.io.ctrio.oStateCurr === STATE_EX) {
         assert(false.B, "Invalid instruction at 0x%x", mIFU.io.oPC)
     }.elsewhen (rInstName === INST_NAME_EBREAK) {
         mDPI.io.iEbreakFlag := 1.U

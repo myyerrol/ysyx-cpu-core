@@ -61,13 +61,4 @@ class WBU extends Module with ConfigInst {
     .otherwise {
         io.oGPRWrData := DATA_ZERO
     }
-
-    // io.oGPRWrData := MuxLookup(
-    //     io.iGPRWrSrc,
-    //     DATA_ZERO,
-    //     Seq(
-    //         GPR_WR_SRC_ALU -> io.iALUOut,
-    //         GPR_WR_SRC_MEM -> wMemDataByt
-    //     )
-    // )
 }

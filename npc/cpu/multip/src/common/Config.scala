@@ -21,6 +21,13 @@ trait ConfigInst extends ConfigIO {
     val EN_TRUE  = true.B
     val EN_FALSE = false.B
 
+    val STATE_RS = 0.U
+    val STATE_IF = 1.U
+    val STATE_ID = 2.U
+    val STATE_EX = 3.U
+    val STATE_LS = 4.U
+    val STATE_WB = 5.U
+
     val INST_NAME_X      =  0.U(SIGS_WIDTH.W)
     val INST_NAME_SLL    =  1.U(SIGS_WIDTH.W)
     val INST_NAME_SLLI   =  2.U(SIGS_WIDTH.W)

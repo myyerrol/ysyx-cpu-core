@@ -22,24 +22,6 @@ class IFU extends Module with ConfigInst {
     })
 
     val rPC  = RegInit(ADDR_SIM_START)
-    // val wNPC = MuxLookup(
-    //     io.iPCWrSrc,
-    //     ADDR_SIM_START,
-    //     Seq(
-    //         PC_WR_SRC_NEXT -> io.iPCNext,
-    //         PC_WR_SRC_JUMP -> io.iPCJump
-    //     )
-    // )
-
-    // val wPCWr = io.iPCWrEn || (io.iPCWrConEn && io.iALUZero)
-
-    // when (wPCWr) {
-    //     rPC    := wNPC
-    //     io.oPC := rPC
-    // }
-    // .otherwise {
-    //     io.oPC := rPC
-    // }
 
     val wNPC = WireInit(ADDR_SIM_START)
 
