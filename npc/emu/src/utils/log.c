@@ -1,6 +1,6 @@
 #include <common.h>
 
-extern uint64_t cpu_guest_inst;
+extern uint64_t cpu_inst_num;
 
 FILE *log_fp = NULL;
 
@@ -11,10 +11,10 @@ void initLog(const char *log_file) {
         ASSERT(fp, "Can not open '%s'", log_file);
         log_fp = fp;
     }
-    LOG("Log is written to %s", log_file ? log_file : "stdout");
+    LOG_BRIEF_COLOR("[log] [init] file: %s", log_file ? log_file : "stdout");
 }
 
 bool enaLog() {
-    return MUXDEF(CONFIG_TRACE, (cpu_guest_inst >= CONFIG_TRACE_START) &&
-                                (cpu_guest_inst <= CONFIG_TRACE_END), false);
+    return MUXDEF(CONFIG_TRACE, (cpu_inst_num >= CONFIG_TRACE_START) &&
+                                (cpu_inst_num <= CONFIG_TRACE_END), false);
 }

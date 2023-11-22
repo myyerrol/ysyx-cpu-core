@@ -10,7 +10,11 @@
          __FILE__, __LINE__, __func__, ## __VA_ARGS__)
 
 #define LOG_BRIEF(format, ...) \
-    _LOG(format, \
+    _LOG(format "\n", \
+         ## __VA_ARGS__)
+
+#define LOG_BRIEF_COLOR(format, ...) \
+    _LOG(ANSI_FMT(format, ANSI_FG_BLUE) "\n", \
          ## __VA_ARGS__)
 
 #define ASSERT(cond, format, ...) \

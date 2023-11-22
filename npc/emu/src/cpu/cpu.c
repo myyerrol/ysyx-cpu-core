@@ -22,9 +22,10 @@ extern uint64_t sim_pc;
 extern uint64_t sim_snpc;
 extern uint64_t sim_dnpc;
 extern uint64_t sim_inst;
+extern uint64_t sim_cycle_num;
 
 char cpu_logbuf[256];
-uint64_t cpu_guest_inst = 0;
+uint64_t cpu_inst_num = 0;
 CPUState cpu = {};
 
 static void execCPUTraceAndDifftest() {
@@ -53,7 +54,7 @@ static void execCPUTimesSingle() {
     cpu.pc = sim_dnpc;
 
     if (inst_end_flag != NULL && *inst_end_flag) {
-        cpu_guest_inst++;
+        cpu_inst_num++;
     }
 
 #ifdef CONFIG_ITRACE_COND_RESULT
@@ -87,7 +88,6 @@ static void execCPUTimesMultip(uint64_t num) {
     for (; num > 0; num--) {
         execCPUTimesSingle();
         execCPUTraceAndDifftest();
-        // cpu_guest_inst++;
         if (npc_state.state != NPC_RUNNING) {
             break;
         }
@@ -95,23 +95,25 @@ static void execCPUTimesMultip(uint64_t num) {
     }
 }
 
-static void printfCPUStat() {
-// #if CPU_TYPE == multip
-//     LOG("Test");
-// #endif
-
+static void printfCPUStatistic() {
     IFNDEF(CONFIG_TARGET_AM, setlocale(LC_NUMERIC, ""));
     #define NUMBERIC_FMT MUXDEF(CONFIG_TARGET_AM, "%", "%'") PRIu64
-    LOG("host time spent = " NUMBERIC_FMT " us", cpu_timer);
-    LOG("total guest instructions = " NUMBERIC_FMT, cpu_guest_inst);
+    LOG_BRIEF_COLOR("[statistic] time      = " NUMBERIC_FMT " us", cpu_timer);
+    LOG_BRIEF_COLOR("[statistic] inst  num = " NUMBERIC_FMT, cpu_inst_num);
+    LOG_BRIEF_COLOR("[statistic] cycle num = " NUMBERIC_FMT, sim_cycle_num);
     if (cpu_timer > 0) {
-        LOG("simulation frequency = " NUMBERIC_FMT " inst/s",
-            cpu_guest_inst * 1000000 / cpu_timer);
+        LOG_BRIEF_COLOR(
+            "[statistic] sim freq  = " NUMBERIC_FMT " inst/s",
+            cpu_inst_num * 1000000 / cpu_timer);
     }
     else {
-        LOG("Finish running in less than 1 us and can not calculate the " \
-            "simulation frequency");
+        LOG_BRIEF_COLOR("[statistic] sim freq  = 0 inst/s (time < 1us, can't " \
+                        "calculate sim freq)");
     }
+    LOG_BRIEF_COLOR("[statistic] ipc       = %lf inst/c",
+                    (double)cpu_inst_num / sim_cycle_num);
+    LOG_BRIEF_COLOR("[statistic] cpi       = %lf c/inst",
+                    (double)sim_cycle_num / cpu_inst_num);
 }
 
 void execCPU(uint64_t num) {
@@ -148,19 +150,20 @@ void execCPU(uint64_t num) {
             printf("\n");
             printfDebugFTrace((char *)"result", NULL, NULL, 0, 0);
 #endif
-            LOG("npc: %s at pc = " FMT_WORD,
+            LOG_BRIEF_COLOR("[result] state: %s",
                 (npc_state.state == NPC_ABORT ?
-                 ANSI_FMT("ABORT", ANSI_FG_RED) :
-                (npc_state.halt_ret == 0 ?
-                 ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
-                 ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
-                 npc_state.halt_pc);
+                    ANSI_FMT("ABORT", ANSI_FG_RED) :
+                    (npc_state.halt_ret == 0 ?
+                        ANSI_FMT("SUCCESS", ANSI_FG_GREEN) :
+                        ANSI_FMT("FAILED", ANSI_FG_RED))));
+            LOG_BRIEF_COLOR("[result] pc:    " FMT_WORD, npc_state.halt_pc);
+            LOG_BRIEF_COLOR();
         }
-        case NPC_QUIT: { printfCPUStat(); }
+        case NPC_QUIT: { printfCPUStatistic(); }
     }
 }
 
 void printfCPUAssertFailMsg() {
     printfISAGPRData();
-    printfCPUStat();
+    printfCPUStatistic();
 }

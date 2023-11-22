@@ -4,7 +4,7 @@
 #include <monitor/sdb/expr.h>
 #include <utils/str.h>
 
-// #include <isa.h>
+#include <isa/gpr.h>
 
 enum {
     TK_NOTYPE = 256,
@@ -68,30 +68,32 @@ static bool handleSDBExprToken(char *e) {
                 int substr_len = pmatch.rm_eo;
 
 #ifdef CONFIG_SDB_EXPR_TOKEN
-                printf("[sdb expr token] match rule:  \"%s\"\n", rules[i].regex);
-                printf("[sdb expr token] match pos:   %d\n", position);
-                printf("[sdb expr token] match len:   %d\n", substr_len);
-                printf("[sdb expr token] match str:   %.*s\n", substr_len,
-                                                               substr_start);
+                LOG_BRIEF("[sdb] [expr] [token] match rule:  \"%s\"",
+                          rules[i].regex);
+                LOG_BRIEF("[sdb] [expr] [token] match pos:   %d", position);
+                LOG_BRIEF("[sdb] [expr] [token] match len:   %d", substr_len);
+                LOG_BRIEF("[sdb] [expr] [token] match str:   %.*s",
+                          substr_len,
+                          substr_start);
 #endif
                 position += substr_len;
 
 #ifdef CONFIG_SDB_EXPR_TOKEN
-                printf("[sdb expr token] substr:      %s\n", substr_start);
+                LOG_BRIEF("[sdb] [expr] [token] substr:      %s", substr_start);
 #endif
                 Token token = { 0, -1, "" };
                 token.type = rules[i].type;
                 token.prior = rules[i].prior;
 #ifdef CONFIG_SDB_EXPR_TOKEN
-                printf("[sdb expr token] token.type:  %d\n", token.type);
-                printf("[sdb expr token] token.prior: %d\n", token.prior);
+                LOG_BRIEF("[sdb] [expr] [token] token.type:  %d", token.type);
+                LOG_BRIEF("[sdb] [expr] [token] token.prior: %d", token.prior);
 #endif
                 if (substr_len > TOKEN_STR_LENGTH) {
                     substr_len = TOKEN_STR_LENGTH;
                 }
                 strncpy(token.str, substr_start, substr_len);
 #ifdef CONFIG_SDB_EXPR_TOKEN
-                printf("[sdb expr token] token.str:   %s\n\n", token.str);
+                LOG_BRIEF("[sdb] [expr] [token] token.str:   %s\n", token.str);
 #endif
                 if (nr_token < ARRLEN(tokens)) {
                     tokens[nr_token] = token;
@@ -105,7 +107,11 @@ static bool handleSDBExprToken(char *e) {
         }
 
         if (i == NR_REGEX) {
-            printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
+            LOG_BRIEF("[sdb] [expr] [token] no match at position %d\n%s\n%*.s^",
+                      position,
+                      e,
+                      position,
+                      "");
             return false;
         }
     }
@@ -226,8 +232,7 @@ static word_t handleSDBExprEval(word_t index_l, word_t index_r) {
                 case TK_REG: {
                     bool success = false;
                     token_str = token_str + 1;
-                    // word_t val = isa_reg_str2val(token_str, &success);
-                    word_t val = 0;
+                    word_t val = getISAGPRData(token_str, &success);
                     if (success) {
                         return val;
                     }
@@ -256,9 +261,9 @@ static word_t handleSDBExprEval(word_t index_l, word_t index_r) {
         word_t val2 = handleSDBExprEval(op + 1, index_r);
 
 #ifdef CONFIG_SDB_EXPR_EVAL
-        printf("[sdb expr eval] op:   %s\n", tokens[op].str);
-        printf("[sdb expr eval] val1: %lu\n", val1);
-        printf("[sdb expr eval] val2: %lu\n", val2);
+        LOG_BRIEF("[sdb] [expr] [eval] op:   %s", tokens[op].str);
+        LOG_BRIEF("[sdb] [expr] [eval] val1: %lu", val1);
+        LOG_BRIEF("[sdb] [expr] [eval] val2: %lu", val2);
 #endif
 
         word_t ret = 0;
@@ -318,7 +323,7 @@ static word_t handleSDBExprEval(word_t index_l, word_t index_r) {
         }
 
 #ifdef CONFIG_SDB_EXPR_EVAL
-        printf("[sdb expr eval] ret:  %lu\n\n", ret);
+        LOG_BRIEF("[sdb] [expr] [eval] ret:  %lu\n", ret);
 #endif
 
         return ret;
@@ -354,7 +359,7 @@ word_t handleSDBExpr(char *epxr, char *ret_ref, bool *success) {
     }
 
 #ifdef CONFIG_SDB_EXPR
-    printf("[sdb expr] success: %d, ret: %lu\n\n", *success, ret);
+    LOG_BRIEF("[sdb] [expr] success: %d, ret: %lu\n", *success, ret);
 #endif
 
   return ret;
@@ -368,7 +373,8 @@ void initSDBExpr() {
         ret = regcomp(&regex_arr[i], rules[i].regex, REG_EXTENDED);
         if (ret != 0) {
             regerror(ret, &regex_arr[i], error_msg, 128);
-            PANIC("regex compilation failed: %s\n%s", error_msg, rules[i].regex);
+            PANIC("[sdb] [expr] regex compilation failed: %s\n%s", error_msg,
+                                                                   rules[i].regex);
         }
     }
 }

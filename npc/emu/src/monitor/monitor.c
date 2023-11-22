@@ -20,7 +20,7 @@ static int   difftest_port = 1234;
 
 static long initMonitorImg() {
     if (img_file == NULL) {
-        LOG("No image is given. Use the default build-in image.");
+        LOG_BRIEF_COLOR("[monitor] [init] image: use the default build-in");
         return 4096;
     }
 
@@ -30,7 +30,7 @@ static long initMonitorImg() {
     fseek(fp, 0, SEEK_END);
     long size = ftell(fp);
 
-    LOG("The image is %s, size = %ld", img_file, size);
+    LOG_BRIEF_COLOR("[monitor] [init] image: %s, size = %ld byte", img_file, size);
 
     fseek(fp, 0, SEEK_SET);
     int ret = fread(convertGuestToHost(RESET_VECTOR), size, 1, fp);
@@ -77,18 +77,88 @@ static int parseMonitorArgs(int argc, char *argv[]) {
     return 0;
 }
 
-static void printfWelcome() {
-    LOG("Trace: %s",
-        MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN),
-                             ANSI_FMT("OFF", ANSI_FG_RED)));
-    IFDEF(CONFIG_TRACE,
-          LOG("If trace is enabled, a log file will be generated "
-              "to record the trace. This may lead to a large log file. "
-              "If it is not necessary, you can disable it in menuconfig"));
-    LOG("Build time: %s, %s", __TIME__, __DATE__);
-    printf("Welcome to %s-NPC!\n", ANSI_FMT(str(__GUEST_ISA__),
-                                   ANSI_FG_YELLOW ANSI_BG_RED));
-    printf("For help, type \"h\"\n");
+static void printfMonitorWelcome() {
+    LOG_BRIEF_COLOR("[monitor] [welcome] [sdb]:               %s",
+                    MUXDEF(CONFIG_SDB, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                       ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]:             %s",
+                    MUXDEF(CONFIG_TRACE, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                         ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace] inst:        %s",
+                    MUXDEF(CONFIG_ITRACE, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                          ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     process: %s",
+                    MUXDEF(CONFIG_ITRACE_COND_PROCESS,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     result:  %s",
+                    MUXDEF(CONFIG_ITRACE_COND_RESULT,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace] memory:      %s",
+                    MUXDEF(CONFIG_MTRACE, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                          ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     process: %s",
+                    MUXDEF(CONFIG_MTRACE_COND_PROCESS,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     result:  %s",
+                    MUXDEF(CONFIG_MTRACE_COND_RESULT,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace] function:    %s",
+                    MUXDEF(CONFIG_FTRACE, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                          ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     process: %s",
+                    MUXDEF(CONFIG_FTRACE_COND_PROCESS,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     result:  %s",
+                    MUXDEF(CONFIG_FTRACE_COND_RESULT,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace] device:      %s",
+                    MUXDEF(CONFIG_DTRACE, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                          ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     process: %s",
+                    MUXDEF(CONFIG_DTRACE_COND_PROCESS,
+                          ANSI_FMT("ON",  ANSI_FG_GREEN),
+                          ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     result:  %s",
+                    MUXDEF(CONFIG_DTRACE_COND_RESULT,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace] exception:   %s",
+                    MUXDEF(CONFIG_ETRACE, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                          ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     process: %s",
+                    MUXDEF(CONFIG_ETRACE_COND_PROCESS,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [trace]     result:  %s",
+                    MUXDEF(CONFIG_ETRACE_COND_RESULT,
+                           ANSI_FMT("ON",  ANSI_FG_GREEN),
+                           ANSI_FMT("OFF", ANSI_FG_RED)));
+
+    LOG_BRIEF_COLOR("[monitor] [welcome] [difftest]:          %s",
+                    MUXDEF(CONFIG_DIFFTEST, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                            ANSI_FMT("OFF", ANSI_FG_RED)));
+    LOG_BRIEF_COLOR("[monitor] [welcome] [difftest] ref:      %s",
+                   CONFIG_DIFFTEST_REF_NAME);
+
+    LOG_BRIEF_COLOR("[monitor] [welcome] [wave]:              %s",
+                    MUXDEF(CONFIG_DEBUG_WAVE, ANSI_FMT("ON",  ANSI_FG_GREEN),
+                                              ANSI_FMT("OFF", ANSI_FG_RED)));
+
+    LOG_BRIEF_COLOR("[monitor] [welcome] date: %s, %s", __TIME__, __DATE__);
+
+    LOG_BRIEF("Welcome to %s-NPC!", ANSI_FMT(str(__GUEST_ISA__),
+                                             ANSI_FG_YELLOW ANSI_BG_RED));
+    LOG_BRIEF("For help, type \"h\"");
 }
 
 void initMonitor(int argc, char *argv[]) {
@@ -114,7 +184,7 @@ void initMonitor(int argc, char *argv[]) {
     ));
     IFDEF(CONFIG_DEVICE, initDevice());
 
-    printfWelcome();
+    printfMonitorWelcome();
 
     loopSDB();
 }

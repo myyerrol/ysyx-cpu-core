@@ -5,7 +5,7 @@
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 
 static void printfOutOfBoundInfo(paddr_t addr) {
-    PANIC("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " \
+    PANIC("[memory] address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " \
           FMT_PADDR "] at pc = " FMT_WORD,
           addr,
           PMEM_LEFT,
@@ -52,7 +52,7 @@ void initMem() {
         pmem_p[i] = rand();
     }
 #endif
-    LOG("physical memory area [" FMT_PADDR ", " FMT_PADDR "]",
+    LOG_BRIEF_COLOR("[memory] [init] physical area: [" FMT_PADDR ", " FMT_PADDR "]",
         PMEM_LEFT,
         PMEM_RIGHT);
 }
