@@ -28,8 +28,6 @@ uint64_t cpu_guest_inst = 0;
 CPUState cpu = {};
 
 static void execCPUTraceAndDifftest() {
-    // printfISAGPRData();
-
 #ifdef CONFIG_ITRACE_COND_PROCESS
     writeLog("%s\n", cpu_logbuf);
 #endif
@@ -49,8 +47,14 @@ static void execCPUTraceAndDifftest() {
 }
 
 static void execCPUTimesSingle() {
-    runCPUSimModule();
+    bool *inst_end_flag = (bool *)malloc(sizeof(bool));
+
+    runCPUSimModule(inst_end_flag);
     cpu.pc = sim_dnpc;
+
+    if (inst_end_flag != NULL && *inst_end_flag) {
+        cpu_guest_inst++;
+    }
 
 #ifdef CONFIG_ITRACE_COND_RESULT
         char *cpu_logbuf_p = cpu_logbuf;
@@ -82,8 +86,8 @@ static void execCPUTimesSingle() {
 static void execCPUTimesMultip(uint64_t num) {
     for (; num > 0; num--) {
         execCPUTimesSingle();
-        cpu_guest_inst++;
         execCPUTraceAndDifftest();
+        // cpu_guest_inst++;
         if (npc_state.state != NPC_RUNNING) {
             break;
         }
@@ -92,6 +96,10 @@ static void execCPUTimesMultip(uint64_t num) {
 }
 
 static void printfCPUStat() {
+// #if CPU_TYPE == multip
+//     LOG("Test");
+// #endif
+
     IFNDEF(CONFIG_TARGET_AM, setlocale(LC_NUMERIC, ""));
     #define NUMBERIC_FMT MUXDEF(CONFIG_TARGET_AM, "%", "%'") PRIu64
     LOG("host time spent = " NUMBERIC_FMT " us", cpu_timer);

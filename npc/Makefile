@@ -46,6 +46,7 @@ CFLAGS_BUILD += $(call REMOVE_QUOTE,$(CONFIG_CC_OPT))
 CFLAGS_BUILD += $(if $(CONFIG_CC_LTO),-flto,)
 CFLAGS_BUILD += $(if $(CONFIG_CC_DEBUG),-Og -ggdb3,)
 CFLAGS_BUILD += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
+CFLAGS_BUILD += -DCPU_SINGLE=$(if $(PROJECT EQUAL single),true,false)
 CFLAGS  += $(CFLAGS_BUILD) \
            -D__GUEST_ISA__=$(GUEST_ISA) \
            -Wno-unused-result \

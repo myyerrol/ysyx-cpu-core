@@ -10,7 +10,7 @@ extern VTop *top;
 
 void exitCPUSim();
 void initCPUSim();
-void runCPUSimModule();
+void runCPUSimModule(bool *inst_end_flag);
 void resetCPUSimModule(int num);
 
 #endif

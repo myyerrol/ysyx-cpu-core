@@ -14,8 +14,8 @@ typedef unsigned long long uint64_tt;
 
 bool sim_ebreak = false;
 
-extern "C" void judgeIsEbreak(uint8_t flag) {
-    sim_ebreak = flag;
+extern "C" void judgeIsEbreak(uint8_t inst_end_flag) {
+    sim_ebreak = inst_end_flag;
 }
 
 extern "C" uint64_tt readInsData(uint64_tt addr, uint8_t len) {
@@ -124,7 +124,7 @@ uint64_t sim_dnpc = 0;
 uint64_t sim_inst = 0;
 uint64_t sim_num  = 0;
 
-void runCPUSimModule() {
+void runCPUSimModule(bool *inst_end_flag) {
     if (!sim_ebreak) {
         sim_pc   = top->io_oPC;
         sim_snpc = sim_pc + 4;
@@ -135,6 +135,17 @@ void runCPUSimModule() {
         sim_dnpc = top->io_oPC;
 
         sim_num++;
+
+#if CPU_SINGLE
+        *inst_end_flag = true;
+#else
+        if (top->io_itraceio_ctrio_oStateCurr == 1) {
+            *inst_end_flag = true;
+        }
+        else {
+            *inst_end_flag = false;
+        }
+#endif
 
 #ifdef CONFIG_ITRACE_COND_PROCESS
     LOG_BRIEF("[itrace]           num:              %ld\n", sim_num);
@@ -209,12 +220,13 @@ void runCPUSimModule() {
 
     char *state_curr = (char *)"";
     switch (top->io_itraceio_ctrio_oStateCurr) {
-        case 0:  state_curr = (char *)"IF"; break;
-        case 1:  state_curr = (char *)"ID"; break;
-        case 2:  state_curr = (char *)"EX"; break;
-        case 3:  state_curr = (char *)"LS"; break;
-        case 4:  state_curr = (char *)"WB"; break;
-        default: state_curr = (char *)"IF"; break;
+        case 0:  state_curr = (char *)"RS"; break;
+        case 1:  state_curr = (char *)"IF"; break;
+        case 2:  state_curr = (char *)"ID"; break;
+        case 3:  state_curr = (char *)"EX"; break;
+        case 4:  state_curr = (char *)"LS"; break;
+        case 5:  state_curr = (char *)"WB"; break;
+        default: state_curr = (char *)"RS"; break;
     }
     LOG_BRIEF("[itrace] [idu ctr] state curr:       %s\n", state_curr);
 
