@@ -52,7 +52,7 @@ void initMem() {
         pmem_p[i] = rand();
     }
 #endif
-    LOG_BRIEF_COLOR("[memory] [init] physical area: [" FMT_PADDR ", " FMT_PADDR "]",
+    LOG_BRIEF_COLOR("[memory] physical area: [" FMT_PADDR ", " FMT_PADDR "]",
         PMEM_LEFT,
         PMEM_RIGHT);
 }

@@ -5,12 +5,13 @@ import chisel3.util._
 
 trait ConfigIO {
     val BYTE_WIDTH = 8
+    val INST_WIDTH = 32
     val DATA_WIDTH = 64
     val GPRS_WIDTH = 5
     val SIGS_WIDTH = 10
 
     val GPRS_NUM = 1 << GPRS_WIDTH
-    val MEMS_NUM = 4096
+    val MEMS_NUM = 1 << 32
 }
 
 trait ConfigInst extends ConfigIO {

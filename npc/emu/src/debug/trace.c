@@ -94,7 +94,7 @@ static int judgeDebugFTraceIsELF64(FILE *fp) {
 
 static char *getDebugFTraceFunc(Elf64_Addr addr) {
   Elf64_Addr offset = addr - CONFIG_MBASE;
-  ASSERT(offset < ARR_LEN, "Out of bounds: %ld", offset);
+  ASSERT(offset < ARR_LEN, "[trace] out of bounds: %ld", offset);
   if (func_name_arr[offset] != NULL) {
     return func_name_arr[offset];
   }
@@ -106,8 +106,8 @@ static char *getDebugFTraceFunc(Elf64_Addr addr) {
 static void initDebugFTrace(char *elf_file) {
     if (elf_file != NULL) {
         FILE *fp = fopen(elf_file, "r");
-        ASSERT(fp, "Can not open '%s'", elf_file);
-        ASSERT(judgeDebugFTraceIsELF64(fp), "File type mismatch");
+        ASSERT(fp, "[trace] can not open '%s'", elf_file);
+        ASSERT(judgeDebugFTraceIsELF64(fp), "[trace] file type mismatch");
 
         // 读取ELF文件头部
         Elf64_Ehdr elf_header;
@@ -157,7 +157,7 @@ static void initDebugFTrace(char *elf_file) {
                 Elf32_Word st_name = elf_symbol_arr[i].st_name;
                 char *func_name = elf_string_name_arr + st_name;
                 Elf64_Addr offset = st_value - elf_header.e_entry;
-                ASSERT(offset < ARR_LEN, "Out of bounds: %ld", offset);
+                ASSERT(offset < ARR_LEN, "[trace] out of bounds: %ld", offset);
                 if (func_name_arr[offset] == NULL) {
                     func_name_arr[offset] = (char *)malloc(sizeof(char) * 256);
                 }

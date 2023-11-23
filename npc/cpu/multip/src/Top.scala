@@ -39,7 +39,7 @@ class Top extends Module with ConfigInst {
         val iItrace  = Input(Bool())
 
         val oPC      = Output(UInt(DATA_WIDTH.W))
-        val oInst    = Output(UInt(DATA_WIDTH.W ))
+        val oInst    = Output(UInt(INST_WIDTH.W))
         val oEndData = Output(UInt(DATA_WIDTH.W))
 
         val gprio    = new GPRIO
@@ -85,6 +85,8 @@ class Top extends Module with ConfigInst {
 
     io.itraceio.oGPRWrData     := mWBU.io.oGPRWrData
 
+    mDPI.io.iClock         := clock
+    mDPI.io.iReset         := reset
     mDPI.io.iMemRdAddrInst := mLSU.io.oMemRdAddrInst
     mDPI.io.iMemRdAddrLoad := mLSU.io.oMemRdAddrLoad
     mDPI.io.iMemWrEn       := mLSU.io.oMemWrEn
@@ -132,6 +134,8 @@ class Top extends Module with ConfigInst {
 
     mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
     mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
+    // mLSU.io.iMemRdDataInst := DATA_ZERO
+    // mLSU.io.iMemRdDataLoad := DATA_ZERO
 
     mWBU.io.iInstName := mIDU.io.ctrio.oInstName
     mWBU.io.iMemByt   := mIDU.io.ctrio.oMemByt

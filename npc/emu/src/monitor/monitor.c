@@ -20,17 +20,17 @@ static int   difftest_port = 1234;
 
 static long initMonitorImg() {
     if (img_file == NULL) {
-        LOG_BRIEF_COLOR("[monitor] [init] image: use the default build-in");
+        LOG_BRIEF_COLOR("[monitor] image: use the default build-in");
         return 4096;
     }
 
     FILE *fp = fopen(img_file, "rb");
-    ASSERT(fp, "Can not open '%s'", img_file);
+    ASSERT(fp, "[monitor] can not open '%s'", img_file);
 
     fseek(fp, 0, SEEK_END);
     long size = ftell(fp);
 
-    LOG_BRIEF_COLOR("[monitor] [init] image: %s, size = %ld byte", img_file, size);
+    LOG_BRIEF_COLOR("[monitor] image: %s, size = %ld byte", img_file, size);
 
     fseek(fp, 0, SEEK_SET);
     int ret = fread(convertGuestToHost(RESET_VECTOR), size, 1, fp);

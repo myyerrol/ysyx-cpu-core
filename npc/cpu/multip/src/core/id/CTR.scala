@@ -25,7 +25,7 @@ class CTRIO extends Bundle with ConfigIO {
 class CTR extends Module with ConfigInstPattern {
     val io = IO(new Bundle {
         val iPC   = Input(UInt(DATA_WIDTH.W))
-        val iInst = Input(UInt(DATA_WIDTH.W))
+        val iInst = Input(UInt(INST_WIDTH.W))
         val ctrio = new CTRIO
     })
 

@@ -7,6 +7,8 @@ import cpu.common._
 
 class DPI extends BlackBox with ConfigInst {
     val io = IO(new Bundle {
+        val iClock         = Input(Clock())
+        val iReset         = Input(Bool())
         val iEbreakFlag    = Input(UInt(BYTE_WIDTH.W))
         val iMemRdAddrInst = Input(UInt(DATA_WIDTH.W))
         val iMemRdAddrLoad = Input(UInt(DATA_WIDTH.W))
@@ -14,10 +16,8 @@ class DPI extends BlackBox with ConfigInst {
         val iMemWrAddr     = Input(UInt(DATA_WIDTH.W))
         val iMemWrData     = Input(UInt(DATA_WIDTH.W))
         val iMemWrLen      = Input(UInt(BYTE_WIDTH.W))
-        // val iGPRData       = Input(UInt(DATA_WIDTH.W))
 
-        val oMemRdDataInst = Output(UInt(DATA_WIDTH.W))
+        val oMemRdDataInst = Output(UInt(INST_WIDTH.W))
         val oMemRdDataLoad = Output(UInt(DATA_WIDTH.W))
-        // val oGPRAddr       = Output(UInt(DATA_WIDTH.W))
     })
 }

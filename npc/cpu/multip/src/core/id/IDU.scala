@@ -8,7 +8,7 @@ import cpu.common._
 class IDU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val iPC        =  Input(UInt(DATA_WIDTH.W))
-        val iInst      =  Input(UInt(DATA_WIDTH.W))
+        val iInst      =  Input(UInt(INST_WIDTH.W))
         val iGPRWrData =  Input(UInt(DATA_WIDTH.W))
 
         val ctrio      = new CTRIO

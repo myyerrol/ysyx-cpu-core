@@ -14,7 +14,7 @@ class LSU extends Module with ConfigInst {
         val iMemWrData     =  Input(UInt(DATA_WIDTH.W))
 
         // 通过DPI-C从仿真环境获取到的内存指令和数据
-        val iMemRdDataInst =  Input(UInt(DATA_WIDTH.W))
+        val iMemRdDataInst =  Input(UInt(INST_WIDTH.W))
         val iMemRdDataLoad =  Input(UInt(DATA_WIDTH.W))
 
         // 通过DPI-C将内存指令和数据地址发给仿真环境

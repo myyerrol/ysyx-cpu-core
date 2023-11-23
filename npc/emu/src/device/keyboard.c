@@ -16,7 +16,7 @@ static int key_f = 0, key_r = 0;
 static void enqueueDeviceKey(uint32_t am_scancode) {
     key_queue[key_r] = am_scancode;
     key_r = (key_r + 1) % KEY_QUEUE_LEN;
-    ASSERT(key_r != key_f, "key queue overflow!");
+    ASSERT(key_r != key_f, "[device] key queue overflow!");
 }
 
 uint32_t dequeueDiviceKey() {
