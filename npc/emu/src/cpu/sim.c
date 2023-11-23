@@ -126,13 +126,13 @@ uint64_t sim_cycle_num = 0;
 
 void runCPUSimModule(bool *inst_end_flag) {
     if (!sim_ebreak) {
-        sim_pc   = top->io_oPC;
+        sim_pc   = top->io_ifuio_oPC;
         sim_snpc = sim_pc + 4;
-        sim_inst = top->io_oInst;
+        sim_inst = top->io_ifuio_oInst;
 
         runCPUSimModuleCycle();
 
-        sim_dnpc = top->io_oPC;
+        sim_dnpc = top->io_ifuio_oPC;
 
         sim_cycle_num++;
 
@@ -148,9 +148,11 @@ void runCPUSimModule(bool *inst_end_flag) {
 #endif
 
 #ifdef CONFIG_ITRACE_COND_PROCESS
-    LOG_BRIEF("[itrace]           cycle num:        %ld", sim_cycle_num);
-    LOG_BRIEF("[itrace] [ifu]     pc:               " FMT_WORD "", top->io_oPC);
-    LOG_BRIEF("[itrace] [ifu]     inst:             " FMT_WORD "", top->io_oInst);
+    LOG_BRIEF("[itrace]             cycle num:        %ld", sim_cycle_num);
+    LOG_BRIEF("[itrace] [ifu]       pc:               " FMT_WORD,
+              top->io_ifuio_oPC);
+    LOG_BRIEF("[itrace] [ifu]       inst:             " FMT_WORD,
+              top->io_ifuio_oInst);
 
     char *inst_name = (char *)"";
     switch (top->io_itraceio_ctrio_oInstName) {
@@ -216,7 +218,7 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 59: inst_name = (char *)"REMW";   break;
         default: inst_name = (char *)"X";      break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] inst name:        %s", inst_name);
+    LOG_BRIEF("[itrace] [idu] [ctr] inst name:        %s", inst_name);
 
     char *state_curr = (char *)"";
     switch (top->io_itraceio_ctrio_oStateCurr) {
@@ -228,9 +230,9 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 5:  state_curr = (char *)"WB"; break;
         default: state_curr = (char *)"RS"; break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] state curr:       %s", state_curr);
+    LOG_BRIEF("[itrace] [idu] [ctr] state curr:       %s", state_curr);
 
-    LOG_BRIEF("[itrace] [idu ctr] pc wr en:         %d",
+    LOG_BRIEF("[itrace] [idu] [ctr] pc wr en:         %d",
               top->io_itraceio_ctrio_oPCWrEn);
 
     char *pc_wr_src = (char *)"";
@@ -240,13 +242,15 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 2:  pc_wr_src = (char *)"JUMP"; break;
         default: pc_wr_src = (char *)"X";    break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] pc wr src:        %s", pc_wr_src);
+    LOG_BRIEF("[itrace] [idu] [ctr] pc wr src:        %s", pc_wr_src);
 
-    LOG_BRIEF("[itrace] [idu ctr] pc next en:       %d",
+    LOG_BRIEF("[itrace] [idu] [ctr] pc next en:       %d",
               top->io_itraceio_ctrio_oPCNextEn);
-    LOG_BRIEF("[itrace] [idu ctr] pc jump en:       %d",
+    LOG_BRIEF("[itrace] [idu] [ctr] pc jump en:       %d",
               top->io_itraceio_ctrio_oPCJumpEn);
-    LOG_BRIEF("[itrace] [idu ctr] mem wr en:        %d",
+    LOG_BRIEF("[itrace] [idu] [ctr] mem rd en:        %d",
+              top->io_itraceio_ctrio_oMemRdEn);
+    LOG_BRIEF("[itrace] [idu] [ctr] mem wr en:        %d",
               top->io_itraceio_ctrio_oMemWrEn);
 
     char *mem_byt = (char *)"";
@@ -262,11 +266,11 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 8:  mem_byt = (char *)"8_S"; break;
         default: mem_byt = (char *)"X";   break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] mem byt:          %s", mem_byt);
+    LOG_BRIEF("[itrace] [idu] [ctr] mem byt:          %s", mem_byt);
 
-    LOG_BRIEF("[itrace] [idu ctr] ir wr en:         %d",
+    LOG_BRIEF("[itrace] [idu] [ctr] ir wr en:         %d",
               top->io_itraceio_ctrio_oIRWrEn);
-    LOG_BRIEF("[itrace] [idu ctr] gpr wr en:        %d",
+    LOG_BRIEF("[itrace] [idu] [ctr] gpr wr en:        %d",
               top->io_itraceio_ctrio_oGPRWrEn);
 
     char *gpr_wr_src = (char *)"";
@@ -276,7 +280,7 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 2:  gpr_wr_src = (char *)"MEM"; break;
         default: gpr_wr_src = (char *)"X";   break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] gpr wr src:       %s", gpr_wr_src);
+    LOG_BRIEF("[itrace] [idu] [ctr] gpr wr src:       %s", gpr_wr_src);
 
     char *alu_type = (char *)"";
     switch (top->io_itraceio_ctrio_oALUType) {
@@ -311,7 +315,7 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 28: alu_type = (char *)"REMW";  break;
         default: alu_type = (char *)"X";     break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] alu type:         %s", alu_type);
+    LOG_BRIEF("[itrace] [idu] [ctr] alu type:         %s", alu_type);
 
     char *alu_rs1 = (char *)"";
     switch (top->io_itraceio_ctrio_oALURS1) {
@@ -320,7 +324,7 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 2:  alu_rs1 = (char *)"GPR"; break;
         default: alu_rs1 = (char *)"X";   break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] alu rs1:          %s", alu_rs1);
+    LOG_BRIEF("[itrace] [idu] [ctr] alu rs1:          %s", alu_rs1);
 
     char *alu_rs2 = (char *)"";
     switch (top->io_itraceio_ctrio_oALURS2) {
@@ -334,53 +338,55 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 7:  alu_rs2 = (char *)"4";     break;
         default: alu_rs2 = (char *)"X";     break;
     }
-    LOG_BRIEF("[itrace] [idu ctr] alu rs2:          %s", alu_rs2);
+    LOG_BRIEF("[itrace] [idu] [ctr] alu rs2:          %s", alu_rs2);
 
-    LOG_BRIEF("[itrace] [idu]     rs1 addr:         %ld",
-              top->io_itraceio_oRS1Addr);
-    LOG_BRIEF("[itrace] [idu]     rs2 addr:         %ld",
-              top->io_itraceio_oRS2Addr);
-    LOG_BRIEF("[itrace] [idu]     rd  addr:         %ld",
-              top->io_itraceio_oRDAddr);
-    LOG_BRIEF("[itrace] [idu]     rs1 data:         " FMT_WORD "",
-              top->io_itraceio_oRS1Data);
-    LOG_BRIEF("[itrace] [idu]     rs2 data:         " FMT_WORD "",
-              top->io_itraceio_oRS2Data);
-    LOG_BRIEF("[itrace] [idu]     end data:         " FMT_WORD "",
-              top->io_itraceio_oEndData);
-    LOG_BRIEF("[itrace] [idu]     imm data:         " FMT_WORD "",
-              top->io_itraceio_oImmData);
+    LOG_BRIEF("[itrace] [idu]       rs1 addr:         %ld",
+              top->io_itraceio_iduio_oRS1Addr);
+    LOG_BRIEF("[itrace] [idu]       rs2 addr:         %ld",
+              top->io_itraceio_iduio_oRS2Addr);
+    LOG_BRIEF("[itrace] [idu]       rd  addr:         %ld",
+              top->io_itraceio_iduio_oRDAddr);
+    LOG_BRIEF("[itrace] [idu]       rs1 data:         " FMT_WORD "",
+              top->io_itraceio_iduio_oRS1Data);
+    LOG_BRIEF("[itrace] [idu]       rs2 data:         " FMT_WORD "",
+              top->io_itraceio_iduio_oRS2Data);
+    LOG_BRIEF("[itrace] [idu]       end data:         " FMT_WORD "",
+              top->io_itraceio_iduio_oEndData);
+    LOG_BRIEF("[itrace] [idu]       imm data:         " FMT_WORD "",
+              top->io_itraceio_iduio_oImmData);
 
-    LOG_BRIEF("[itrace] [exu]     pc next:          " FMT_WORD "",
-              top->io_itraceio_oPCNext);
-    LOG_BRIEF("[itrace] [exu]     pc jump:          " FMT_WORD "",
-              top->io_itraceio_oPCJump);
-    LOG_BRIEF("[itrace] [exu]     alu zero:         %d",
-              top->io_itraceio_oALUZero);
-    LOG_BRIEF("[itrace] [exu]     alu out:          " FMT_WORD "",
-              top->io_itraceio_oALUOut);
+    LOG_BRIEF("[itrace] [exu]       pc next:          " FMT_WORD "",
+              top->io_itraceio_exuio_oPCNext);
+    LOG_BRIEF("[itrace] [exu]       pc jump:          " FMT_WORD "",
+              top->io_itraceio_exuio_oPCJump);
+    LOG_BRIEF("[itrace] [exu]       alu zero:         %d",
+              top->io_itraceio_exuio_oALUZero);
+    LOG_BRIEF("[itrace] [exu]       alu out:          " FMT_WORD "",
+              top->io_itraceio_exuio_oALUOut);
 
-    LOG_BRIEF("[itrace] [lsu]     mem rd addr inst: " FMT_WORD "",
-              top->io_itraceio_oMemRdAddrInst);
-    LOG_BRIEF("[itrace] [lsu]     mem rd addr load: " FMT_WORD "",
-              top->io_itraceio_oMemRdAddrLoad);
-    LOG_BRIEF("[itrace] [lsu]     mem rd data inst: " FMT_WORD "",
-              top->io_itraceio_oMemRdDataInst);
-    LOG_BRIEF("[itrace] [lsu]     mem rd data load: " FMT_WORD "",
-              top->io_itraceio_oMemRdDataLoad);
-    LOG_BRIEF("[itrace] [lsu]     mem wr en:        %d",
-              top->io_itraceio_oMemWrEn);
-    LOG_BRIEF("[itrace] [lsu]     mem wr addr:      " FMT_WORD "",
-              top->io_itraceio_oMemWrAddr);
-    LOG_BRIEF("[itrace] [lsu]     mem wr data:      " FMT_WORD "",
-              top->io_itraceio_oMemWrData);
-    LOG_BRIEF("[itrace] [lsu]     mem wr len:       %d",
-              top->io_itraceio_oMemWrLen);
-    LOG_BRIEF("[itrace] [lsu]     mem rd data:      " FMT_WORD "",
-              top->io_itraceio_oMemRdData);
+    LOG_BRIEF("[itrace] [lsu]       mem rd en:        %d",
+              top->io_itraceio_lsuio_oMemRdEn);
+    LOG_BRIEF("[itrace] [lsu]       mem rd addr inst: " FMT_WORD "",
+              top->io_itraceio_lsuio_oMemRdAddrInst);
+    LOG_BRIEF("[itrace] [lsu]       mem rd addr load: " FMT_WORD "",
+              top->io_itraceio_lsuio_oMemRdAddrLoad);
+    LOG_BRIEF("[itrace] [lsu]       mem rd data inst: " FMT_WORD "",
+              top->io_itraceio_lsuio_oMemRdDataInst);
+    LOG_BRIEF("[itrace] [lsu]       mem rd data load: " FMT_WORD "",
+              top->io_itraceio_lsuio_oMemRdDataLoad);
+    LOG_BRIEF("[itrace] [lsu]       mem wr en:        %d",
+              top->io_itraceio_lsuio_oMemWrEn);
+    LOG_BRIEF("[itrace] [lsu]       mem wr addr:      " FMT_WORD "",
+              top->io_itraceio_lsuio_oMemWrAddr);
+    LOG_BRIEF("[itrace] [lsu]       mem wr data:      " FMT_WORD "",
+              top->io_itraceio_lsuio_oMemWrData);
+    LOG_BRIEF("[itrace] [lsu]       mem wr len:       %d",
+              top->io_itraceio_lsuio_oMemWrLen);
+    LOG_BRIEF("[itrace] [lsu]       mem rd data:      " FMT_WORD "",
+              top->io_itraceio_lsuio_oMemRdData);
 
-    LOG_BRIEF("[itrace] [wbu]     gpr wr:           " FMT_WORD "",
-              top->io_itraceio_oGPRWrData);
+    LOG_BRIEF("[itrace] [wbu]       gpr wr:           " FMT_WORD "",
+              top->io_itraceio_wbuio_oGPRWrData);
     LOG_BRIEF();
 #endif
 

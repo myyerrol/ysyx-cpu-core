@@ -5,6 +5,16 @@ import chisel3.util._
 
 import cpu.common._
 
+class IDUIO extends Bundle with ConfigIO {
+    val oRS1Addr = Output(UInt(DATA_WIDTH.W))
+    val oRS2Addr = Output(UInt(DATA_WIDTH.W))
+    val oRDAddr  = Output(UInt(DATA_WIDTH.W))
+    val oRS1Data = Output(UInt(DATA_WIDTH.W))
+    val oRS2Data = Output(UInt(DATA_WIDTH.W))
+    val oEndData = Output(UInt(DATA_WIDTH.W))
+    val oImmData = Output(UInt(DATA_WIDTH.W))
+}
+
 class IDU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val iPC        =  Input(UInt(DATA_WIDTH.W))
@@ -13,14 +23,7 @@ class IDU extends Module with ConfigInst {
 
         val ctrio      = new CTRIO
         val gprio      = new GPRIO
-
-        val oRS1Addr   = Output(UInt(DATA_WIDTH.W))
-        val oRS2Addr   = Output(UInt(DATA_WIDTH.W))
-        val oRDAddr    = Output(UInt(DATA_WIDTH.W))
-        val oRS1Data   = Output(UInt(DATA_WIDTH.W))
-        val oRS2Data   = Output(UInt(DATA_WIDTH.W))
-        val oEndData   = Output(UInt(DATA_WIDTH.W))
-        val oImmData   = Output(UInt(DATA_WIDTH.W))
+        val iduio      = new IDUIO
     })
 
     val mCTR = Module(new CTR())
@@ -42,19 +45,19 @@ class IDU extends Module with ConfigInst {
     mGPR.io.iWrAddr    := wRDAddr
     mGPR.io.iWrData    := io.iGPRWrData
 
-    io.gprio    <> mGPR.io.gprio
-    io.oRS1Addr := wRS1Addr
-    io.oRS2Addr := wRS2Addr
-    io.oRDAddr  := wRDAddr
+    io.gprio          <> mGPR.io.gprio
+    io.iduio.oRS1Addr := wRS1Addr
+    io.iduio.oRS2Addr := wRS2Addr
+    io.iduio.oRDAddr  := wRDAddr
 
     val mGPRRS1 = Module(new GPRRS1())
     val mGPRRS2 = Module(new GPRRS2())
     mGPRRS1.io.iData := mGPR.io.oRd1Data
     mGPRRS2.io.iData := mGPR.io.oRd2Data
 
-    io.oRS1Data := mGPRRS1.io.oData
-    io.oRS2Data := mGPRRS2.io.oData
-    io.oEndData := mGPR.io.oRdEndData
+    io.iduio.oRS1Data := mGPRRS1.io.oData
+    io.iduio.oRS2Data := mGPRRS2.io.oData
+    io.iduio.oEndData := mGPR.io.oRdEndData
 
     val wImmI     = wInst(31, 20)
     val wImmISext = Cat(Fill(52, wImmI(11)), wImmI)
@@ -67,7 +70,7 @@ class IDU extends Module with ConfigInst {
     val wImmJ     = Cat(wInst(31), wInst(19, 12), wInst(20), wInst(30, 21))
     val wImmJSext = Cat(Fill(43, wImmJ(19)), wImmJ, 0.U(1.U))
 
-    io.oImmData := MuxLookup(
+    io.iduio.oImmData := MuxLookup(
         io.ctrio.oALURS2,
         DATA_ZERO,
         Seq(

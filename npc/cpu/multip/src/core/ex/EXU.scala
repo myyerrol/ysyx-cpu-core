@@ -5,6 +5,14 @@ import chisel3.util._
 
 import cpu.common._
 
+class EXUIO extends Bundle with ConfigIO {
+    val oPCNext    = Output(UInt(DATA_WIDTH.W))
+    val oPCJump    = Output(UInt(DATA_WIDTH.W))
+    val oALUZero   = Output(Bool())
+    val oALUOut    = Output(UInt(DATA_WIDTH.W))
+    val oMemWrData = Output(UInt(DATA_WIDTH.W))
+}
+
 class EXU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val iPCNextEn  =  Input(Bool())
@@ -18,11 +26,7 @@ class EXU extends Module with ConfigInst {
         val iRS2Data   =  Input(UInt(DATA_WIDTH.W))
         val iImmData   =  Input(UInt(DATA_WIDTH.W))
 
-        val oPCNext    = Output(UInt(DATA_WIDTH.W))
-        val oPCJump    = Output(UInt(DATA_WIDTH.W))
-        val oALUZero   = Output(Bool())
-        val oALUOut    = Output(UInt(DATA_WIDTH.W))
-        val oMemWrData = Output(UInt(DATA_WIDTH.W))
+        val exuio      = new EXUIO
     })
 
     val wRS1Data = MuxLookup(
@@ -59,9 +63,9 @@ class EXU extends Module with ConfigInst {
     val mALUOut = Module(new ALUOut())
     mALUOut.io.iData := mALU.io.oOut
 
-    io.oPCNext    := rPCNext
-    io.oPCJump    := rPCJump
-    io.oALUZero   := mALU.io.oZero
-    io.oALUOut    := mALUOut.io.oData
-    io.oMemWrData := wRS2Data
+    io.exuio.oPCNext    := rPCNext
+    io.exuio.oPCJump    := rPCJump
+    io.exuio.oALUZero   := mALU.io.oZero
+    io.exuio.oALUOut    := mALUOut.io.oData
+    io.exuio.oMemWrData := wRS2Data
 }
