@@ -9,6 +9,7 @@ class LSU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val iPC            =  Input(UInt(DATA_WIDTH.W))
         val iALUOut        =  Input(UInt(DATA_WIDTH.W))
+        val iMemRdEn       =  Input(Bool())
         val iMemWrEn       =  Input(Bool())
         val iMemByt        =  Input(UInt(SIGS_WIDTH.W))
         val iMemWrData     =  Input(UInt(DATA_WIDTH.W))
@@ -18,6 +19,7 @@ class LSU extends Module with ConfigInst {
         val iMemRdDataLoad =  Input(UInt(DATA_WIDTH.W))
 
         // 通过DPI-C将内存指令和数据地址发给仿真环境
+        val oMemRdEn       = Output(Bool())
         val oMemRdAddrInst = Output(UInt(DATA_WIDTH.W))
         val oMemRdAddrLoad = Output(UInt(DATA_WIDTH.W))
         val oMemWrEn       = Output(Bool())
@@ -28,6 +30,7 @@ class LSU extends Module with ConfigInst {
         val oMemRdData     = Output(UInt(DATA_WIDTH.W))
     })
 
+    io.oMemRdEn       := io.iMemRdEn
     io.oMemRdAddrInst := io.iPC
     io.oMemRdAddrLoad := io.iALUOut
 
@@ -48,9 +51,9 @@ class LSU extends Module with ConfigInst {
     }
     .otherwise {
         io.oMemWrEn   := false.B
-        io.oMemWrAddr := 0.U(DATA_WIDTH.W)
-        io.oMemWrData := 0.U(DATA_WIDTH.W)
-        io.oMemWrLen  := 0.U(BYTE_WIDTH.W)
+        io.oMemWrAddr := DATA_ZERO
+        io.oMemWrData := DATA_ZERO
+        io.oMemWrLen  := DATA_ZERO
     }
 
     val mMRU = Module(new MRU())

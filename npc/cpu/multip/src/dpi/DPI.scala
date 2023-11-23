@@ -10,6 +10,7 @@ class DPI extends BlackBox with ConfigInst {
         val iClock         = Input(Clock())
         val iReset         = Input(Bool())
         val iEbreakFlag    = Input(UInt(BYTE_WIDTH.W))
+        val iMemRdEn       = Input(Bool())
         val iMemRdAddrInst = Input(UInt(DATA_WIDTH.W))
         val iMemRdAddrLoad = Input(UInt(DATA_WIDTH.W))
         val iMemWrEn       = Input(Bool())

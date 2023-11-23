@@ -11,7 +11,7 @@ trait ConfigIO {
     val SIGS_WIDTH = 10
 
     val GPRS_NUM = 1 << GPRS_WIDTH
-    val MEMS_NUM = 1 << 32
+    val MEMS_NUM = 1 << 16
 }
 
 trait ConfigInst extends ConfigIO {

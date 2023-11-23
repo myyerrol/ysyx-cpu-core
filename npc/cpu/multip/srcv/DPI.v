@@ -2,9 +2,10 @@ module DPI(
     input  wire       iClock,
     input  wire       iReset,
     input  wire[07:0] iEbreakFlag,
+    input  wire       iMemRdEn,
     input  wire[63:0] iMemRdAddrInst,
     input  wire[63:0] iMemRdAddrLoad,
-    input  wire[00:0] iMemWrEn,
+    input  wire       iMemWrEn,
     input  wire[63:0] iMemWrAddr,
     input  wire[63:0] iMemWrData,
     input  wire[07:0] iMemWrLen,
@@ -29,11 +30,15 @@ always @(iEbreakFlag) begin
 end
 
 always @(iMemRdAddrInst) begin
-    oMemRdDataInst = readInsData(iMemRdAddrInst, 4);
+    if (iMemRdEn) begin
+        oMemRdDataInst = readInsData(iMemRdAddrInst, 4);
+    end
 end
 
 always @(iMemRdAddrLoad) begin
-    oMemRdDataLoad = readMemData(iMemRdAddrLoad, 8);
+    if (iMemRdEn) begin
+        oMemRdDataLoad = readMemData(iMemRdAddrLoad, 8);
+    end
 end
 
 always @(iMemWrAddr or iMemWrData) begin

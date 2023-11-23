@@ -87,6 +87,7 @@ class Top extends Module with ConfigInst {
 
     mDPI.io.iClock         := clock
     mDPI.io.iReset         := reset
+    mDPI.io.iMemRdEn       := mLSU.io.oMemRdEn
     mDPI.io.iMemRdAddrInst := mLSU.io.oMemRdAddrInst
     mDPI.io.iMemRdAddrLoad := mLSU.io.oMemRdAddrLoad
     mDPI.io.iMemWrEn       := mLSU.io.oMemWrEn
@@ -128,14 +129,13 @@ class Top extends Module with ConfigInst {
 
     mLSU.io.iPC        := mIFU.io.oPC
     mLSU.io.iALUOut    := mEXU.io.oALUOut
+    mLSU.io.iMemRdEn   := mIDU.io.ctrio.oMemRdEn
     mLSU.io.iMemWrEn   := mIDU.io.ctrio.oMemWrEn
     mLSU.io.iMemByt    := mIDU.io.ctrio.oMemByt
     mLSU.io.iMemWrData := mEXU.io.oMemWrData
 
     mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
     mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
-    // mLSU.io.iMemRdDataInst := DATA_ZERO
-    // mLSU.io.iMemRdDataLoad := DATA_ZERO
 
     mWBU.io.iInstName := mIDU.io.ctrio.oInstName
     mWBU.io.iMemByt   := mIDU.io.ctrio.oMemByt
