@@ -63,7 +63,7 @@ class LSU extends Module with ConfigInst {
         io.lsuio.oMemWrLen  := DATA_ZERO
     }
 
-    val mMRU = Module(new MRU())
+    val mMRU = Module(new MRU)
     mMRU.io.iData := io.iMemRdDataLoad
 
     io.lsuio.oMemRdData := mMRU.io.oData

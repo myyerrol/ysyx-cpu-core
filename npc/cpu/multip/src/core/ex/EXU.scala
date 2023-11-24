@@ -52,7 +52,7 @@ class EXU extends Module with ConfigInst {
         )
     )
 
-    val mALU = Module(new ALU())
+    val mALU = Module(new ALU)
     mALU.io.iType    := io.iALUType
     mALU.io.iRS1Data := wRS1Data
     mALU.io.iRS2Data := wRS2Data
@@ -60,7 +60,7 @@ class EXU extends Module with ConfigInst {
     val rPCNext = RegEnable(mALU.io.oOut, DATA_ZERO, io.iPCNextEn)
     val rPCJump = RegEnable(mALU.io.oOut, DATA_ZERO, io.iPCJumpEn)
 
-    val mALUOut = Module(new ALUOut())
+    val mALUOut = Module(new ALUOut)
     mALUOut.io.iData := mALU.io.oOut
 
     io.exuio.oPCNext    := rPCNext

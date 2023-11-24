@@ -22,12 +22,12 @@ class Top extends Module with ConfigInst {
         val itraceio = new ITraceIO
     })
 
-    val mDPI = Module(new DPI())
-    val mIFU = Module(new IFU())
-    val mIDU = Module(new IDU())
-    val mEXU = Module(new EXU())
-    val mLSU = Module(new LSU())
-    val mWBU = Module(new WBU())
+    val mDPI = Module(new DPI)
+    val mIFU = Module(new IFU)
+    val mIDU = Module(new IDU)
+    val mEXU = Module(new EXU)
+    val mLSU = Module(new LSU)
+    val mWBU = Module(new WBU)
 
     io.oEndData := mIDU.io.iduio.oEndData
 

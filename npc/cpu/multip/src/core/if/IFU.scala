@@ -54,7 +54,7 @@ class IFU extends Module with ConfigInst {
         io.ifuio.oPC := rPC
     }
 
-    val mIRU = Module(new IRU())
+    val mIRU = Module(new IRU)
     mIRU.io.iWrEn := io.iIRWrEn
     mIRU.io.iData := io.iInst
 
