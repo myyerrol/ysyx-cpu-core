@@ -152,7 +152,7 @@ void runCPUSimModule(bool *inst_end_flag) {
     LOG_BRIEF("[itrace] [ifu]       pc:               " FMT_WORD,
               top->io_ifuio_oPC);
     LOG_BRIEF("[itrace] [ifu]       inst:             " FMT_WORD,
-              top->io_ifuio_oInst);
+              (uint64_t)top->io_ifuio_oInst);
 
     char *inst_name = (char *)"";
     switch (top->io_itraceio_ctrio_oInstName) {
@@ -250,6 +250,16 @@ void runCPUSimModule(bool *inst_end_flag) {
               top->io_itraceio_ctrio_oPCJumpEn);
     LOG_BRIEF("[itrace] [idu] [ctr] mem rd en:        %d",
               top->io_itraceio_ctrio_oMemRdEn);
+
+    char *mem_rd_src = (char *)"";
+    switch (top->io_itraceio_ctrio_oMemRdSrc) {
+        case 0:  mem_rd_src = (char *)"X";   break;
+        case 1:  mem_rd_src = (char *)"PC";  break;
+        case 2:  mem_rd_src = (char *)"ALU"; break;
+        default: mem_rd_src = (char *)"X";   break;
+    }
+    LOG_BRIEF("[itrace] [idu] [ctr] mem rd src:       %s", mem_rd_src);
+
     LOG_BRIEF("[itrace] [idu] [ctr] mem wr en:        %d",
               top->io_itraceio_ctrio_oMemWrEn);
 
