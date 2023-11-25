@@ -11,7 +11,7 @@ trait ConfigIO {
     val SIGS_WIDTH = 10
 
     val GPRS_NUM = 1 << GPRS_WIDTH
-    val MEMS_NUM = 1 << 16
+    val MEMS_NUM = 1 << 33
 }
 
 trait ConfigInst extends ConfigIO {
@@ -93,6 +93,10 @@ trait ConfigInst extends ConfigIO {
     val PC_WR_SRC_X    = 0.U(SIGS_WIDTH.W)
     val PC_WR_SRC_NEXT = 1.U(SIGS_WIDTH.W)
     val PC_WR_SRC_JUMP = 2.U(SIGS_WIDTH.W)
+
+    val MEM_RD_SRC_X   = 0.U(SIGS_WIDTH.W)
+    val MEM_RD_SRC_PC  = 1.U(SIGS_WIDTH.W)
+    val MEM_RD_SRC_ALU = 2.U(SIGS_WIDTH.W)
 
     val MEM_BYT_X   = 0.U(SIGS_WIDTH.W)
     val MEM_BYT_1_U = 1.U(SIGS_WIDTH.W)

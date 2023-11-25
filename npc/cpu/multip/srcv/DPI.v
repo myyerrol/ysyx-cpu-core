@@ -1,14 +1,14 @@
 module DPI(
     input  wire       iClock,
     input  wire       iReset,
-    input  wire[07:0] iEbreakFlag,
+    input  wire[ 7:0] iEbreakFlag,
     input  wire       iMemRdEn,
     input  wire[63:0] iMemRdAddrInst,
     input  wire[63:0] iMemRdAddrLoad,
     input  wire       iMemWrEn,
     input  wire[63:0] iMemWrAddr,
     input  wire[63:0] iMemWrData,
-    input  wire[07:0] iMemWrLen,
+    input  wire[ 7:0] iMemWrLen,
 
     output  reg[31:0] oMemRdDataInst,
     output  reg[63:0] oMemRdDataLoad

@@ -41,15 +41,15 @@ class Top extends Module with ConfigInst {
     io.itraceio.lsuio <> mLSU.io.lsuio
     io.itraceio.wbuio <> mWBU.io.wbuio
 
-    mDPI.io.iClock         := clock
-    mDPI.io.iReset         := reset
-    mDPI.io.iMemRdEn       := mLSU.io.lsuio.oMemRdEn
-    mDPI.io.iMemRdAddrInst := mLSU.io.lsuio.oMemRdAddrInst
-    mDPI.io.iMemRdAddrLoad := mLSU.io.lsuio.oMemRdAddrLoad
-    mDPI.io.iMemWrEn       := mLSU.io.lsuio.oMemWrEn
-    mDPI.io.iMemWrAddr     := mLSU.io.lsuio.oMemWrAddr
-    mDPI.io.iMemWrData     := mLSU.io.lsuio.oMemWrData
-    mDPI.io.iMemWrLen      := mLSU.io.lsuio.oMemWrLen
+    // mDPI.io.iClock         := clock
+    // mDPI.io.iReset         := reset
+    // mDPI.io.iMemRdEn       := mLSU.io.lsuio.oMemRdEn
+    // mDPI.io.iMemRdAddrInst := mLSU.io.lsuio.oMemRdAddrInst
+    // mDPI.io.iMemRdAddrLoad := mLSU.io.lsuio.oMemRdAddrLoad
+    // mDPI.io.iMemWrEn       := mLSU.io.lsuio.oMemWrEn
+    // mDPI.io.iMemWrAddr     := mLSU.io.lsuio.oMemWrAddr
+    // mDPI.io.iMemWrData     := mLSU.io.lsuio.oMemWrData
+    // mDPI.io.iMemWrLen      := mLSU.io.lsuio.oMemWrLen
 
     val rInstName = RegNext(mIDU.io.ctrio.oInstName, INST_NAME_X)
     when (rInstName === INST_NAME_X && mIDU.io.ctrio.oStateCurr === STATE_EX) {
@@ -83,15 +83,18 @@ class Top extends Module with ConfigInst {
     mEXU.io.iRS2Data  := mIDU.io.iduio.oRS2Data
     mEXU.io.iImmData  := mIDU.io.iduio.oImmData
 
-    mLSU.io.iPC        := mIFU.io.ifuio.oPC
-    mLSU.io.iALUOut    := mEXU.io.exuio.oALUOut
     mLSU.io.iMemRdEn   := mIDU.io.ctrio.oMemRdEn
+    mLSU.io.iMemRdSrc  := mIDU.io.ctrio.oMemRdSrc
     mLSU.io.iMemWrEn   := mIDU.io.ctrio.oMemWrEn
     mLSU.io.iMemByt    := mIDU.io.ctrio.oMemByt
+    mLSU.io.iPC        := mIFU.io.ifuio.oPC
+    mLSU.io.iALUOut    := mEXU.io.exuio.oALUOut
     mLSU.io.iMemWrData := mEXU.io.exuio.oMemWrData
 
-    mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
-    mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
+    // mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
+    // mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
+    mLSU.io.iMemRdDataInst := DontCare
+    mLSU.io.iMemRdDataLoad := DontCare
 
     mWBU.io.iInstName := mIDU.io.ctrio.oInstName
     mWBU.io.iMemByt   := mIDU.io.ctrio.oMemByt

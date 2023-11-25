@@ -13,6 +13,7 @@ class CTRIO extends Bundle with ConfigIO {
     val oPCNextEn  = Output(Bool())
     val oPCJumpEn  = Output(Bool())
     val oMemRdEn   = Output(Bool())
+    val oMemRdSrc  = Output(UInt(SIGS_WIDTH.W))
     val oMemWrEn   = Output(Bool())
     val oMemByt    = Output(UInt(SIGS_WIDTH.W))
     val oIRWrEn    = Output(Bool())
@@ -111,6 +112,7 @@ class CTR extends Module with ConfigInstPattern {
     val wPCNextEn  = WireInit(EN_FALSE)
     val wPCJumpEn  = WireInit(EN_FALSE)
     val wMemRdEn   = WireInit(EN_FALSE)
+    val wMemRdSrc  = WireInit(MEM_RD_SRC_X)
     val wMemWrEn   = WireInit(EN_FALSE)
     val wMemByt    = WireInit(MEM_BYT_X)
     val wIRWrEn    = WireInit(EN_FALSE)
@@ -124,11 +126,13 @@ class CTR extends Module with ConfigInstPattern {
         is (STATE_RS) {
             rStateCurr := STATE_IF
             wMemRdEn   := EN_TRUE
+            wMemRdSrc  := MEM_RD_SRC_PC
         }
         is (STATE_IF) {
             rStateCurr := STATE_ID
             wPCNextEn  := EN_TRUE
             wMemRdEn   := EN_TRUE
+            wMemRdSrc  := MEM_RD_SRC_PC
             wIRWrEn    := EN_TRUE
             wALUType   := ALU_TYPE_ADD
             wALURS1    := ALU_RS1_PC
@@ -386,6 +390,7 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_LD) {
                 rStateCurr := STATE_WB
                 wMemRdEn   := EN_TRUE
+                wMemRdSrc  := MEM_RD_SRC_ALU
             }
             .elsewhen (wInstName === INST_NAME_SB ||
                        wInstName === INST_NAME_SH ||
@@ -451,6 +456,7 @@ class CTR extends Module with ConfigInstPattern {
     io.ctrio.oPCNextEn  := wPCNextEn
     io.ctrio.oPCJumpEn  := wPCJumpEn
     io.ctrio.oMemRdEn   := wMemRdEn
+    io.ctrio.oMemRdSrc  := wMemRdSrc
     io.ctrio.oMemWrEn   := wMemWrEn
     io.ctrio.oMemByt    := wMemByt
     io.ctrio.oIRWrEn    := wIRWrEn

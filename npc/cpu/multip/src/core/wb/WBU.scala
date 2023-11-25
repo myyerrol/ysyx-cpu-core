@@ -22,7 +22,7 @@ class WBU extends Module with ConfigInst {
 
     when (io.iGPRWrSrc === GPR_WR_SRC_MEM) {
         val wMemData     = io.iMemData
-        val wMemDataByt1 = wMemData(07, 0)
+        val wMemDataByt1 = wMemData( 7, 0)
         val wMemDataByt2 = wMemData(15, 0)
         val wMemDataByt4 = wMemData(31, 0)
         val wMemDataByt8 = wMemData(63, 0)
