@@ -5,4 +5,4 @@ import chisel3.util._
 
 import cpu.common._
 
-class ALUOut extends REG
+class ALUOut extends Reg

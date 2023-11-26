@@ -3,10 +3,10 @@ package cpu.core
 import chisel3._
 import chisel3.util._
 
+import cpu.blackbox._
 import cpu.common._
 
 class LSUIO extends Bundle with ConfigIO {
-    // 通过DPI-C将内存指令和数据地址发给仿真环境
     val oMemRdEn       = Output(Bool())
     val oMemRdAddrInst = Output(UInt(DATA_WIDTH.W))
     val oMemRdAddrLoad = Output(UInt(DATA_WIDTH.W))
@@ -31,7 +31,6 @@ class LSU extends Module with ConfigInst {
         val iALUOut        = Input(UInt(DATA_WIDTH.W))
         val iMemWrData     = Input(UInt(DATA_WIDTH.W))
 
-        // 通过DPI-C从仿真环境获取到的内存指令和数据
         val iMemRdDataInst = Input(UInt(INST_WIDTH.W))
         val iMemRdDataLoad = Input(UInt(DATA_WIDTH.W))
 
@@ -74,44 +73,69 @@ class LSU extends Module with ConfigInst {
 
 
 
-    val mMEMPortDual = Module(new MEMPortDual)
-    mMEMPortDual.io.iRdEn := io.iMemRdEn
-    mMEMPortDual.io.iWrEn := io.iMemWrEn
+    val mMEMI = Module(new MEMPortDualI)
+    mMEMI.io.iClock := clock
+    mMEMI.io.iReset := reset
+
+    mMEMI.io.bMEMPortDualIO.iRdEn := io.iMemRdEn
+    mMEMI.io.bMEMPortDualIO.iWrEn := io.iMemWrEn
+
+    // val wAddr = WireInit(DATA_ZERO)
+
+    val wAddr = Wire(UInt(DATA_WIDTH.W))
+    val rAddr = RegInit(DATA_ZERO)
+
+
+    val wMemRdDataInst = Wire(UInt(DATA_WIDTH.W))
+    val rMemRdDataInst = RegInit(DATA_ZERO)
+
+    // val wMemRdDataLoad = Wire(DATA_ZERO)
 
     when (io.iMemRdEn) {
         when (io.iMemRdSrc === MEM_RD_SRC_PC) {
-            mMEMPortDual.io.iAddr   := io.iPC
-            io.lsuio.oMemRdDataInst := mMEMPortDual.io.oRdData
-            io.lsuio.oMemRdDataLoad := DontCare
+            wAddr := io.iPC
+            rAddr := io.iPC
+
+            wMemRdDataInst := mMEMI.io.bMEMPortDualIO.oRdData
+            rMemRdDataInst := mMEMI.io.bMEMPortDualIO.oRdData
         }
         .elsewhen (io.iMemRdSrc === MEM_RD_SRC_ALU) {
-            mMEMPortDual.io.iAddr   := io.iALUOut
-            io.lsuio.oMemRdDataInst := DontCare
-            io.lsuio.oMemRdDataLoad := mMEMPortDual.io.oRdData
+            wAddr := io.iALUOut
+            wMemRdDataInst := rMemRdDataInst
         }
         .otherwise {
-            io.lsuio.oMemRdDataInst := DontCare
-            io.lsuio.oMemRdDataLoad := DontCare
+            wAddr := rAddr
+            wMemRdDataInst := rMemRdDataInst
         }
     }
     .otherwise {
-        io.lsuio.oMemRdDataInst := DontCare
-        io.lsuio.oMemRdDataLoad := DontCare
+        wAddr := rAddr
+        wMemRdDataInst := rMemRdDataInst
     }
 
-    when (io.iMemWrEn) {
-        mMEMPortDual.io.iAddr   := io.iALUOut
-        mMEMPortDual.io.iWrData := io.iMemWrData
-        mMEMPortDual.io.iWrByt  := io.iMemByt
-    }
-    .otherwise {
-        mMEMPortDual.io.iAddr   := DontCare
-        mMEMPortDual.io.iWrData := DontCare
-        mMEMPortDual.io.iWrByt  := MEM_BYT_X
-    }
+
+
+
+
+    // when (io.iMemWrEn) {
+    //     wAddr := io.iALUOut
+    //     rAddr := io.iALUOut
+    //     mMEMI.io.bMEMPortDualIO.iWrData := io.iMemWrData
+    //     mMEMI.io.bMEMPortDualIO.iWrByt  := io.iMemByt
+    // }
+    // .otherwise {
+    //     wAddr := rAddr
+    //     // mMEMI.io.bMEMPortDualIO.iWrData := DATA_ZERO
+    //     // mMEMI.io.bMEMPortDualIO.iWrByt  := MEM_BYT_X
+    // }
+
+    mMEMI.io.bMEMPortDualIO.iAddr := wAddr
+    io.lsuio.oMemRdDataInst := wMemRdDataInst
+    // io.lsuio.oMemRdDataLoad := wMemRdDataLoad
+    io.lsuio.oMemRdDataLoad := DontCare
 
     val mMRU = Module(new MRU)
-    mMRU.io.iData := mMEMPortDual.io.oRdData
+    mMRU.io.iData := mMEMI.io.bMEMPortDualIO.oRdData
 
     io.lsuio.oMemRdData := mMRU.io.oData
 }

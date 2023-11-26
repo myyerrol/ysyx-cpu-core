@@ -3,7 +3,7 @@ import chisel3.util._
 
 import cpu.common._
 import cpu.core._
-import cpu.dpi._
+import cpu.blackbox._
 
 class ITraceIO extends Bundle with ConfigIO {
     val ctrio = new CTRIO
@@ -22,7 +22,8 @@ class Top extends Module with ConfigInst {
         val itraceio = new ITraceIO
     })
 
-    val mDPI = Module(new DPI)
+    val mDPI  = Module(new DPI)
+
     val mIFU = Module(new IFU)
     val mIDU = Module(new IDU)
     val mEXU = Module(new EXU)
@@ -93,8 +94,8 @@ class Top extends Module with ConfigInst {
 
     // mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
     // mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
-    mLSU.io.iMemRdDataInst := DontCare
-    mLSU.io.iMemRdDataLoad := DontCare
+    mLSU.io.iMemRdDataInst := DATA_ZERO
+    mLSU.io.iMemRdDataLoad := DATA_ZERO
 
     mWBU.io.iInstName := mIDU.io.ctrio.oInstName
     mWBU.io.iMemByt   := mIDU.io.ctrio.oMemByt
