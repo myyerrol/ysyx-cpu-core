@@ -36,8 +36,6 @@ static long initMonitorImg() {
     int ret = fread(convertGuestToHost(RESET_VECTOR), size, 1, fp);
     assert(ret == 1);
 
-    genMemFile("/home/myyerrol/Workspaces/mem.txt", size);
-
     fclose(fp);
     return size;
 }
@@ -173,6 +171,8 @@ void initMonitor(int argc, char *argv[]) {
     initISA();
 
     long img_size = initMonitorImg();
+    genMemFile("/home/myyerrol/Workspaces/mem.txt", img_size);
+
     initDebugDifftest(diff_so_file, img_size, difftest_port);
 
     initSDB();

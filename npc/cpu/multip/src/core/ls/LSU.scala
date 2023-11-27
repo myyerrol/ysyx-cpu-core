@@ -34,18 +34,18 @@ class LSU extends Module with ConfigInst {
         val iMemRdDataInst = Input(UInt(INST_WIDTH.W))
         val iMemRdDataLoad = Input(UInt(DATA_WIDTH.W))
 
-        val lsuio          = new LSUIO
+        val bLSUIO         = new LSUIO
     })
 
-    io.lsuio.oMemRdEn       := io.iMemRdEn
-    io.lsuio.oMemRdAddrInst := io.iPC
-    io.lsuio.oMemRdAddrLoad := io.iALUOut
+    io.bLSUIO.oMemRdEn       := io.iMemRdEn
+    io.bLSUIO.oMemRdAddrInst := io.iPC
+    io.bLSUIO.oMemRdAddrLoad := io.iALUOut
 
     when (io.iMemWrEn) {
-        io.lsuio.oMemWrEn   := true.B
-        io.lsuio.oMemWrAddr := io.iALUOut
-        io.lsuio.oMemWrData := io.iMemWrData
-        io.lsuio.oMemWrLen  := MuxLookup(
+        io.bLSUIO.oMemWrEn   := true.B
+        io.bLSUIO.oMemWrAddr := io.iALUOut
+        io.bLSUIO.oMemWrData := io.iMemWrData
+        io.bLSUIO.oMemWrLen  := MuxLookup(
             io.iMemByt,
             8.U(BYTE_WIDTH.W),
             Seq(
@@ -57,16 +57,16 @@ class LSU extends Module with ConfigInst {
         )
     }
     .otherwise {
-        io.lsuio.oMemWrEn   := false.B
-        io.lsuio.oMemWrAddr := DATA_ZERO
-        io.lsuio.oMemWrData := DATA_ZERO
-        io.lsuio.oMemWrLen  := DATA_ZERO
+        io.bLSUIO.oMemWrEn   := false.B
+        io.bLSUIO.oMemWrAddr := DATA_ZERO
+        io.bLSUIO.oMemWrData := DATA_ZERO
+        io.bLSUIO.oMemWrLen  := DATA_ZERO
     }
 
     val mMRU = Module(new MRU)
     if (MEMS_INT.equals("DPI")) {
-        io.lsuio.oMemRdDataInst := io.iMemRdDataInst
-        io.lsuio.oMemRdDataLoad := io.iMemRdDataLoad
+        io.bLSUIO.oMemRdDataInst := io.iMemRdDataInst
+        io.bLSUIO.oMemRdDataLoad := io.iMemRdDataLoad
 
         mMRU.io.iData := io.iMemRdDataLoad
     }
@@ -79,17 +79,17 @@ class LSU extends Module with ConfigInst {
         mMEMI.io.bMEMPortDualIO.iWrEn := io.iMemWrEn
 
         mMEMI.io.bMEMPortDualIO.iAddr := DontCare
-        io.lsuio.oMemRdDataInst       := DontCare
-        io.lsuio.oMemRdDataLoad       := DontCare
+        io.bLSUIO.oMemRdDataInst       := DontCare
+        io.bLSUIO.oMemRdDataLoad       := DontCare
 
         when (io.iMemRdEn) {
             when (io.iMemRdSrc === MEM_RD_SRC_PC) {
                 mMEMI.io.bMEMPortDualIO.iAddr := io.iPC
-                io.lsuio.oMemRdDataInst       := mMEMI.io.bMEMPortDualIO.oRdData
+                io.bLSUIO.oMemRdDataInst       := mMEMI.io.bMEMPortDualIO.oRdData
             }
             .elsewhen (io.iMemRdSrc === MEM_RD_SRC_ALU) {
                 mMEMI.io.bMEMPortDualIO.iAddr := io.iALUOut
-                io.lsuio.oMemRdDataInst       := mMEMI.io.bMEMPortDualIO.oRdData
+                io.bLSUIO.oMemRdDataInst       := mMEMI.io.bMEMPortDualIO.oRdData
             }
         }
 
@@ -102,5 +102,5 @@ class LSU extends Module with ConfigInst {
         mMRU.io.iData := mMEMI.io.bMEMPortDualIO.oRdData
     }
 
-    io.lsuio.oMemRdData := mMRU.io.oData
+    io.bLSUIO.oMemRdData := mMRU.io.oData
 }

@@ -26,7 +26,7 @@ class EXU extends Module with ConfigInst {
         val iRS2Data   =  Input(UInt(DATA_WIDTH.W))
         val iImmData   =  Input(UInt(DATA_WIDTH.W))
 
-        val exuio      = new EXUIO
+        val bEXUIO     = new EXUIO
     })
 
     val wRS1Data = MuxLookup(
@@ -63,9 +63,9 @@ class EXU extends Module with ConfigInst {
     val mALUOut = Module(new ALUOut)
     mALUOut.io.iData := mALU.io.oOut
 
-    io.exuio.oPCNext    := rPCNext
-    io.exuio.oPCJump    := rPCJump
-    io.exuio.oALUZero   := mALU.io.oZero
-    io.exuio.oALUOut    := mALUOut.io.oData
-    io.exuio.oMemWrData := wRS2Data
+    io.bEXUIO.oPCNext    := rPCNext
+    io.bEXUIO.oPCJump    := rPCJump
+    io.bEXUIO.oALUZero   := mALU.io.oZero
+    io.bEXUIO.oALUOut    := mALUOut.io.oData
+    io.bEXUIO.oMemWrData := wRS2Data
 }

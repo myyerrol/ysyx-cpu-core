@@ -17,7 +17,7 @@ class WBU extends Module with ConfigInst {
         val iALUOut    = Input(UInt(DATA_WIDTH.W))
         val iMemData   = Input(UInt(DATA_WIDTH.W))
 
-        val wbuio      = new WBUIO
+        val bWBUIO      = new WBUIO
     })
 
     when (io.iGPRWrSrc === GPR_WR_SRC_MEM) {
@@ -39,7 +39,7 @@ class WBU extends Module with ConfigInst {
                 MEM_BYT_8_S -> wMemDataByt8
             )
         )
-        io.wbuio.oGPRWrData := wMemDataMux
+        io.bWBUIO.oGPRWrData := wMemDataMux
     }
     .elsewhen (io.iGPRWrSrc === GPR_WR_SRC_ALU) {
         when (io.iInstName === INST_NAME_ADDW  ||
@@ -56,13 +56,13 @@ class WBU extends Module with ConfigInst {
               io.iInstName === INST_NAME_DIVUW ||
               io.iInstName === INST_NAME_REMW) {
             val wALUOutByt4 = io.iALUOut(31, 0)
-            io.wbuio.oGPRWrData := Cat(Fill(32, wALUOutByt4(31)), wALUOutByt4)
+            io.bWBUIO.oGPRWrData := Cat(Fill(32, wALUOutByt4(31)), wALUOutByt4)
         }
         .otherwise {
-            io.wbuio.oGPRWrData := io.iALUOut
+            io.bWBUIO.oGPRWrData := io.iALUOut
         }
     }
     .otherwise {
-        io.wbuio.oGPRWrData := DATA_ZERO
+        io.bWBUIO.oGPRWrData := DATA_ZERO
     }
 }

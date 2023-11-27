@@ -22,7 +22,7 @@ class IFU extends Module with ConfigInst {
         val iALUZero   =  Input(Bool())
         val iInst      =  Input(UInt(DATA_WIDTH.W))
 
-        val ifuio      = new IFUIO
+        val bIFUIO     = new IFUIO
     })
 
     val rPC  = RegInit(ADDR_SIM)
@@ -47,16 +47,16 @@ class IFU extends Module with ConfigInst {
     }
 
     when (io.iPCWrEn) {
-        rPC          := wNPC
-        io.ifuio.oPC := rPC
+        rPC           := wNPC
+        io.bIFUIO.oPC := rPC
     }
     .otherwise {
-        io.ifuio.oPC := rPC
+        io.bIFUIO.oPC := rPC
     }
 
     val mIRU = Module(new IRU)
     mIRU.io.iWrEn := io.iIRWrEn
     mIRU.io.iData := io.iInst
 
-    io.ifuio.oInst := mIRU.io.oData
+    io.bIFUIO.oInst := mIRU.io.oData
 }

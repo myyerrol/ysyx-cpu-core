@@ -26,9 +26,9 @@ class CTRIO extends Bundle with ConfigIO {
 
 class CTR extends Module with ConfigInstPattern {
     val io = IO(new Bundle {
-        val iPC   = Input(UInt(DATA_WIDTH.W))
-        val iInst = Input(UInt(INST_WIDTH.W))
-        val ctrio = new CTRIO
+        val iPC    = Input(UInt(DATA_WIDTH.W))
+        val iInst  = Input(UInt(INST_WIDTH.W))
+        val bCTRIO = new CTRIO
     })
 
     var lInst = ListLookup(
@@ -449,20 +449,20 @@ class CTR extends Module with ConfigInstPattern {
         }
     }
 
-    io.ctrio.oInstName  := wInstName
-    io.ctrio.oStateCurr := rStateCurr
-    io.ctrio.oPCWrEn    := wPCWrEn
-    io.ctrio.oPCWrSrc   := wPCWrSrc
-    io.ctrio.oPCNextEn  := wPCNextEn
-    io.ctrio.oPCJumpEn  := wPCJumpEn
-    io.ctrio.oMemRdEn   := wMemRdEn
-    io.ctrio.oMemRdSrc  := wMemRdSrc
-    io.ctrio.oMemWrEn   := wMemWrEn
-    io.ctrio.oMemByt    := wMemByt
-    io.ctrio.oIRWrEn    := wIRWrEn
-    io.ctrio.oGPRWrEn   := wGPRWrEn
-    io.ctrio.oGPRWrSrc  := wGPRWrSrc
-    io.ctrio.oALUType   := wALUType
-    io.ctrio.oALURS1    := wALURS1
-    io.ctrio.oALURS2    := wALURS2
+    io.bCTRIO.oInstName  := wInstName
+    io.bCTRIO.oStateCurr := rStateCurr
+    io.bCTRIO.oPCWrEn    := wPCWrEn
+    io.bCTRIO.oPCWrSrc   := wPCWrSrc
+    io.bCTRIO.oPCNextEn  := wPCNextEn
+    io.bCTRIO.oPCJumpEn  := wPCJumpEn
+    io.bCTRIO.oMemRdEn   := wMemRdEn
+    io.bCTRIO.oMemRdSrc  := wMemRdSrc
+    io.bCTRIO.oMemWrEn   := wMemWrEn
+    io.bCTRIO.oMemByt    := wMemByt
+    io.bCTRIO.oIRWrEn    := wIRWrEn
+    io.bCTRIO.oGPRWrEn   := wGPRWrEn
+    io.bCTRIO.oGPRWrSrc  := wGPRWrSrc
+    io.bCTRIO.oALUType   := wALUType
+    io.bCTRIO.oALURS1    := wALURS1
+    io.bCTRIO.oALURS2    := wALURS2
 }
