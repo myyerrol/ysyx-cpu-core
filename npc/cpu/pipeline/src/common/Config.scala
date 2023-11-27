@@ -9,6 +9,6 @@ trait ConfigIO {
 }
 
 trait ConfigInst extends ConfigIO {
-    val ADDR_SIM_START = "x80000000".U(DATA_WIDTH.W)
+    val ADDR_SIM = "x80000000".U(DATA_WIDTH.W)
     val DATA_ZERO      = "x00000000".U(DATA_WIDTH.W)
 }

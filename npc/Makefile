@@ -36,7 +36,8 @@ VERILATOR_CFLAGS += -MMD --build -cc \
                     -O3 --x-assign fast --x-initial fast --noassert \
                     --trace \
                     -Wno-WIDTHEXPAND \
-                    -Wno-WIDTHTRUNC
+                    -Wno-WIDTHTRUNC \
+                    +incdir+$(NPC_HOME)/cpu/$(PROJECT_TEMP)/srcv
 
 INC_PATH += $(NPC_HOME)/emu/include \
             $(NPC_HOME)/emu/include/generated

@@ -11,7 +11,7 @@ class IFU extends Module with ConfigInst {
         val ifio = new IFIO
     })
 
-    protected val pc     = RegInit(ADDR_SIM_START)
+    protected val pc     = RegInit(ADDR_SIM)
     protected val pcNext = pc + 4.U
 
     io.ifio.pc := pcNext

@@ -22,7 +22,7 @@ class Top extends Module with ConfigInst {
         val itraceio = new ITraceIO
     })
 
-    val mDPI  = Module(new DPI)
+    val mDPI = Module(new DPI)
 
     val mIFU = Module(new IFU)
     val mIDU = Module(new IDU)
@@ -42,15 +42,17 @@ class Top extends Module with ConfigInst {
     io.itraceio.lsuio <> mLSU.io.lsuio
     io.itraceio.wbuio <> mWBU.io.wbuio
 
-    // mDPI.io.iClock         := clock
-    // mDPI.io.iReset         := reset
-    // mDPI.io.iMemRdEn       := mLSU.io.lsuio.oMemRdEn
-    // mDPI.io.iMemRdAddrInst := mLSU.io.lsuio.oMemRdAddrInst
-    // mDPI.io.iMemRdAddrLoad := mLSU.io.lsuio.oMemRdAddrLoad
-    // mDPI.io.iMemWrEn       := mLSU.io.lsuio.oMemWrEn
-    // mDPI.io.iMemWrAddr     := mLSU.io.lsuio.oMemWrAddr
-    // mDPI.io.iMemWrData     := mLSU.io.lsuio.oMemWrData
-    // mDPI.io.iMemWrLen      := mLSU.io.lsuio.oMemWrLen
+    if (MEMS_INT.equals("DPI")) {
+        mDPI.io.iClock         := clock
+        mDPI.io.iReset         := reset
+        mDPI.io.iMemRdEn       := mLSU.io.lsuio.oMemRdEn
+        mDPI.io.iMemRdAddrInst := mLSU.io.lsuio.oMemRdAddrInst
+        mDPI.io.iMemRdAddrLoad := mLSU.io.lsuio.oMemRdAddrLoad
+        mDPI.io.iMemWrEn       := mLSU.io.lsuio.oMemWrEn
+        mDPI.io.iMemWrAddr     := mLSU.io.lsuio.oMemWrAddr
+        mDPI.io.iMemWrData     := mLSU.io.lsuio.oMemWrData
+        mDPI.io.iMemWrLen      := mLSU.io.lsuio.oMemWrLen
+    }
 
     val rInstName = RegNext(mIDU.io.ctrio.oInstName, INST_NAME_X)
     when (rInstName === INST_NAME_X && mIDU.io.ctrio.oStateCurr === STATE_EX) {
@@ -92,10 +94,14 @@ class Top extends Module with ConfigInst {
     mLSU.io.iALUOut    := mEXU.io.exuio.oALUOut
     mLSU.io.iMemWrData := mEXU.io.exuio.oMemWrData
 
-    // mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
-    // mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
-    mLSU.io.iMemRdDataInst := DATA_ZERO
-    mLSU.io.iMemRdDataLoad := DATA_ZERO
+    if (MEMS_INT.equals("DPI")) {
+        mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
+        mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
+    }
+    else {
+        mLSU.io.iMemRdDataInst := DATA_ZERO
+        mLSU.io.iMemRdDataLoad := DATA_ZERO
+    }
 
     mWBU.io.iInstName := mIDU.io.ctrio.oInstName
     mWBU.io.iMemByt   := mIDU.io.ctrio.oMemByt

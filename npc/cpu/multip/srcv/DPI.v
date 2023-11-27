@@ -1,17 +1,19 @@
-module DPI(
-    input  wire       iClock,
-    input  wire       iReset,
-    input  wire[07:0] iEbreakFlag,
-    input  wire       iMemRdEn,
-    input  wire[63:0] iMemRdAddrInst,
-    input  wire[63:0] iMemRdAddrLoad,
-    input  wire       iMemWrEn,
-    input  wire[63:0] iMemWrAddr,
-    input  wire[63:0] iMemWrData,
-    input  wire[07:0] iMemWrLen,
+`include "Config.v"
 
-    output  reg[31:0] oMemRdDataInst,
-    output  reg[63:0] oMemRdDataLoad
+module DPI(
+    input  wire                      iClock,
+    input  wire                      iReset,
+    input  wire[`BYTE_WIDTH - 1 : 0] iEbreakFlag,
+    input  wire                      iMemRdEn,
+    input  wire[`DATA_WIDTH - 1 : 0] iMemRdAddrInst,
+    input  wire[`DATA_WIDTH - 1 : 0] iMemRdAddrLoad,
+    input  wire                      iMemWrEn,
+    input  wire[`DATA_WIDTH - 1 : 0] iMemWrAddr,
+    input  wire[`DATA_WIDTH - 1 : 0] iMemWrData,
+    input  wire[`BYTE_WIDTH - 1 : 0] iMemWrLen,
+
+    output  reg[`INST_WIDTH - 1 : 0] oMemRdDataInst,
+    output  reg[`DATA_WIDTH - 1 : 0] oMemRdDataLoad
 );
 
 import "DPI-C" context function void judgeIsEbreak(input byte unsigned flag);

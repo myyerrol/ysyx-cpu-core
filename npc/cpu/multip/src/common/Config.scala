@@ -11,13 +11,15 @@ trait ConfigIO {
     val SIGS_WIDTH = 10
 
     val GPRS_NUM = 1 << GPRS_WIDTH
-    val MEMS_NUM = 1 << 33
+    val MEMS_NUM = 1 << INST_WIDTH
+
+    val MEMS_INT = "MEMI"
 }
 
 trait ConfigInst extends ConfigIO {
-    val ADDR_SIM_START = "x80000000".U(DATA_WIDTH.W)
-    val DATA_ZERO      = "x00000000".U(DATA_WIDTH.W)
-    val GPRS_10        = 10.U(GPRS_WIDTH.W)
+    val ADDR_SIM  = "x80000000".U(DATA_WIDTH.W)
+    val DATA_ZERO = "x00000000".U(DATA_WIDTH.W)
+    val GPRS_10   = 10.U(GPRS_WIDTH.W)
 
     val EN_TRUE  = true.B
     val EN_FALSE = false.B
