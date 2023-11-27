@@ -15,6 +15,8 @@ bool judgeAddrIsInPhyMem(paddr_t addr);
 word_t readPhyMemData(paddr_t addr, int len);
 void writePhyMemData(paddr_t addr, int len, word_t data);
 
+void genMemFile(const char *mem_file, int size);
 void initMem();
+void printfMemData(int size);
 
 #endif

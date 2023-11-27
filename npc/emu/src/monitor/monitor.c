@@ -36,6 +36,8 @@ static long initMonitorImg() {
     int ret = fread(convertGuestToHost(RESET_VECTOR), size, 1, fp);
     assert(ret == 1);
 
+    genMemFile("/home/myyerrol/Workspaces/mem.txt", size);
+
     fclose(fp);
     return size;
 }

@@ -45,6 +45,18 @@ void writePhyMemData(paddr_t addr, int len, word_t data) {
     }
 }
 
+void genMemFile(const char *mem_file, int size) {
+    if (mem_file != NULL) {
+        FILE *fp = fopen(mem_file, "w");
+        ASSERT(fp, "[memory] can not open '%s'", mem_file);
+        uint32_t *pmem_p = (uint32_t *)pmem;
+        for (int i = 0; i < size; i++) {
+            fprintf(fp, FMT_PADDR "\n", pmem_p[i]);
+        }
+        fclose(fp);
+    }
+}
+
 void initMem() {
 #ifdef CONFIG_MEM_RANDOM
     uint32_t *pmem_p = (uint32_t *)pmem;
@@ -55,4 +67,13 @@ void initMem() {
     LOG_BRIEF_COLOR("[memory] physical area: [" FMT_PADDR ", " FMT_PADDR "]",
         PMEM_LEFT,
         PMEM_RIGHT);
+}
+
+void printfMemData(int size) {
+    uint32_t *pmem_p = (uint32_t *)pmem;
+    for (int i = 0; i < size; i++) {
+        LOG_BRIEF_COLOR("[memory] physical data[%05d]: " FMT_PADDR,
+                                                         i,
+                                                         pmem_p[i]);
+    }
 }
