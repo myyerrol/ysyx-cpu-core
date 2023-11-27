@@ -13,7 +13,7 @@
 #include <utils/log.h>
 #include <utils/timer.h>
 
-#define MAX_INST_TO_PRINT 10
+#define MAX_INST_TO_PRINT 0
 
 static uint64_t cpu_timer = 0;
 static bool cpu_print_step = true;
@@ -43,7 +43,9 @@ static void execCPUTraceAndDifftest() {
     }
 #endif
 
-    if (cpu_print_step) { IFDEF(CONFIG_ITRACE, puts(cpu_logbuf)); }
+    if (cpu_print_step) {
+        IFDEF(CONFIG_ITRACE, puts(cpu_logbuf));
+    }
     IFDEF(CONFIG_DIFFTEST, stepDebugDifftest(sim_pc, sim_dnpc));
 }
 

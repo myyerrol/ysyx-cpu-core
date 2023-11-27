@@ -17,13 +17,16 @@ module MEMPortDualI(
     initial begin
         integer i;
         $readmemh("/home/myyerrol/Workspaces/mem.txt", mem);
-`ifdef DEBUG
-        for (i = 0; i < 4096; i++) begin
-            $display("mem[%d]: %x", i, mem[i]);
+`ifdef BTRACE_MEMORY
+        for (i = 0; i < `MEMS_NUM; i++) begin
+            $display("[btrace] mem[%d]: %x", i, mem[i]);
         end
-        $monitor("iaddr: %x, addr: %x, mem[addr]: %x", bMEMPortDualIO_iAddr,
-                                                       addr,
-                                                       mem[addr]);
+`endif
+`ifdef BTRACE_MONITOR
+        $monitor("[btrace] iaddr: %x, addr: %x, mem[addr]: %x",
+                 bMEMPortDualIO_iAddr,
+                 addr,
+                 mem[addr]);
 `endif
     end
 

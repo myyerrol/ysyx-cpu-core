@@ -78,51 +78,26 @@ class LSU extends Module with ConfigInst {
         mMEMI.io.bMEMPortDualIO.iRdEn := io.iMemRdEn
         mMEMI.io.bMEMPortDualIO.iWrEn := io.iMemWrEn
 
-        val wAddr = Wire(UInt(DATA_WIDTH.W))
-        val rAddr = RegInit(DATA_ZERO)
-
-        val wMemRdDataInst = Wire(UInt(DATA_WIDTH.W))
-        val rMemRdDataInst = RegInit(DATA_ZERO)
-
-        // val wMemRdDataLoad = Wire(UInt(DATA_WIDTH.W))
+        mMEMI.io.bMEMPortDualIO.iAddr := DontCare
+        io.lsuio.oMemRdDataInst       := DontCare
+        io.lsuio.oMemRdDataLoad       := DontCare
 
         when (io.iMemRdEn) {
             when (io.iMemRdSrc === MEM_RD_SRC_PC) {
-                wAddr := io.iPC
-                rAddr := io.iPC
-
-                wMemRdDataInst := mMEMI.io.bMEMPortDualIO.oRdData
-                rMemRdDataInst := mMEMI.io.bMEMPortDualIO.oRdData
+                mMEMI.io.bMEMPortDualIO.iAddr := io.iPC
+                io.lsuio.oMemRdDataInst       := mMEMI.io.bMEMPortDualIO.oRdData
             }
             .elsewhen (io.iMemRdSrc === MEM_RD_SRC_ALU) {
-                wAddr := io.iALUOut
-                wMemRdDataInst := rMemRdDataInst
-            }
-            .otherwise {
-                wAddr := rAddr
-                wMemRdDataInst := rMemRdDataInst
+                mMEMI.io.bMEMPortDualIO.iAddr := io.iALUOut
+                io.lsuio.oMemRdDataInst       := mMEMI.io.bMEMPortDualIO.oRdData
             }
         }
-        .otherwise {
-            wAddr := rAddr
-            wMemRdDataInst := rMemRdDataInst
+
+        when (io.iMemWrEn) {
+            mMEMI.io.bMEMPortDualIO.iAddr := io.iALUOut
+            mMEMI.io.bMEMPortDualIO.iWrData := io.iMemWrData
+            mMEMI.io.bMEMPortDualIO.iWrByt  := io.iMemByt
         }
-
-        // when (io.iMemWrEn) {
-        //     wAddr := io.iALUOut
-        //     rAddr := io.iALUOut
-        //     mMEMI.io.bMEMPortDualIO.iWrData := io.iMemWrData
-        //     mMEMI.io.bMEMPortDualIO.iWrByt  := io.iMemByt
-        // }
-        // .otherwise {
-        //     wAddr := rAddr
-        //     // mMEMI.io.bMEMPortDualIO.iWrData := DATA_ZERO
-        //     // mMEMI.io.bMEMPortDualIO.iWrByt  := MEM_BYT_X
-        // }
-
-        mMEMI.io.bMEMPortDualIO.iAddr := wAddr
-        io.lsuio.oMemRdDataInst := wMemRdDataInst
-        io.lsuio.oMemRdDataLoad := 0.U
 
         mMRU.io.iData := mMEMI.io.bMEMPortDualIO.oRdData
     }
