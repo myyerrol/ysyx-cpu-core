@@ -32,7 +32,7 @@ module MEMPortDualI(
 
     wire [`DATA_WIDTH - 1 : 0] addr;
     wire [`DATA_WIDTH - 1 : 0] wr_data;
-    assign addr = bMEMPortDualIO_iAddr - `ADDR_SIM;
+    assign addr = (bMEMPortDualIO_iAddr - `ADDR_SIM) / 4;
     assign wr_data = bMEMPortDualIO_iWrData;
 
     always @(bMEMPortDualIO_iAddr or bMEMPortDualIO_iWrData) begin

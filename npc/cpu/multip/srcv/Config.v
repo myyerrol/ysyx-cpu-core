@@ -1,4 +1,4 @@
-`define BTRACE_MEMORY
+// `define BTRACE_MEMORY
 `define BTRACE_MONITOR
 
 `define BYTE_WIDTH 8
