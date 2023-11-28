@@ -1,5 +1,5 @@
 // `define BTRACE_MEMORY
-`define BTRACE_MONITOR
+// `define BTRACE_MONITOR
 
 `define BYTE_WIDTH 8
 `define INST_WIDTH 32
