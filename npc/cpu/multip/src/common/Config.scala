@@ -11,9 +11,7 @@ trait ConfigIO {
     val SIGS_WIDTH = 10
 
     val GPRS_NUM = 1 << GPRS_WIDTH
-    val MEMS_NUM = 1 << INST_WIDTH
-
-    val MEMS_INT = "MEMI"
+    val MEMS_TYP = "DPIDirect"
 }
 
 trait ConfigInst extends ConfigIO {

@@ -5,11 +5,10 @@ import chisel3.util._
 
 import cpu.common._
 
-class DPI extends BlackBox with ConfigInst {
+class MemDPIDirect extends BlackBox with ConfigInst {
     val io = IO(new Bundle {
         val iClock         = Input(Clock())
         val iReset         = Input(Bool())
-        val iEbreakFlag    = Input(UInt(BYTE_WIDTH.W))
         val iMemRdEn       = Input(Bool())
         val iMemRdAddrInst = Input(UInt(DATA_WIDTH.W))
         val iMemRdAddrLoad = Input(UInt(DATA_WIDTH.W))

@@ -1,6 +1,6 @@
 `include "Config.v"
 
-module MEMPortDualI(
+module MemEmbed(
     input  wire                      iClock,
     input  wire                      iReset,
     input  wire                      bMEMPortDualIO_iRdEn,

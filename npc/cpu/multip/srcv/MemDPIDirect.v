@@ -1,9 +1,8 @@
 `include "Config.v"
 
-module DPI(
+module MemDPIDirect(
     input  wire                      iClock,
     input  wire                      iReset,
-    input  wire[`BYTE_WIDTH - 1 : 0] iEbreakFlag,
     input  wire                      iMemRdEn,
     input  wire[`DATA_WIDTH - 1 : 0] iMemRdAddrInst,
     input  wire[`DATA_WIDTH - 1 : 0] iMemRdAddrLoad,
@@ -16,7 +15,6 @@ module DPI(
     output  reg[`DATA_WIDTH - 1 : 0] oMemRdDataLoad
 );
 
-import "DPI-C" context function void judgeIsEbreak(input byte unsigned flag);
 import "DPI-C" context function longint unsigned readInsData(
     input longint unsigned addr,
     input byte unsigned len);
@@ -26,10 +24,6 @@ import "DPI-C" context function longint unsigned readMemData(
 import "DPI-C" context function void writeMemData(input longint unsigned addr,
                                                   input longint unsigned data,
                                                   input byte unsigned len);
-
-always @(iEbreakFlag) begin
-    judgeIsEbreak(iEbreakFlag);
-end
 
 always @(iMemRdAddrInst) begin
     if (iMemRdEn) begin

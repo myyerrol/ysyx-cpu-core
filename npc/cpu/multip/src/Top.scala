@@ -22,7 +22,8 @@ class Top extends Module with ConfigInst {
         val bITraceIO = new ITraceIO
     })
 
-    val mDPI = Module(new DPI)
+    val mMemDPIDirect = Module(new MemDPIDirect)
+    val mSysDPIDirect = Module(new SysDPIDirect)
 
     val mIFU = Module(new IFU)
     val mIDU = Module(new IDU)
@@ -42,25 +43,27 @@ class Top extends Module with ConfigInst {
     io.bITraceIO.bLSUIO <> mLSU.io.bLSUIO
     io.bITraceIO.bWBUIO <> mWBU.io.bWBUIO
 
-    if (MEMS_INT.equals("DPI")) {
-        mDPI.io.iClock         := clock
-        mDPI.io.iReset         := reset
-        mDPI.io.iMemRdEn       := mLSU.io.bLSUIO.oMemRdEn
-        mDPI.io.iMemRdAddrInst := mLSU.io.bLSUIO.oMemRdAddrInst
-        mDPI.io.iMemRdAddrLoad := mLSU.io.bLSUIO.oMemRdAddrLoad
-        mDPI.io.iMemWrEn       := mLSU.io.bLSUIO.oMemWrEn
-        mDPI.io.iMemWrAddr     := mLSU.io.bLSUIO.oMemWrAddr
-        mDPI.io.iMemWrData     := mLSU.io.bLSUIO.oMemWrData
-        mDPI.io.iMemWrLen      := mLSU.io.bLSUIO.oMemWrLen
+    if (MEMS_TYP.equals("DPIDirect")) {
+        mMemDPIDirect.io.iClock         := clock
+        mMemDPIDirect.io.iReset         := reset
+        mMemDPIDirect.io.iMemRdEn       := mLSU.io.bLSUIO.oMemRdEn
+        mMemDPIDirect.io.iMemRdAddrInst := mLSU.io.bLSUIO.oMemRdAddrInst
+        mMemDPIDirect.io.iMemRdAddrLoad := mLSU.io.bLSUIO.oMemRdAddrLoad
+        mMemDPIDirect.io.iMemWrEn       := mLSU.io.bLSUIO.oMemWrEn
+        mMemDPIDirect.io.iMemWrAddr     := mLSU.io.bLSUIO.oMemWrAddr
+        mMemDPIDirect.io.iMemWrData     := mLSU.io.bLSUIO.oMemWrData
+        mMemDPIDirect.io.iMemWrLen      := mLSU.io.bLSUIO.oMemWrLen
     }
 
     val rInstName = RegNext(mIDU.io.bCTRIO.oInstName, INST_NAME_X)
     when (rInstName === INST_NAME_X && mIDU.io.bCTRIO.oStateCurr === STATE_EX) {
         assert(false.B, "Invalid instruction at 0x%x", mIFU.io.bIFUIO.oPC)
-    }.elsewhen (rInstName === INST_NAME_EBREAK) {
-        mDPI.io.iEbreakFlag := 1.U
-    }.otherwise {
-        mDPI.io.iEbreakFlag := 0.U
+    }
+    .elsewhen (rInstName === INST_NAME_EBREAK) {
+        mSysDPIDirect.io.iEbreakFlag := 1.U
+    }
+    .otherwise {
+        mSysDPIDirect.io.iEbreakFlag := 0.U
     }
 
     mIFU.io.iInstName := mIDU.io.bCTRIO.oInstName
@@ -94,9 +97,9 @@ class Top extends Module with ConfigInst {
     mLSU.io.iALUOut    := mEXU.io.bEXUIO.oALUOut
     mLSU.io.iMemWrData := mEXU.io.bEXUIO.oMemWrData
 
-    if (MEMS_INT.equals("DPI")) {
-        mLSU.io.iMemRdDataInst := mDPI.io.oMemRdDataInst
-        mLSU.io.iMemRdDataLoad := mDPI.io.oMemRdDataLoad
+    if (MEMS_TYP.equals("DPIDirect")) {
+        mLSU.io.iMemRdDataInst := mMemDPIDirect.io.oMemRdDataInst
+        mLSU.io.iMemRdDataLoad := mMemDPIDirect.io.oMemRdDataLoad
     }
     else {
         mLSU.io.iMemRdDataInst := DATA_ZERO
