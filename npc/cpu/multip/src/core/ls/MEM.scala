@@ -20,7 +20,7 @@ class MEMPortDual extends Module with ConfigInst {
         val bMEMPortDualIO = new MEMPortDualIO
     })
 
-    val wAddr = (io.bMEMPortDualIO.iAddr - "x80000000".U)
+    val wAddr = (io.bMEMPortDualIO.iAddr - "x80000000".U) / 4.U
 
     val mMem     = SyncReadMem(MEMS_NUM, UInt(DATA_WIDTH.W))
     val mMemCell = mMem(wAddr)
