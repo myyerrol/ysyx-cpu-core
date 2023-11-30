@@ -101,6 +101,7 @@ static void printfCPUStatistic() {
     IFNDEF(CONFIG_TARGET_AM, setlocale(LC_NUMERIC, ""));
     #define NUMBERIC_FMT MUXDEF(CONFIG_TARGET_AM, "%", "%'") PRIu64
     LOG_BRIEF_COLOR("[statistic] time      = " NUMBERIC_FMT " us", cpu_timer);
+    LOG_BRIEF_COLOR("[statistic] freq      = %lf MHz", (1.0 / cpu_timer));
     LOG_BRIEF_COLOR("[statistic] inst  num = " NUMBERIC_FMT, cpu_inst_num);
     LOG_BRIEF_COLOR("[statistic] cycle num = " NUMBERIC_FMT, sim_cycle_num);
     if (cpu_timer > 0) {
