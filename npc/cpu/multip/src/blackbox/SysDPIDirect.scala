@@ -8,7 +8,7 @@ import cpu.common._
 class SysDPIDirect extends BlackBox with ConfigInst {
     val io = IO(new Bundle {
         val iClock      = Input(Clock())
-        val iReset      = Input(Bool())
+        val iReset      = Input(Reset())
         val iEbreakFlag = Input(UInt(BYTE_WIDTH.W))
     })
 }

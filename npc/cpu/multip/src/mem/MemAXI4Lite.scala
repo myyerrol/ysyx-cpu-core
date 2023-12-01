@@ -14,10 +14,6 @@ class SRAMIFU extends Module with ConfigInst {
 
     // val stateMasterIDLE :: stateMasterWait :: Nil = Enum(2)
     // val stateMaster = RegInit(stateMasterIDLE)
-
-
-
-
 }
 
 class SRAMLSU extends Module with ConfigInst {

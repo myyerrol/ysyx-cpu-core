@@ -63,16 +63,21 @@ class LSU extends Module with ConfigInst {
         io.bLSUIO.oMemWrLen  := DATA_ZERO
     }
 
+    io.bLSUIO.oMemRdDataInst := DontCare
+    io.bLSUIO.oMemRdDataLoad := DontCare
+
     val mMRU = Module(new MRU)
+    mMRU.io.iData := DontCare
+
     if (MEMS_TYP.equals("DPIDirect")) {
         io.bLSUIO.oMemRdDataInst := io.iMemRdDataInst
         io.bLSUIO.oMemRdDataLoad := io.iMemRdDataLoad
 
         mMRU.io.iData := io.iMemRdDataLoad
     }
-    else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+    // else if (MEMS_TYP.equals("DPIAXI4Lite")) {
 
-    }
+    // }
     else if (MEMS_TYP.equals("Embed")) {
         val mMemEmbed = Module(new MemEmbed)
         mMemEmbed.io.iClock := clock
@@ -82,8 +87,6 @@ class LSU extends Module with ConfigInst {
         mMemEmbed.io.bMemPortDualIO.iWrEn := io.iMemWrEn
 
         mMemEmbed.io.bMemPortDualIO.iAddr := DontCare
-        io.bLSUIO.oMemRdDataInst          := DontCare
-        io.bLSUIO.oMemRdDataLoad          := DontCare
 
         when (io.iMemRdEn) {
             when (io.iMemRdSrc === MEM_RD_SRC_PC) {

@@ -19,7 +19,7 @@ class MemPortDualIO extends Bundle with ConfigIO {
 class MemEmbed extends BlackBox with ConfigInst {
     val io = IO(new Bundle {
         val iClock         = Input(Clock())
-        val iReset         = Input(Bool())
+        val iReset         = Input(Reset())
         val bMemPortDualIO = new MemPortDualIO
     })
 }

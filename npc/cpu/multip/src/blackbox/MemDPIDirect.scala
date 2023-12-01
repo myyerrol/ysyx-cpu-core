@@ -8,7 +8,7 @@ import cpu.common._
 class MemDPIDirect extends BlackBox with ConfigInst {
     val io = IO(new Bundle {
         val iClock         = Input(Clock())
-        val iReset         = Input(Bool())
+        val iReset         = Input(Reset())
         val iMemRdEn       = Input(Bool())
         val iMemRdAddrInst = Input(UInt(DATA_WIDTH.W))
         val iMemRdAddrLoad = Input(UInt(DATA_WIDTH.W))

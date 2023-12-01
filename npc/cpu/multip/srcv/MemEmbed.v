@@ -9,7 +9,7 @@ module MemEmbed(
     input  wire[`DATA_WIDTH - 1 : 0] bMEMPortDualIO_iWrData,
     input  wire[`DATA_WIDTH - 1 : 0] bMEMPortDualIO_iWrByt,
 
-    output  reg[`DATA_WIDTH - 1 : 0] bMEMPortDualIO_oRdData
+    output reg [`DATA_WIDTH - 1 : 0] bMEMPortDualIO_oRdData
 );
 
     reg[`DATA_WIDTH - 1 : 0] mem[`MEMS_NUM];

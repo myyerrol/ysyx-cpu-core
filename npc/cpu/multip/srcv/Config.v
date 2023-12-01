@@ -12,3 +12,8 @@
 `define MEM_BYT_2_U 10'd2
 `define MEM_BYT_4_U 10'd3
 `define MEM_BYT_8_U 10'd4
+
+`define AXI4_RRESP_OKEY   2'b00
+`define AXI4_RRESP_EXOKAY 2'b01
+`define AXI4_RRESP_SLVEER 2'b10
+`define AXI4_RRESP_DECEER 2'b11

@@ -125,18 +125,23 @@ class CTR extends Module with ConfigInstPattern {
     switch (rStateCurr) {
         is (STATE_RS) {
             rStateCurr := STATE_IF
-            wMemRdEn   := EN_TRUE
-            wMemRdSrc  := MEM_RD_SRC_PC
+            // wMemRdEn   := EN_TRUE
+            // wMemRdSrc  := MEM_RD_SRC_PC
         }
         is (STATE_IF) {
-            rStateCurr := STATE_ID
+            rStateCurr := STATE_ME
             wPCNextEn  := EN_TRUE
-            wMemRdEn   := EN_TRUE
-            wMemRdSrc  := MEM_RD_SRC_PC
+            // wMemRdEn   := EN_TRUE
+            // wMemRdSrc  := MEM_RD_SRC_PC
             wIRWrEn    := EN_TRUE
             wALUType   := ALU_TYPE_ADD
             wALURS1    := ALU_RS1_PC
             wALURS2    := ALU_RS2_4
+        }
+        is (STATE_ME) {
+            rStateCurr := STATE_ID
+            wMemRdEn   := EN_TRUE
+            wMemRdSrc  := MEM_RD_SRC_PC
         }
         is (STATE_ID) {
             rStateCurr := STATE_EX

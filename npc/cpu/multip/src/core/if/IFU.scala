@@ -3,6 +3,7 @@ package cpu.core
 import chisel3._
 import chisel3.util._
 
+import cpu.blackbox._
 import cpu.common._
 
 class IFUIO extends Bundle with ConfigIO {
@@ -30,6 +31,8 @@ class IFU extends Module with ConfigInst {
         val iInstName      =  Input(UInt(SIGS_WIDTH.W))
         val iPCWrEn        =  Input(Bool())
         val iPCWrSrc       =  Input(UInt(SIGS_WIDTH.W))
+        val iMemRdEn       =  Input(UInt(SIGS_WIDTH.W))
+        val iMemRdSrc      =  Input(UInt(SIGS_WIDTH.W))
         val iIRWrEn        =  Input(Bool())
 
         val iPCNext        =  Input(UInt(DATA_WIDTH.W))
@@ -38,20 +41,12 @@ class IFU extends Module with ConfigInst {
         val iInst          =  Input(UInt(DATA_WIDTH.W))
 
         val bIFUIO            = new IFUIO
-        // val bIFUAXIMasterARIO = new IFUAXI4LiteARIO
-        // val bIFUAXIMasterAIO  = new IFUAXI4LiteRIO
+        val bIFUAXIMasterARIO = new IFUAXI4LiteARIO
+        val bIFUAXIMasterRIO  = new IFUAXI4LiteRIO
+
+        val oState         = Output(UInt(2.W))
     })
 
-    // val stateMasterIDLE :: stateMasterWait :: Nil = Enum(2)
-    // val stateMaster = RegInit(stateMasterIDLE)
-    // stateMaster := MuxLookup(
-    //     stateMaster,
-    //     stateMasterIDLE,
-    //     Seq(
-    //         stateMasterIDLE -> Mux(io.bIFUAXIMasterARIO.arvalid, stateMasterWait, stateMasterIDLE),
-    //         stateMasterWait -> Mux(io.bIFUAXIMasterARIO.arready, stateMasterIDLE, stateMasterWait)
-    //     )
-    // )
 
     val rPC  = RegInit(ADDR_SIM)
     val wNPC = WireInit(ADDR_SIM)
@@ -76,20 +71,66 @@ class IFU extends Module with ConfigInst {
     when (io.iPCWrEn) {
         rPC           := wNPC
         io.bIFUIO.oPC := rPC
-
-        // io.bIFUAXIMasterARIO.arvalid := true.B
-        // io.bIFUAXIMasterARIO.araddr  := rPC
     }
     .otherwise {
         io.bIFUIO.oPC := rPC
-
-        // io.bIFUAXIMasterARIO.arvalid := false.B
-        // io.bIFUAXIMasterARIO.araddr  := rPC
     }
 
     val mIRU = Module(new IRU)
     mIRU.io.iWrEn := io.iIRWrEn
-    mIRU.io.iData := io.iInst
+    mIRU.io.iData := DontCare
+
+    // val mIRU = Module(new IRU)
+    // mIRU.io.iWrEn := io.iIRWrEn
+    // // mIRU.io.iData := io.iInst
+
+    io.bIFUAXIMasterARIO.arvalid := DontCare
+    io.bIFUAXIMasterARIO.araddr  := DontCare
+    io.bIFUAXIMasterRIO.rready   := true.B
+
+    when ((io.iMemRdEn === true.B) && (io.iMemRdSrc === MEM_RD_SRC_PC)) {
+        io.bIFUAXIMasterARIO.arvalid := true.B
+        io.bIFUAXIMasterARIO.araddr  := rPC
+    }
+
+    val stateARWait :: stateAWait :: stateA :: Nil = Enum(3)
+    val state = RegInit(stateARWait)
+
+    io.oState := state
+
+    switch (state) {
+        is (stateARWait) {
+            when (io.bIFUAXIMasterARIO.arvalid &&
+                  io.bIFUAXIMasterARIO.arready) {
+                state := stateAWait
+            }
+            .otherwise {
+                state := stateARWait
+            }
+        }
+        is (stateAWait) {
+            when (io.bIFUAXIMasterRIO.rvalid &&
+                  io.bIFUAXIMasterRIO.rready) {
+                state := stateA
+                // when (io.bIFUAXIMasterRIO.rresp === 0.U) {
+                //     mIRU.io.iData := io.bIFUAXIMasterRIO.rdata
+                // }
+                // io.bIFUAXIMasterARIO.arvalid := false.B
+            }
+            .otherwise {
+                state := stateAWait
+            }
+        }
+        is (stateA) {
+            state := stateARWait
+            when (io.bIFUAXIMasterRIO.rresp === 0.U) {
+                mIRU.io.iData := io.bIFUAXIMasterRIO.rdata
+            }
+        }
+    }
+
+    printf("state: %d\n", state)
+    printf("mIRU.io.iData: %x\n", mIRU.io.iData)
 
     io.bIFUIO.oInst := mIRU.io.oData
 }

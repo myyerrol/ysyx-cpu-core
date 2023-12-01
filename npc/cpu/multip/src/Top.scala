@@ -1,9 +1,9 @@
 import chisel3._
 import chisel3.util._
 
+import cpu.blackbox._
 import cpu.common._
 import cpu.core._
-import cpu.blackbox._
 
 class ITraceIO extends Bundle with ConfigIO {
     val bCTRIO = new CTRIO
@@ -31,11 +31,25 @@ class Top extends Module with ConfigInst {
     val mLSU = Module(new LSU)
     val mWBU = Module(new WBU)
 
+    mIFU.io.bIFUAXIMasterARIO <> DontCare
+    mIFU.io.bIFUAXIMasterRIO  <> DontCare
+
     io.oEndData := mIDU.io.bIDUIO.oEndData
 
-    io.bIFUIO.oPC   := mIFU.io.bIFUIO.oPC
-    io.bIFUIO.oInst := mLSU.io.bLSUIO.oMemRdDataInst
-    io.bGPRIO       <> mIDU.io.bGPRIO
+    io.bIFUIO.oPC := mIFU.io.bIFUIO.oPC
+    if (MEMS_TYP.equals("DPIDirect") || MEMS_TYP.equals("Embed")) {
+        io.bIFUIO.oInst := mLSU.io.bLSUIO.oMemRdDataInst
+    }
+    else {
+        when (mIFU.io.oState === 1.U && mIFU.io.bIFUAXIMasterRIO.rresp === 0.U) {
+            io.bIFUIO.oInst := mIFU.io.bIFUAXIMasterRIO.rdata
+        }
+        .otherwise {
+            io.bIFUIO.oInst := DATA_ZERO
+        }
+    }
+
+    io.bGPRIO <> mIDU.io.bGPRIO
 
     io.bITraceIO.bCTRIO <> mIDU.io.bCTRIO
     io.bITraceIO.bIDUIO <> mIDU.io.bIDUIO
@@ -54,6 +68,13 @@ class Top extends Module with ConfigInst {
         mMemDPIDirect.io.iMemWrData     := mLSU.io.bLSUIO.oMemWrData
         mMemDPIDirect.io.iMemWrLen      := mLSU.io.bLSUIO.oMemWrLen
     }
+    else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+        val mMemDPIAXI4LiteLFU = Module(new MemDPIAXI4LiteLFU)
+        mMemDPIAXI4LiteLFU.io.iClock := clock
+        mMemDPIAXI4LiteLFU.io.iReset := reset
+        mMemDPIAXI4LiteLFU.io.bIFUAXISlaveARIO <> mIFU.io.bIFUAXIMasterARIO
+        mMemDPIAXI4LiteLFU.io.bIFUAXISlaveRIO  <> mIFU.io.bIFUAXIMasterRIO
+    }
 
     val rInstName = RegNext(mIDU.io.bCTRIO.oInstName, INST_NAME_X)
     when (rInstName === INST_NAME_X && mIDU.io.bCTRIO.oStateCurr === STATE_EX) {
@@ -69,6 +90,8 @@ class Top extends Module with ConfigInst {
     mIFU.io.iInstName := mIDU.io.bCTRIO.oInstName
     mIFU.io.iPCWrEn   := mIDU.io.bCTRIO.oPCWrEn
     mIFU.io.iPCWrSrc  := mIDU.io.bCTRIO.oPCWrSrc
+    mIFU.io.iMemRdEn  := mIDU.io.bCTRIO.oMemRdEn
+    mIFU.io.iMemRdSrc := mIDU.io.bCTRIO.oMemRdSrc
     mIFU.io.iIRWrEn   := mIDU.io.bCTRIO.oIRWrEn
     mIFU.io.iPCNext   := mEXU.io.bEXUIO.oPCNext
     mIFU.io.iPCJump   := mEXU.io.bEXUIO.oPCJump
