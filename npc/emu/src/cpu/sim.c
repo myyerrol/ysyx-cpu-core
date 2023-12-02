@@ -29,6 +29,17 @@ extern "C" uint64_tt readInsData(uint64_tt addr, uint8_t len) {
     return data;
 }
 
+extern "C" uint64_tt readInsDataByAXI4Lite(uint64_tt addr, uint8_t len) {
+    uint64_tt data = 0;
+    if (addr != 0x00000000) {
+        data = (uint64_tt)readPhyMemData(addr, len);
+#ifdef CONFIG_MTRACE_COND_PROCESS
+        printfDebugMTrace((char *)"process", (char *)"rd ins axi4lite", addr, data, 0);
+#endif
+    }
+    return data;
+}
+
 extern "C" uint64_tt readMemData(uint64_tt addr, uint8_t len) {
     uint64_tt data = 0;
     if (addr == 0xa0000048) {
@@ -228,6 +239,7 @@ void runCPUSimModule(bool *inst_end_flag) {
         case 3:  state_curr = (char *)"EX"; break;
         case 4:  state_curr = (char *)"LS"; break;
         case 5:  state_curr = (char *)"WB"; break;
+        case 6:  state_curr = (char *)"ME"; break;
         default: state_curr = (char *)"RS"; break;
     }
     LOG_BRIEF("[itrace] [idu] [ctr] state curr:       %s", state_curr);
@@ -365,38 +377,38 @@ void runCPUSimModule(bool *inst_end_flag) {
     LOG_BRIEF("[itrace] [idu]       imm data:         " FMT_WORD "",
               top->io_bITraceIO_bIDUIO_oImmData);
 
-    LOG_BRIEF("[itrace] [exu]       pc next:          " FMT_WORD "",
-              top->io_bITraceIO_bEXUIO_oPCNext);
-    LOG_BRIEF("[itrace] [exu]       pc jump:          " FMT_WORD "",
-              top->io_bITraceIO_bEXUIO_oPCJump);
-    LOG_BRIEF("[itrace] [exu]       alu zero:         %d",
-              top->io_bITraceIO_bEXUIO_oALUZero);
-    LOG_BRIEF("[itrace] [exu]       alu out:          " FMT_WORD "",
-              top->io_bITraceIO_bEXUIO_oALUOut);
+    // LOG_BRIEF("[itrace] [exu]       pc next:          " FMT_WORD "",
+    //           top->io_bITraceIO_bEXUIO_oPCNext);
+    // LOG_BRIEF("[itrace] [exu]       pc jump:          " FMT_WORD "",
+    //           top->io_bITraceIO_bEXUIO_oPCJump);
+    // LOG_BRIEF("[itrace] [exu]       alu zero:         %d",
+    //           top->io_bITraceIO_bEXUIO_oALUZero);
+    // LOG_BRIEF("[itrace] [exu]       alu out:          " FMT_WORD "",
+    //           top->io_bITraceIO_bEXUIO_oALUOut);
 
-    LOG_BRIEF("[itrace] [lsu]       mem rd en:        %d",
-              top->io_bITraceIO_bLSUIO_oMemRdEn);
-    LOG_BRIEF("[itrace] [lsu]       mem rd addr inst: " FMT_WORD "",
-              top->io_bITraceIO_bLSUIO_oMemRdAddrInst);
-    LOG_BRIEF("[itrace] [lsu]       mem rd addr load: " FMT_WORD "",
-              top->io_bITraceIO_bLSUIO_oMemRdAddrLoad);
-    LOG_BRIEF("[itrace] [lsu]       mem rd data inst: " FMT_WORD "",
-              top->io_bITraceIO_bLSUIO_oMemRdDataInst);
-    LOG_BRIEF("[itrace] [lsu]       mem rd data load: " FMT_WORD "",
-              top->io_bITraceIO_bLSUIO_oMemRdDataLoad);
-    LOG_BRIEF("[itrace] [lsu]       mem wr en:        %d",
-              top->io_bITraceIO_bLSUIO_oMemWrEn);
-    LOG_BRIEF("[itrace] [lsu]       mem wr addr:      " FMT_WORD "",
-              top->io_bITraceIO_bLSUIO_oMemWrAddr);
-    LOG_BRIEF("[itrace] [lsu]       mem wr data:      " FMT_WORD "",
-              top->io_bITraceIO_bLSUIO_oMemWrData);
-    LOG_BRIEF("[itrace] [lsu]       mem wr len:       %d",
-              top->io_bITraceIO_bLSUIO_oMemWrLen);
-    LOG_BRIEF("[itrace] [lsu]       mem rd data:      " FMT_WORD "",
-              top->io_bITraceIO_bLSUIO_oMemRdData);
+    // LOG_BRIEF("[itrace] [lsu]       mem rd en:        %d",
+    //           top->io_bITraceIO_bLSUIO_oMemRdEn);
+    // LOG_BRIEF("[itrace] [lsu]       mem rd addr inst: " FMT_WORD "",
+    //           top->io_bITraceIO_bLSUIO_oMemRdAddrInst);
+    // LOG_BRIEF("[itrace] [lsu]       mem rd addr load: " FMT_WORD "",
+    //           top->io_bITraceIO_bLSUIO_oMemRdAddrLoad);
+    // LOG_BRIEF("[itrace] [lsu]       mem rd data inst: " FMT_WORD "",
+    //           top->io_bITraceIO_bLSUIO_oMemRdDataInst);
+    // LOG_BRIEF("[itrace] [lsu]       mem rd data load: " FMT_WORD "",
+    //           top->io_bITraceIO_bLSUIO_oMemRdDataLoad);
+    // LOG_BRIEF("[itrace] [lsu]       mem wr en:        %d",
+    //           top->io_bITraceIO_bLSUIO_oMemWrEn);
+    // LOG_BRIEF("[itrace] [lsu]       mem wr addr:      " FMT_WORD "",
+    //           top->io_bITraceIO_bLSUIO_oMemWrAddr);
+    // LOG_BRIEF("[itrace] [lsu]       mem wr data:      " FMT_WORD "",
+    //           top->io_bITraceIO_bLSUIO_oMemWrData);
+    // LOG_BRIEF("[itrace] [lsu]       mem wr len:       %d",
+    //           top->io_bITraceIO_bLSUIO_oMemWrLen);
+    // LOG_BRIEF("[itrace] [lsu]       mem rd data:      " FMT_WORD "",
+    //           top->io_bITraceIO_bLSUIO_oMemRdData);
 
-    LOG_BRIEF("[itrace] [wbu]       gpr wr:           " FMT_WORD "",
-              top->io_bITraceIO_bWBUIO_oGPRWrData);
+    // LOG_BRIEF("[itrace] [wbu]       gpr wr:           " FMT_WORD "",
+    //           top->io_bITraceIO_bWBUIO_oGPRWrData);
     LOG_BRIEF();
 #endif
 
