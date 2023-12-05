@@ -5,20 +5,7 @@ import chisel3.util._
 
 import cpu.blackbox._
 import cpu.common._
-
-class LSUIO extends Bundle with ConfigIO {
-    val oMemRdEn       = Output(Bool())
-    val oMemRdAddrInst = Output(UInt(DATA_WIDTH.W))
-    val oMemRdAddrLoad = Output(UInt(DATA_WIDTH.W))
-    val oMemWrEn       = Output(Bool())
-    val oMemWrAddr     = Output(UInt(DATA_WIDTH.W))
-    val oMemWrData     = Output(UInt(DATA_WIDTH.W))
-    val oMemWrLen      = Output(UInt(BYTE_WIDTH.W))
-
-    val oMemRdDataInst = Output(UInt(DATA_WIDTH.W))
-    val oMemRdDataLoad = Output(UInt(DATA_WIDTH.W))
-    val oMemRdData     = Output(UInt(DATA_WIDTH.W))
-}
+import cpu.port._
 
 class LSU extends Module with ConfigInst {
     val io = IO(new Bundle {
@@ -34,18 +21,18 @@ class LSU extends Module with ConfigInst {
         val iMemRdDataInst = Input(UInt(INST_WIDTH.W))
         val iMemRdDataLoad = Input(UInt(DATA_WIDTH.W))
 
-        val bLSUIO         = new LSUIO
+        val pLSU           = new LSUIO
     })
 
-    io.bLSUIO.oMemRdEn       := io.iMemRdEn
-    io.bLSUIO.oMemRdAddrInst := io.iPC
-    io.bLSUIO.oMemRdAddrLoad := io.iALUOut
+    io.pLSU.oMemRdEn       := io.iMemRdEn
+    io.pLSU.oMemRdAddrInst := io.iPC
+    io.pLSU.oMemRdAddrLoad := io.iALUOut
 
     when (io.iMemWrEn) {
-        io.bLSUIO.oMemWrEn   := true.B
-        io.bLSUIO.oMemWrAddr := io.iALUOut
-        io.bLSUIO.oMemWrData := io.iMemWrData
-        io.bLSUIO.oMemWrLen  := MuxLookup(
+        io.pLSU.oMemWrEn   := true.B
+        io.pLSU.oMemWrAddr := io.iALUOut
+        io.pLSU.oMemWrData := io.iMemWrData
+        io.pLSU.oMemWrLen  := MuxLookup(
             io.iMemByt,
             8.U(BYTE_WIDTH.W),
             Seq(
@@ -57,56 +44,56 @@ class LSU extends Module with ConfigInst {
         )
     }
     .otherwise {
-        io.bLSUIO.oMemWrEn   := false.B
-        io.bLSUIO.oMemWrAddr := DATA_ZERO
-        io.bLSUIO.oMemWrData := DATA_ZERO
-        io.bLSUIO.oMemWrLen  := DATA_ZERO
+        io.pLSU.oMemWrEn   := false.B
+        io.pLSU.oMemWrAddr := DATA_ZERO
+        io.pLSU.oMemWrData := DATA_ZERO
+        io.pLSU.oMemWrLen  := DATA_ZERO
     }
 
-    io.bLSUIO.oMemRdDataInst := DontCare
-    io.bLSUIO.oMemRdDataLoad := DontCare
+    io.pLSU.oMemRdDataInst := DontCare
+    io.pLSU.oMemRdDataLoad := DontCare
 
     val mMRU = Module(new MRU)
     mMRU.io.iData := DontCare
 
     if (MEMS_TYP.equals("DPIDirect")) {
-        io.bLSUIO.oMemRdDataInst := io.iMemRdDataInst
-        io.bLSUIO.oMemRdDataLoad := io.iMemRdDataLoad
+        io.pLSU.oMemRdDataInst := io.iMemRdDataInst
+        io.pLSU.oMemRdDataLoad := io.iMemRdDataLoad
 
         mMRU.io.iData := io.iMemRdDataLoad
     }
-    // else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+    else if (MEMS_TYP.equals("DPIAXI4Lite")) {
 
-    // }
+    }
     else if (MEMS_TYP.equals("Embed")) {
         val mMemEmbed = Module(new MemEmbed)
         mMemEmbed.io.iClock := clock
         mMemEmbed.io.iReset := reset
 
-        mMemEmbed.io.bMemPortDualIO.iRdEn := io.iMemRdEn
-        mMemEmbed.io.bMemPortDualIO.iWrEn := io.iMemWrEn
+        mMemEmbed.io.pMem.iRdEn := io.iMemRdEn
+        mMemEmbed.io.pMem.iWrEn := io.iMemWrEn
 
-        mMemEmbed.io.bMemPortDualIO.iAddr := DontCare
+        mMemEmbed.io.pMem.iAddr := DontCare
 
         when (io.iMemRdEn) {
             when (io.iMemRdSrc === MEM_RD_SRC_PC) {
-                mMemEmbed.io.bMemPortDualIO.iAddr := io.iPC
-                io.bLSUIO.oMemRdDataInst          := mMemEmbed.io.bMemPortDualIO.oRdData
+                mMemEmbed.io.pMem.iAddr := io.iPC
+                io.pLSU.oMemRdDataInst          := mMemEmbed.io.pMem.oRdData
             }
             .elsewhen (io.iMemRdSrc === MEM_RD_SRC_ALU) {
-                mMemEmbed.io.bMemPortDualIO.iAddr := io.iALUOut
-                io.bLSUIO.oMemRdDataInst          := mMemEmbed.io.bMemPortDualIO.oRdData
+                mMemEmbed.io.pMem.iAddr := io.iALUOut
+                io.pLSU.oMemRdDataInst          := mMemEmbed.io.pMem.oRdData
             }
         }
 
         when (io.iMemWrEn) {
-            mMemEmbed.io.bMemPortDualIO.iAddr   := io.iALUOut
-            mMemEmbed.io.bMemPortDualIO.iWrData := io.iMemWrData
-            mMemEmbed.io.bMemPortDualIO.iWrByt  := io.iMemByt
+            mMemEmbed.io.pMem.iAddr   := io.iALUOut
+            mMemEmbed.io.pMem.iWrData := io.iMemWrData
+            mMemEmbed.io.pMem.iWrByt  := io.iMemByt
         }
 
-        mMRU.io.iData := mMemEmbed.io.bMemPortDualIO.oRdData
+        mMRU.io.iData := mMemEmbed.io.pMem.oRdData
     }
 
-    io.bLSUIO.oMemRdData := mMRU.io.oData
+    io.pLSU.oMemRdData := mMRU.io.oData
 }

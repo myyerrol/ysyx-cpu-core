@@ -6,10 +6,10 @@ module SysDPIDirect(
     input wire[`BYTE_WIDTH - 1 : 0] iEbreakFlag
 );
 
-import "DPI-C" context function void judgeIsEbreak(input byte unsigned flag);
+    import "DPI-C" context function void judgeIsEbreak(input byte unsigned flag);
 
-always @(iEbreakFlag) begin
-    judgeIsEbreak(iEbreakFlag);
-end
+    always @(iEbreakFlag) begin
+        judgeIsEbreak(iEbreakFlag);
+    end
 
 endmodule

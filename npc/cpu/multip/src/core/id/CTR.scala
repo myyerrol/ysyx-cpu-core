@@ -4,31 +4,14 @@ import chisel3._
 import chisel3.util._
 
 import cpu.common._
-
-class CTRIO extends Bundle with ConfigIO {
-    val oInstName  = Output(UInt(SIGS_WIDTH.W))
-    val oStateCurr = Output(UInt(SIGS_WIDTH.W))
-    val oPCWrEn    = Output(Bool())
-    val oPCWrSrc   = Output(UInt(SIGS_WIDTH.W))
-    val oPCNextEn  = Output(Bool())
-    val oPCJumpEn  = Output(Bool())
-    val oMemRdEn   = Output(Bool())
-    val oMemRdSrc  = Output(UInt(SIGS_WIDTH.W))
-    val oMemWrEn   = Output(Bool())
-    val oMemByt    = Output(UInt(SIGS_WIDTH.W))
-    val oIRWrEn    = Output(Bool())
-    val oGPRWrEn   = Output(Bool())
-    val oGPRWrSrc  = Output(UInt(SIGS_WIDTH.W))
-    val oALUType   = Output(UInt(SIGS_WIDTH.W))
-    val oALURS1    = Output(UInt(SIGS_WIDTH.W))
-    val oALURS2    = Output(UInt(SIGS_WIDTH.W))
-}
+import cpu.port._
 
 class CTR extends Module with ConfigInstPattern {
     val io = IO(new Bundle {
         val iPC    = Input(UInt(DATA_WIDTH.W))
         val iInst  = Input(UInt(INST_WIDTH.W))
-        val bCTRIO = new CTRIO
+
+        val pCTR   = new CTRIO
     })
 
     var lInst = ListLookup(
@@ -454,20 +437,20 @@ class CTR extends Module with ConfigInstPattern {
         }
     }
 
-    io.bCTRIO.oInstName  := wInstName
-    io.bCTRIO.oStateCurr := rStateCurr
-    io.bCTRIO.oPCWrEn    := wPCWrEn
-    io.bCTRIO.oPCWrSrc   := wPCWrSrc
-    io.bCTRIO.oPCNextEn  := wPCNextEn
-    io.bCTRIO.oPCJumpEn  := wPCJumpEn
-    io.bCTRIO.oMemRdEn   := wMemRdEn
-    io.bCTRIO.oMemRdSrc  := wMemRdSrc
-    io.bCTRIO.oMemWrEn   := wMemWrEn
-    io.bCTRIO.oMemByt    := wMemByt
-    io.bCTRIO.oIRWrEn    := wIRWrEn
-    io.bCTRIO.oGPRWrEn   := wGPRWrEn
-    io.bCTRIO.oGPRWrSrc  := wGPRWrSrc
-    io.bCTRIO.oALUType   := wALUType
-    io.bCTRIO.oALURS1    := wALURS1
-    io.bCTRIO.oALURS2    := wALURS2
+    io.pCTR.oInstName  := wInstName
+    io.pCTR.oStateCurr := rStateCurr
+    io.pCTR.oPCWrEn    := wPCWrEn
+    io.pCTR.oPCWrSrc   := wPCWrSrc
+    io.pCTR.oPCNextEn  := wPCNextEn
+    io.pCTR.oPCJumpEn  := wPCJumpEn
+    io.pCTR.oMemRdEn   := wMemRdEn
+    io.pCTR.oMemRdSrc  := wMemRdSrc
+    io.pCTR.oMemWrEn   := wMemWrEn
+    io.pCTR.oMemByt    := wMemByt
+    io.pCTR.oIRWrEn    := wIRWrEn
+    io.pCTR.oGPRWrEn   := wGPRWrEn
+    io.pCTR.oGPRWrSrc  := wGPRWrSrc
+    io.pCTR.oALUType   := wALUType
+    io.pCTR.oALURS1    := wALURS1
+    io.pCTR.oALURS2    := wALURS2
 }

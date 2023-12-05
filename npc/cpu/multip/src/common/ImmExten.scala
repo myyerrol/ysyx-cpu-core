@@ -5,8 +5,8 @@ import chisel3.util._
 
 class ImmExten extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val iInst    =  Input(UInt(INST_WIDTH.W))
-        val iALURS2  =  Input(UInt(SIGS_WIDTH.W))
+        val iInst    = Input (UInt(INST_WIDTH.W))
+        val iALURS2  = Input (UInt(SIGS_WIDTH.W))
 
         val oImmData = Output(UInt(DATA_WIDTH.W))
     })

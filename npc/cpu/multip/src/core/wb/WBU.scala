@@ -4,20 +4,17 @@ import chisel3._
 import chisel3.util._
 
 import cpu.common._
-
-class WBUIO extends Bundle with ConfigIO {
-    val oGPRWrData = Output(UInt(DATA_WIDTH.W))
-}
+import cpu.port._
 
 class WBU extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val iInstName  = Input(UInt(SIGS_WIDTH.W))
-        val iMemByt    = Input(UInt(SIGS_WIDTH.W))
-        val iGPRWrSrc  = Input(UInt(SIGS_WIDTH.W))
-        val iALUOut    = Input(UInt(DATA_WIDTH.W))
-        val iMemData   = Input(UInt(DATA_WIDTH.W))
+        val iInstName = Input(UInt(SIGS_WIDTH.W))
+        val iMemByt   = Input(UInt(SIGS_WIDTH.W))
+        val iGPRWrSrc = Input(UInt(SIGS_WIDTH.W))
+        val iALUOut   = Input(UInt(DATA_WIDTH.W))
+        val iMemData  = Input(UInt(DATA_WIDTH.W))
 
-        val bWBUIO      = new WBUIO
+        val pWBU      = new WBUIO
     })
 
     when (io.iGPRWrSrc === GPR_WR_SRC_MEM) {
@@ -39,7 +36,7 @@ class WBU extends Module with ConfigInst {
                 MEM_BYT_8_S -> wMemDataByt8
             )
         )
-        io.bWBUIO.oGPRWrData := wMemDataMux
+        io.pWBU.oGPRWrData := wMemDataMux
     }
     .elsewhen (io.iGPRWrSrc === GPR_WR_SRC_ALU) {
         when (io.iInstName === INST_NAME_ADDW  ||
@@ -56,13 +53,13 @@ class WBU extends Module with ConfigInst {
               io.iInstName === INST_NAME_DIVUW ||
               io.iInstName === INST_NAME_REMW) {
             val wALUOutByt4 = io.iALUOut(31, 0)
-            io.bWBUIO.oGPRWrData := Cat(Fill(32, wALUOutByt4(31)), wALUOutByt4)
+            io.pWBU.oGPRWrData := Cat(Fill(32, wALUOutByt4(31)), wALUOutByt4)
         }
         .otherwise {
-            io.bWBUIO.oGPRWrData := io.iALUOut
+            io.pWBU.oGPRWrData := io.iALUOut
         }
     }
     .otherwise {
-        io.bWBUIO.oGPRWrData := DATA_ZERO
+        io.pWBU.oGPRWrData := DATA_ZERO
     }
 }

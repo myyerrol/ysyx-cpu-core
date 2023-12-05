@@ -7,9 +7,9 @@ import cpu.common._
 
 class ALU extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val iType    =  Input(UInt(SIGS_WIDTH.W))
-        val iRS1Data =  Input(UInt(DATA_WIDTH.W))
-        val iRS2Data =  Input(UInt(DATA_WIDTH.W))
+        val iType    = Input (UInt(SIGS_WIDTH.W))
+        val iRS1Data = Input (UInt(DATA_WIDTH.W))
+        val iRS2Data = Input (UInt(DATA_WIDTH.W))
 
         val oZero    = Output(Bool())
         val oOut     = Output(UInt(DATA_WIDTH.W))
