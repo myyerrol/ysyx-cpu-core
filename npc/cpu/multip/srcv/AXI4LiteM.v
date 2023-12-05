@@ -1,4 +1,36 @@
-// `include "Config.v"
+`include "Config.v"
+
+module AXI4LiteM(
+    input  wire                      iClock,
+    input  wire                      iReset,
+
+    input  wire                      pAXI4M_ar_ready,
+    output wire                      pAXI4M_ar_valid,
+    output wire[`DATA_WIDTH - 1 : 0] pAXI4M_ar_bits_addr,
+
+    input  wire                      pAXI4M_r_valid,
+    input  wire[`DATA_WIDTH - 1 : 0] pAXI4M_r_bits_data,
+    input  wire[`RESP_WIDTH - 1 : 0] pAXI4M_r_bits_resp,
+    output wire                      pAXI4M_r_ready,
+
+    input  wire                      pAXI4M_aw_ready,
+    output wire                      pAXI4M_aw_valid,
+    output wire[`DATA_WIDTH - 1 : 0] pAXI4M_aw_bits_addr,
+
+    input  wire                          pAXI4M_w_ready,
+    output wire                          pAXI4M_w_valid,
+    output wire[`DATA_WIDTH - 1 : 0]     pAXI4M_w_bits_data,
+    output wire[`DATA_WIDTH / 8 - 1 : 0] pAXI4M_w_bits_strb,
+
+    input  wire                          pAXI4M_b_valid,
+    input  wire[`RESP_WIDTH - 1 : 0]     pAXI4M_b_bits_resp,
+    output wire                          pAXI4M_b_ready
+);
+
+
+
+endmodule
+
 
 // module MemDPIAXI4LiteLFU(
 //     input  wire                       iClock,
