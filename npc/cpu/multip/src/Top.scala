@@ -26,9 +26,6 @@ class Top extends Module with ConfigInst {
     val mLSU = Module(new LSU)
     val mWBU = Module(new WBU)
 
-    // mIFU.io.bIFUAXIMasterARIO <> DontCare
-    // mIFU.io.bIFUAXIMasterRIO  <> DontCare
-
     io.oEndData := mIDU.io.pIDU.oEndData
 
     io.pIFU.oPC := mIFU.io.pIFU.oPC

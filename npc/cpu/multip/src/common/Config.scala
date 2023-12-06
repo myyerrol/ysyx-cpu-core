@@ -9,7 +9,9 @@ trait ConfigIO {
     val BYTE_WIDTH = 8
     val SIGS_WIDTH = 10
     val INST_WIDTH = 32
+    val ADDR_WIDTH = 64
     val DATA_WIDTH = 64
+    val MASK_WIDTH = DATA_WIDTH / BYTE_WIDTH
 
     val GPRS_NUM = 1 << GPRS_WIDTH
     val MEMS_TYP = "DPIDirect" // DPIDirect, DPIAXI4Lite, Embed
@@ -29,7 +31,6 @@ trait ConfigInst extends ConfigIO {
     val STATE_EX = 3.U
     val STATE_LS = 4.U
     val STATE_WB = 5.U
-    val STATE_ME = 6.U
 
     val INST_NAME_X      =  0.U(SIGS_WIDTH.W)
     val INST_NAME_SLL    =  1.U(SIGS_WIDTH.W)
