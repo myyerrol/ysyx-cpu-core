@@ -31,26 +31,29 @@ module AXI4LiteM(
 );
 
     //-------------------------------------------------------------------------
-    parameter STATE_IDLE = 3'b000;
-    parameter STATE_AR   = 3'b001;
-    parameter STATE_R    = 3'b010;
-    parameter STATE_AW   = 3'b011;
-    parameter STATE_W    = 3'b100;
-    parameter STATE_B    = 3'b101;
+    parameter STATE_IDLE     = 'd0;
+    parameter STATE_RD_START = 'd1;
+    parameter STATE_RD_TRANS = 'd2;
+    parameter STATE_RD_END   = 'd3;
+    parameter STATE_WR_START = 'd4;
+    parameter STATE_WR_TRANS = 'd5;
+    parameter STATE_WR_END   = 'd6;
 
-    reg [2 : 0] r_state_curr;
-    reg [2 : 0] r_state_next;
+    reg [3 : 0] r_state_rd_curr;
+    reg [3 : 0] r_state_rd_next;
+
+    reg [3 : 0] r_state_wr_curr;
+    reg [3 : 0] r_state_wr_next;
 
     //-------------------------------------------------------------------------
     reg                       r_arvalid;
     reg [`ADDR_WIDTH - 1 : 0] r_araddr;
-    reg                       r_arstart;
 
     reg                       r_rready;
+    reg [`DATA_WIDTH - 1 : 0] r_rdata;
 
     reg                       r_awvalid;
     reg [`ADDR_WIDTH - 1 : 0] r_awaddr;
-    reg                       r_awstart;
 
     reg                       r_wvalid;
     reg [`DATA_WIDTH - 1 : 0] r_wdata;
@@ -58,12 +61,15 @@ module AXI4LiteM(
 
     reg                       r_bready;
 
+    reg                       r_rd_start;
+    reg                       r_rd_last;
+    reg                       r_wr_start;
+    reg                       r_wr_last;
     //-------------------------------------------------------------------------
     assign pAXI4M_ar_valid     = r_arvalid;
     assign pAXI4M_ar_bits_addr = r_araddr;
 
-    // assign pAXI4M_r_ready      = r_rready;
-    assign pAXI4M_r_ready      = 1'b1;
+    assign pAXI4M_r_ready      = r_rready;
 
     assign pAXI4M_aw_valid     = r_awvalid;
     assign pAXI4M_aw_bits_addr = r_awaddr;
@@ -80,7 +86,7 @@ module AXI4LiteM(
         if (!iReset) begin
             r_arvalid <= 1'b0;
         end
-        else if (r_arstart) begin
+        else if (r_rd_start) begin
             r_arvalid <= 1'b1;
         end
         else if (pAXI4M_ar_valid && pAXI4M_ar_ready) begin
@@ -95,7 +101,7 @@ module AXI4LiteM(
         if (!iReset) begin
             r_araddr <= `ADDR_WIDTH'b0;
         end
-        else if (r_arstart) begin
+        else if (r_rd_start) begin
             r_araddr <= iAddr;
         end
         else begin
@@ -103,23 +109,35 @@ module AXI4LiteM(
         end
     end
 
-    // always @(posedge iClock) begin
-    //     if (!iReset) begin
-    //         r_rready <= 1'b0;
-    //     end
-    //     else if (pAXI4M_r_valid && pAXI4M_r_ready) begin
-    //         r_rready <= 1'b1;
-    //     end
-    //     else begin
-    //         r_rready <= r_rready;
-    //     end
-    // end
+    always @(posedge iClock) begin
+        if (!iReset) begin
+            r_rready <= 1'b0;
+        end
+        else if (pAXI4M_ar_valid && pAXI4M_ar_ready) begin
+            r_rready <= 1'b1;
+        end
+        else if (r_rready) begin
+            r_rready <= 1'b0;
+        end
+        else begin
+            r_rready <= r_rready;
+        end
+    end
+
+    always @(posedge iClock) begin
+        if (pAXI4M_r_valid && pAXI4M_r_ready) begin
+            r_rdata <= pAXI4M_r_bits_data;
+        end
+        else begin
+            r_rdata <= r_rdata;
+        end
+    end
 
     always @(posedge iClock) begin
         if (!iReset) begin
             r_awvalid <= 1'b0;
         end
-        else if (r_awstart) begin
+        else if (r_wr_start) begin
             r_awvalid <= 1'b1;
         end
         else if (pAXI4M_aw_valid && pAXI4M_aw_ready) begin
@@ -134,7 +152,7 @@ module AXI4LiteM(
         if (!iReset) begin
             r_awaddr <= `DATA_WIDTH'b0;
         end
-        else if (r_awstart) begin
+        else if (r_wr_start) begin
             r_awaddr <= iAddr;
         end
         else begin
@@ -182,7 +200,7 @@ module AXI4LiteM(
     //     if (!iReset) begin
     //         r_bready <= 1'b0;
     //     end
-    //     else if (pAXI4M_w_valid && pAXI4M_w_ready) begin
+    //     else if (pAXI4M_aw_valid && pAXI4M_aw_ready) begin
     //         r_bready <= 1'b1;
     //     end
     //     else begin
@@ -193,154 +211,108 @@ module AXI4LiteM(
     //-------------------------------------------------------------------------
     always @(posedge iClock) begin
         if (!iReset) begin
-            r_state_curr <= STATE_IDLE;
+            r_state_rd_curr <= STATE_IDLE;
         end
         else begin
-            r_state_curr <= r_state_next;
+            r_state_rd_curr <= r_state_rd_next;
         end
     end
 
     always @(*) begin
-        case (r_state_curr)
+        case (r_state_rd_curr)
             STATE_IDLE: begin
-                if (r_arstart) begin
-                    r_state_next = STATE_AR;
-                end
-                else if (r_awstart) begin
-                    r_state_next = STATE_AW;
+                if (r_state_wr_curr === STATE_WR_END) begin
+                    r_state_rd_next = STATE_RD_START;
                 end
                 else begin
-                    r_state_next = STATE_IDLE;
+                    r_state_rd_next = STATE_IDLE;
                 end
             end
-            STATE_AR: begin
-                if (pAXI4M_ar_valid && pAXI4M_ar_ready) begin
-                    r_state_next = STATE_R;
+            STATE_RD_START: begin
+                if (r_rd_start) begin
+                    r_state_rd_next = STATE_RD_TRANS;
                 end
                 else begin
-                    r_state_next = STATE_AR;
+                    r_state_rd_next = STATE_RD_START;
                 end
             end
-            STATE_R: begin
-                if (pAXI4M_r_valid && pAXI4M_r_ready) begin
-                    r_state_next = STATE_IDLE;
+            STATE_RD_TRANS: begin
+                if (r_rd_last) begin
+                    r_state_rd_next = STATE_RD_END;
                 end
                 else begin
-                    r_state_next = STATE_R;
+                    r_state_rd_next = STATE_RD_TRANS;
                 end
             end
-            STATE_AW: begin
-                if (pAXI4M_aw_valid && pAXI4M_aw_ready) begin
-                    r_state_next = STATE_W;
-                end
-                else begin
-                    r_state_next = STATE_AW;
-                end
-            end
-            STATE_W: begin
-                if (pAXI4M_w_valid && pAXI4M_w_ready) begin
-                    r_state_next = STATE_B;
-                end
-                else begin
-                    r_state_next = STATE_W;
-                end
-            end
-            STATE_B: begin
-                if (pAXI4M_b_valid && pAXI4M_b_ready) begin
-                    r_state_next = STATE_IDLE;
-                end
-                else begin
-                    r_state_next = STATE_B;
-                end
+            STATE_RD_END: begin
+                r_state_rd_next = STATE_IDLE;
             end
             default: begin
-                r_state_next = STATE_IDLE;
+                r_state_rd_next = STATE_IDLE;
             end
         endcase
     end
 
     always @(posedge iClock) begin
-        if (!iReset) begin
+        if (r_state_rd_curr === STATE_RD_START) begin
+            r_rd_start <= 1'b1;
         end
         else begin
-            case (r_state_curr)
-                STATE_IDLE: begin
+            r_rd_start <= 1'b0;
+        end
+    end
+
+    always @(posedge iClock) begin
+        if (!iReset) begin
+            r_state_wr_curr <= STATE_IDLE;
+        end
+        else begin
+            r_state_wr_curr <= r_state_wr_next;
+        end
+    end
+
+    always @(*) begin
+        case (r_state_wr_curr)
+            STATE_IDLE: begin
+                if (r_state_rd_curr === STATE_RD_END) begin
+                    r_state_wr_next = STATE_WR_START;
                 end
-                STATE_AR: begin
+                else begin
+                    r_state_wr_next = STATE_IDLE;
                 end
-                STATE_R: begin
+            end
+            STATE_WR_START: begin
+                if (r_wr_start) begin
+                    r_state_wr_next = STATE_WR_TRANS;
                 end
-                STATE_AW: begin
+                else begin
+                    r_state_wr_next = STATE_WR_START;
                 end
-                STATE_W: begin
+            end
+            STATE_WR_TRANS: begin
+                if (r_wr_last) begin
+                    r_state_wr_next = STATE_WR_END;
                 end
-                STATE_B: begin
+                else begin
+                    r_state_wr_next = STATE_WR_TRANS;
                 end
-                default: begin
-                end
-            endcase
+            end
+            STATE_WR_END: begin
+                r_state_wr_next = STATE_IDLE;
+            end
+            default: begin
+                r_state_wr_next = STATE_IDLE;
+            end
+        endcase
+    end
+
+    always @(posedge iClock) begin
+        if (r_state_wr_curr === STATE_WR_START) begin
+            r_wr_start <= 1'b1;
+        end
+        else begin
+            r_wr_start <= 1'b0;
         end
     end
 
 endmodule
-
-
-// module MemDPIAXI4LiteLFU(
-//     input  wire                       iClock,
-//     input  wire                       iReset,
-
-//     input  wire                       bIFUAXISlaveARIO_arvalid,
-//     input  wire [`DATA_WIDTH - 1 : 0] bIFUAXISlaveARIO_araddr,
-//     output reg                        bIFUAXISlaveARIO_arready,
-
-//     input  wire                       bIFUAXISlaveRIO_rready,
-//     output reg                        bIFUAXISlaveRIO_rvalid,
-//     output wire [`INST_WIDTH - 1 : 0 ] bIFUAXISlaveRIO_rdata,
-//     output wire  [1 : 0]               bIFUAXISlaveRIO_rresp
-// );
-
-//     import "DPI-C" context function longint unsigned readInsDataByAXI4Lite(
-//         input longint unsigned addr,
-//         input byte unsigned len);
-
-//     initial begin
-//         $monitor("[btrace] arvalid: %d, araddr: 0x%x, arready: %d, rready: %d, rvalid: %d, rdata: 0x%x, rresp: %d",
-//                  bIFUAXISlaveARIO_arvalid,
-//                  bIFUAXISlaveARIO_araddr,
-//                  bIFUAXISlaveARIO_arready,
-//                  bIFUAXISlaveRIO_rready,
-//                  bIFUAXISlaveRIO_rvalid,
-//                  bIFUAXISlaveRIO_rdata,
-//                  bIFUAXISlaveRIO_rresp);
-//     end
-
-//     assign bIFUAXISlaveARIO_arready = 1'b1;
-
-//     always @(*) begin
-//         if (bIFUAXISlaveARIO_arvalid && bIFUAXISlaveARIO_arready) begin
-//             bIFUAXISlaveRIO_rvalid = 1'b1;
-//         end
-//         else begin
-//             bIFUAXISlaveRIO_rvalid = 1'b0;
-//         end
-//     end
-
-//     always @(bIFUAXISlaveRIO_rvalid) begin
-//         if (bIFUAXISlaveRIO_rvalid && bIFUAXISlaveRIO_rready) begin
-//             bIFUAXISlaveRIO_rdata = readInsDataByAXI4Lite(
-//                 bIFUAXISlaveARIO_araddr,
-//                 4);
-//             if (bIFUAXISlaveRIO_rdata != 32'b0) begin
-//                 bIFUAXISlaveRIO_rresp = `AXI4_RRESP_OKEY;
-//             end
-//             else begin
-//                 bIFUAXISlaveRIO_rresp = `AXI4_RRESP_SLVEER;
-//             end
-//         end
-//         else begin
-//             bIFUAXISlaveRIO_rdata = 32'b0;
-//             bIFUAXISlaveRIO_rresp = `AXI4_RRESP_OKEY;
-//         end
-//     end
-
-// endmodule
