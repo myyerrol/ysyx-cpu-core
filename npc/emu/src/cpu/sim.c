@@ -10,6 +10,7 @@
 #include <utils/log.h>
 #include <utils/timer.h>
 
+typedef unsigned int       uint32_tt;
 typedef unsigned long long uint64_tt;
 
 bool sim_ebreak = false;
@@ -18,10 +19,10 @@ extern "C" void judgeIsEbreak(uint8_t inst_end_flag) {
     sim_ebreak = inst_end_flag;
 }
 
-extern "C" uint64_tt readInsData(uint64_tt addr, uint8_t len) {
-    uint64_tt data = 0;
+extern "C" uint32_tt readInsData(uint64_tt addr, uint8_t len) {
+    uint32_tt data = 0;
     if (addr != 0x00000000) {
-        data = (uint64_tt)readPhyMemData(addr, len);
+        data = (uint32_tt)readPhyMemData(addr, len);
 #ifdef CONFIG_MTRACE_COND_PROCESS
         printfDebugMTrace((char *)"process", (char *)"rd ins", addr, data, 0);
 #endif
