@@ -13,6 +13,7 @@ class AXI4LiteM extends BlackBox with ConfigInst {
         val iAddr  = Input(UInt(ADDR_WIDTH.W))
         val iData  = Input(UInt(DATA_WIDTH.W))
         val iMask  = Input(UInt(MASK_WIDTH.W))
+        val iMode  = Input(UInt(MODE_WIDTH.W))
 
         val pAXI4M = new AXI4LiteIO
     })

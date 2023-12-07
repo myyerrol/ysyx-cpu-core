@@ -2,6 +2,7 @@
 // `define BTRACE_MONITOR
 
 `define RESP_WIDTH 2
+`define MODE_WIDTH 2
 `define BYTE_WIDTH 8
 `define INST_WIDTH 32
 `define ADDR_WIDTH 64
@@ -16,7 +17,11 @@
 `define MEM_BYT_4_U 10'd3
 `define MEM_BYT_8_U 10'd4
 
-`define RRESP_OKEY   2'b00
-`define RRESP_EXOKAY 2'b01
-`define RRESP_SLVEER 2'b10
-`define RRESP_DECEER 2'b11
+`define RRESP_OKEY   2'd0
+`define RRESP_EXOKAY 2'd1
+`define RRESP_SLVEER 2'd2
+`define RRESP_DECEER 2'd3
+
+`define MODE_RD 2'd0
+`define MODE_WR 2'd1
+`define MODE_RW 2'd2

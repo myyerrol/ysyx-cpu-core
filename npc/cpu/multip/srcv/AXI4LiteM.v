@@ -6,6 +6,7 @@ module AXI4LiteM(
     input  wire [`ADDR_WIDTH - 1 : 0] iAddr,
     input  wire [`DATA_WIDTH - 1 : 0] iData,
     input  wire [`MASK_WIDTH - 1 : 0] iMask,
+    input  wire [1 : 0]               iMode,
 
     input  wire                       pAXI4M_ar_ready,
     output wire                       pAXI4M_ar_valid,
@@ -46,25 +47,26 @@ module AXI4LiteM(
     reg [3 : 0] r_state_wr_next;
 
     //-------------------------------------------------------------------------
+    wire w_rd_last;
+    wire w_wr_last;
+
+    //-------------------------------------------------------------------------
     reg                       r_arvalid;
     reg [`ADDR_WIDTH - 1 : 0] r_araddr;
-
     reg                       r_rready;
-    reg [`DATA_WIDTH - 1 : 0] r_rdata;
-
     reg                       r_awvalid;
     reg [`ADDR_WIDTH - 1 : 0] r_awaddr;
-
     reg                       r_wvalid;
     reg [`DATA_WIDTH - 1 : 0] r_wdata;
     reg [`MASK_WIDTH - 1 : 0] r_wstrb;
-
     reg                       r_bready;
 
     reg                       r_rd_start;
     reg                       r_rd_last;
+    reg [`DATA_WIDTH - 1 : 0] r_rd_data;
     reg                       r_wr_start;
     reg                       r_wr_last;
+
     //-------------------------------------------------------------------------
     assign pAXI4M_ar_valid     = r_arvalid;
     assign pAXI4M_ar_bits_addr = r_araddr;
@@ -78,8 +80,10 @@ module AXI4LiteM(
     assign pAXI4M_w_bits_data  = r_wdata;
     assign pAXI4M_w_bits_strb  = r_wstrb;
 
-    // assign pAXI4M_b_ready      = r_bready;
     assign pAXI4M_b_ready      = 1'b1;
+
+    assign w_rd_last           = r_rready;
+    assign w_wr_last           = pAXI4M_w_valid && pAXI4M_w_ready;
 
     //-------------------------------------------------------------------------
     always @(posedge iClock) begin
@@ -104,6 +108,9 @@ module AXI4LiteM(
         else if (r_rd_start) begin
             r_araddr <= iAddr;
         end
+        else if (r_rd_last) begin
+            r_araddr <= `ADDR_WIDTH'b0;
+        end
         else begin
             r_araddr <= r_araddr;
         end
@@ -116,7 +123,7 @@ module AXI4LiteM(
         else if (pAXI4M_ar_valid && pAXI4M_ar_ready) begin
             r_rready <= 1'b1;
         end
-        else if (r_rready) begin
+        else if (w_rd_last) begin
             r_rready <= 1'b0;
         end
         else begin
@@ -125,11 +132,17 @@ module AXI4LiteM(
     end
 
     always @(posedge iClock) begin
-        if (pAXI4M_r_valid && pAXI4M_r_ready) begin
-            r_rdata <= pAXI4M_r_bits_data;
+        if (!iReset) begin
+            r_rd_data <= `DATA_WIDTH'b0;
+        end
+        else if (pAXI4M_r_valid && pAXI4M_r_ready) begin
+            r_rd_data <= pAXI4M_r_bits_data;
+        end
+        else if (w_rd_last) begin
+            r_rd_data <= `DATA_WIDTH'b0;
         end
         else begin
-            r_rdata <= r_rdata;
+            r_rd_data <= r_rd_data;
         end
     end
 
@@ -155,6 +168,9 @@ module AXI4LiteM(
         else if (r_wr_start) begin
             r_awaddr <= iAddr;
         end
+        else if (r_wr_last) begin
+            r_awaddr <= `DATA_WIDTH'b0;
+        end
         else begin
             r_awaddr <= r_awaddr;
         end
@@ -166,6 +182,9 @@ module AXI4LiteM(
         end
         else if (pAXI4M_aw_valid && pAXI4M_aw_ready) begin
             r_wvalid <= 1'b1;
+        end
+        else if (w_wr_last) begin
+            r_wvalid <= 1'b0;
         end
         else begin
             r_wvalid <= r_wvalid;
@@ -179,8 +198,11 @@ module AXI4LiteM(
         else if (pAXI4M_w_valid && pAXI4M_w_ready) begin
             r_wdata <= iData;
         end
+        else if (w_wr_last) begin
+            r_wdata <= `DATA_WIDTH'b0;
+        end
         else begin
-            r_wdata <= iData;
+            r_wdata <= r_wdata;
         end
     end
 
@@ -191,6 +213,9 @@ module AXI4LiteM(
         else if (pAXI4M_w_valid && pAXI4M_w_ready) begin
             r_wstrb <= iMask;
         end
+        else if (w_wr_last) begin
+            r_wstrb <= `MASK_WIDTH'b0;
+        end
         else begin
             r_wstrb <= r_wstrb;
         end
@@ -200,8 +225,11 @@ module AXI4LiteM(
     //     if (!iReset) begin
     //         r_bready <= 1'b0;
     //     end
-    //     else if (pAXI4M_aw_valid && pAXI4M_aw_ready) begin
+    //     else if (pAXI4M_w_valid && pAXI4M_w_ready) begin
     //         r_bready <= 1'b1;
+    //     end
+    //     else if (pAXI4M_b_valid && pAXI4M_b_ready) begin
+    //         r_bready <= 1'b0;
     //     end
     //     else begin
     //         r_bready <= r_bready;
@@ -221,8 +249,16 @@ module AXI4LiteM(
     always @(*) begin
         case (r_state_rd_curr)
             STATE_IDLE: begin
-                if (r_state_wr_curr === STATE_WR_END) begin
+                if (iMode === `MODE_RD) begin
                     r_state_rd_next = STATE_RD_START;
+                end
+                else if (iMode === `MODE_RW) begin
+                    if (r_state_wr_curr === STATE_WR_END) begin
+                        r_state_rd_next = STATE_RD_START;
+                    end
+                    else begin
+                        r_state_rd_next = STATE_IDLE;
+                    end
                 end
                 else begin
                     r_state_rd_next = STATE_IDLE;
@@ -274,12 +310,7 @@ module AXI4LiteM(
     always @(*) begin
         case (r_state_wr_curr)
             STATE_IDLE: begin
-                if (r_state_rd_curr === STATE_RD_END) begin
-                    r_state_wr_next = STATE_WR_START;
-                end
-                else begin
-                    r_state_wr_next = STATE_IDLE;
-                end
+                r_state_wr_next = STATE_WR_START;
             end
             STATE_WR_START: begin
                 if (r_wr_start) begin
@@ -298,7 +329,20 @@ module AXI4LiteM(
                 end
             end
             STATE_WR_END: begin
-                r_state_wr_next = STATE_IDLE;
+                if (iMode === `MODE_WR) begin
+                    r_state_wr_next = STATE_IDLE;
+                end
+                else if (iMode === `MODE_RW) begin
+                    if (r_state_rd_curr === STATE_RD_END) begin
+                        r_state_wr_next = STATE_IDLE;
+                    end
+                    else begin
+                        r_state_wr_next = STATE_WR_END;
+                    end
+                end
+                else begin
+                    r_state_wr_next = STATE_IDLE;
+                end
             end
             default: begin
                 r_state_wr_next = STATE_IDLE;

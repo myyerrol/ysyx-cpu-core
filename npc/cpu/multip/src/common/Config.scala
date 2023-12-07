@@ -5,6 +5,7 @@ import chisel3.util._
 
 trait ConfigIO {
     val RESP_WIDTH = 2
+    val MODE_WIDTH = 2
     val GPRS_WIDTH = 5
     val BYTE_WIDTH = 8
     val SIGS_WIDTH = 10
