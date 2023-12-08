@@ -171,7 +171,7 @@ void initMonitor(int argc, char *argv[]) {
     initISA();
 
     long img_size = initMonitorImg();
-    genMemFile("/home/myyerrol/Workspaces/mem.txt", img_size);
+    genMemFile("/home/myyerrol/Workspaces/oscc-cpu/mem.txt", img_size);
 
     initDebugDifftest(diff_so_file, img_size, difftest_port);
 

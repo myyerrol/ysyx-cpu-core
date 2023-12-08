@@ -16,7 +16,7 @@ module MemEmbed(
 
     initial begin
         integer i;
-        $readmemh("/home/myyerrol/Workspaces/mem.txt", mem);
+        $readmemh("/home/myyerrol/Workspaces/oscc-cpu/mem.txt", mem);
 `ifdef BTRACE_MEMORY
         for (i = 0; i < `MEMS_NUM; i++) begin
             $display("[btrace] mem[%d]: %x", i, mem[i]);
