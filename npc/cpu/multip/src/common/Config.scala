@@ -15,7 +15,7 @@ trait ConfigIO {
     val MASK_WIDTH = DATA_WIDTH / BYTE_WIDTH
 
     val GPRS_NUM = 1 << GPRS_WIDTH
-    val MEMS_TYP = "DPIDirect" // DPIDirect, DPIAXI4Lite, Embed
+    val MEMS_TYP = "DPIAXI4Lite" // DPIDirect, DPIAXI4Lite, Embed
 }
 
 trait ConfigInst extends ConfigIO {
@@ -158,6 +158,10 @@ trait ConfigInst extends ConfigIO {
     val ALU_RS2_IMM_U = 5.U(SIGS_WIDTH.W)
     val ALU_RS2_IMM_J = 6.U(SIGS_WIDTH.W)
     val ALU_RS2_4     = 7.U(SIGS_WIDTH.W)
+
+    val MODE_RD       = 0.U(MODE_WIDTH.W)
+    val MODE_WR       = 1.U(MODE_WIDTH.W)
+    val MODE_RW       = 2.U(MODE_WIDTH.W)
 }
 
 trait ConfigInstPattern extends ConfigInst {

@@ -15,8 +15,6 @@ class Top extends Module with ConfigInst {
         val pITrace  = new ITraceIO
     })
 
-    val AXI4LiteM = Module(new AXI4LiteM)
-
     val mMemDPIDirect = Module(new MemDPIDirect)
     val mSysDPIDirect = Module(new SysDPIDirect)
 
@@ -29,17 +27,17 @@ class Top extends Module with ConfigInst {
     io.oEndData := mIDU.io.pIDU.oEndData
 
     io.pIFU.oPC := mIFU.io.pIFU.oPC
-    if (MEMS_TYP.equals("DPIDirect") || MEMS_TYP.equals("Embed")) {
+    // if (MEMS_TYP.equals("DPIDirect") || MEMS_TYP.equals("Embed")) {
         io.pIFU.oInst := mLSU.io.pLSU.oMemRdDataInst
-    }
-    else {
+    // }
+    // else {
         // when (mIFU.io.oState === 1.U && mIFU.io.bIFUAXIMasterRIO.rresp === 0.U) {
         //     io.pIFU.oInst := mIFU.io.bIFUAXIMasterRIO.rdata
         // }
         // .otherwise {
         //     io.pIFU.oInst := DATA_ZERO
         // }
-    }
+    // }
 
     io.pGPR <> mIDU.io.pGPR
 
@@ -59,13 +57,6 @@ class Top extends Module with ConfigInst {
         mMemDPIDirect.io.iMemWrAddr     := mLSU.io.pLSU.oMemWrAddr
         mMemDPIDirect.io.iMemWrData     := mLSU.io.pLSU.oMemWrData
         mMemDPIDirect.io.iMemWrLen      := mLSU.io.pLSU.oMemWrLen
-    }
-    else if (MEMS_TYP.equals("DPIAXI4Lite")) {
-        // val mMemDPIAXI4LiteLFU = Module(new MemDPIAXI4LiteLFU)
-        // mMemDPIAXI4LiteLFU.io.iClock := clock
-        // mMemDPIAXI4LiteLFU.io.iReset := reset
-        // mMemDPIAXI4LiteLFU.io.bIFUAXISlaveARIO <> mIFU.io.bIFUAXIMasterARIO
-        // mMemDPIAXI4LiteLFU.io.bIFUAXISlaveRIO  <> mIFU.io.bIFUAXIMasterRIO
     }
 
     val rInstName = RegNext(mIDU.io.pCTR.oInstName, INST_NAME_X)

@@ -63,7 +63,38 @@ class LSU extends Module with ConfigInst {
         mMRU.io.iData := io.iMemRdDataLoad
     }
     else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+        val mAXI4LiteM = Module(new AXI4LiteM)
+        mAXI4LiteM.io.iClock := clock;
+        mAXI4LiteM.io.iReset := reset;
+        mAXI4LiteM.io.iMode  := MODE_RD
+        mAXI4LiteM.io.iAddr  := io.iPC
+        mAXI4LiteM.io.iData  := DontCare
+        mAXI4LiteM.io.iMask  := DontCare
 
+        val mMemDPIDirect = Module(new MemDPIDirect)
+
+        val mAXI4LiteS = Module(new AXI4LiteS)
+        mAXI4LiteS.io.iClock := clock
+        mAXI4LiteS.io.iReset := reset
+        mAXI4LiteS.io.iMode  := MODE_RD
+        mAXI4LiteS.io.iData  := mMemDPIDirect.io.oMemRdDataInst
+        mAXI4LiteS.io.iResp  := 0.U
+        mAXI4LiteS.io.oData  := DontCare
+        mAXI4LiteS.io.oMask  := DontCare
+
+        mMemDPIDirect.io.iClock         := clock
+        mMemDPIDirect.io.iReset         := reset
+        mMemDPIDirect.io.iMemRdEn       := true.B
+        mMemDPIDirect.io.iMemRdAddrInst := mAXI4LiteS.io.oAddr
+        mMemDPIDirect.io.iMemRdAddrLoad := DontCare
+        mMemDPIDirect.io.iMemWrEn       := false.B
+        mMemDPIDirect.io.iMemWrAddr     := DontCare
+        mMemDPIDirect.io.iMemWrData     := DontCare
+        mMemDPIDirect.io.iMemWrLen      := DontCare
+
+        mAXI4LiteM.io.pAXI4 <> mAXI4LiteS.io.pAXI4
+
+        io.pLSU.oMemRdDataInst := mAXI4LiteM.io.oData
     }
     else if (MEMS_TYP.equals("Embed")) {
         val mMemEmbed = Module(new MemEmbed)
@@ -78,11 +109,11 @@ class LSU extends Module with ConfigInst {
         when (io.iMemRdEn) {
             when (io.iMemRdSrc === MEM_RD_SRC_PC) {
                 mMemEmbed.io.pMem.iAddr := io.iPC
-                io.pLSU.oMemRdDataInst          := mMemEmbed.io.pMem.oRdData
+                io.pLSU.oMemRdDataInst  := mMemEmbed.io.pMem.oRdData
             }
             .elsewhen (io.iMemRdSrc === MEM_RD_SRC_ALU) {
                 mMemEmbed.io.pMem.iAddr := io.iALUOut
-                io.pLSU.oMemRdDataInst          := mMemEmbed.io.pMem.oRdData
+                io.pLSU.oMemRdDataLoad  := mMemEmbed.io.pMem.oRdData
             }
         }
 
