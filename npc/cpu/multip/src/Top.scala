@@ -26,18 +26,8 @@ class Top extends Module with ConfigInst {
 
     io.oEndData := mIDU.io.pIDU.oEndData
 
-    io.pIFU.oPC := mIFU.io.pIFU.oPC
-    // if (MEMS_TYP.equals("DPIDirect") || MEMS_TYP.equals("Embed")) {
-        io.pIFU.oInst := mLSU.io.pLSU.oMemRdDataInst
-    // }
-    // else {
-        // when (mIFU.io.oState === 1.U && mIFU.io.bIFUAXIMasterRIO.rresp === 0.U) {
-        //     io.pIFU.oInst := mIFU.io.bIFUAXIMasterRIO.rdata
-        // }
-        // .otherwise {
-        //     io.pIFU.oInst := DATA_ZERO
-        // }
-    // }
+    io.pIFU.oPC   := mIFU.io.pIFU.oPC
+    io.pIFU.oInst := mLSU.io.pLSU.oMemRdDataInst
 
     io.pGPR <> mIDU.io.pGPR
 

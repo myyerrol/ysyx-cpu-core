@@ -35,11 +35,20 @@ module AXI4LiteM(
 
     always @(posedge iClock) begin
 `ifdef VTRACE_MONITOR
-        $display("[vtrace] state curr: %d, state next: %d", r_state_rd_curr, r_state_rd_next);
-        $display("[vtrace] rd start:   %d, wr start:   %d", r_rd_start, r_wr_start);
+        $display("[vtrace] state curr: %d, state next: %d", r_state_rd_curr,
+                                                            r_state_rd_next);
+        $display("[vtrace] rd start:   %d, wr start:   %d", r_rd_start,
+                                                            r_wr_start);
         $display("[vtrace] clock:      %d, reset:      %d", iClock, iReset);
-        $display("[vtrace] arvalid:    %d, arready:    %d, araddr: %x", pAXI4_ar_valid, pAXI4_ar_ready, pAXI4_ar_bits_addr);
-        $display("[vtrace] rvalid:     %d, rready:     %d, rdata:  %x, rresp: %d", pAXI4_r_valid, pAXI4_r_ready, pAXI4_r_bits_data, pAXI4_r_bits_resp);
+        $display("[vtrace] arvalid:    %d, arready:    %d, araddr: %x",
+                 pAXI4_ar_valid,
+                 pAXI4_ar_ready,
+                 pAXI4_ar_bits_addr);
+        $display("[vtrace] rvalid:     %d, rready:     %d, rdata:  %x, rresp: %d",
+                 pAXI4_r_valid,
+                 pAXI4_r_ready,
+                 pAXI4_r_bits_data,
+                 pAXI4_r_bits_resp);
 `endif
     end
 
@@ -78,7 +87,8 @@ module AXI4LiteM(
     reg                       r_wr_start;
 
     //-------------------------------------------------------------------------
-    assign oData              = pAXI4_r_bits_data;
+    assign oData              = (iMode === `MODE_RD) ? r_rd_data :
+                                                       pAXI4_r_bits_data;
     assign oResp              = (iMode === `MODE_RD) ? pAXI4_r_bits_resp :
                                                        pAXI4_b_bits_resp;
 

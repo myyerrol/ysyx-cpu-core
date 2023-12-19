@@ -87,7 +87,16 @@ class CTR extends Module with ConfigInstPattern {
 
     val wInstName = lInst(0)
 
+    val (cNum, cFlag) = Counter(true.B, 5)
+
     val rStateCurr = RegInit(STATE_RS)
+    if (MEMS_TYP.equals("DPIDirect") ||
+        MEMS_TYP.equals("Embed")) {
+        rStateCurr := STATE_RS
+    }
+    else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+        rStateCurr := STATE_IF
+    }
 
     val wPCWrEn    = WireInit(EN_FALSE)
     val wPCWrConEn = WireInit(EN_FALSE)
@@ -107,13 +116,24 @@ class CTR extends Module with ConfigInstPattern {
 
     switch (rStateCurr) {
         is (STATE_RS) {
-            // rStateCurr := STATE_IF
-            rStateCurr := STATE_RS
+            rStateCurr := STATE_IF
             wMemRdEn   := EN_TRUE
             wMemRdSrc  := MEM_RD_SRC_PC
         }
         is (STATE_IF) {
-            rStateCurr := STATE_ID
+            if (MEMS_TYP.equals("DPIDirect") ||
+                MEMS_TYP.equals("Embed")) {
+                rStateCurr := STATE_ID
+            }
+            else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+                when (cFlag) {
+                    rStateCurr := STATE_ID
+                }
+                .otherwise {
+                    rStateCurr := STATE_IF
+                }
+            }
+
             wPCNextEn  := EN_TRUE
             wMemRdEn   := EN_TRUE
             wMemRdSrc  := MEM_RD_SRC_PC

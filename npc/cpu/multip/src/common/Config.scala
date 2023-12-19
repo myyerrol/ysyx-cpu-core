@@ -159,6 +159,11 @@ trait ConfigInst extends ConfigIO {
     val ALU_RS2_IMM_J = 6.U(SIGS_WIDTH.W)
     val ALU_RS2_4     = 7.U(SIGS_WIDTH.W)
 
+    val RESP_OKEY   = 0.U(RESP_WIDTH.W)
+    val RESP_EXOKAY = 1.U(RESP_WIDTH.W)
+    val RESP_SLVEER = 2.U(RESP_WIDTH.W)
+    val RESP_DECEER = 3.U(RESP_WIDTH.W)
+
     val MODE_RD       = 0.U(MODE_WIDTH.W)
     val MODE_WR       = 1.U(MODE_WIDTH.W)
     val MODE_RW       = 2.U(MODE_WIDTH.W)
