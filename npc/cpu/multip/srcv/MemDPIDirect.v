@@ -27,7 +27,7 @@ module MemDPIDirect(
 
     always @(iMemRdAddrInst) begin
         if (iMemRdEn) begin
-            oMemRdDataInst = (readInsData(iMemRdAddrInst, 4));
+            oMemRdDataInst = readInsData(iMemRdAddrInst, 4);
         end
     end
 

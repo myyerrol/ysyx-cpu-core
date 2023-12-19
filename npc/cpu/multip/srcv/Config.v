@@ -1,5 +1,5 @@
-// `define BTRACE_MEMORY
-// `define BTRACE_MONITOR
+`define VTRACE_MEMORY
+`define VTRACE_MONITOR
 
 `define RESP_WIDTH 2
 `define MODE_WIDTH 2

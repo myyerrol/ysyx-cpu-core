@@ -3,13 +3,13 @@
 module MemEmbed(
     input  wire                      iClock,
     input  wire                      iReset,
-    input  wire                      bMEMPortDualIO_iRdEn,
-    input  wire                      bMEMPortDualIO_iWrEn,
-    input  wire[`DATA_WIDTH - 1 : 0] bMEMPortDualIO_iAddr,
-    input  wire[`DATA_WIDTH - 1 : 0] bMEMPortDualIO_iWrData,
-    input  wire[`DATA_WIDTH - 1 : 0] bMEMPortDualIO_iWrByt,
+    input  wire                      pMem_iRdEn,
+    input  wire                      pMem_iWrEn,
+    input  wire[`DATA_WIDTH - 1 : 0] pMem_iAddr,
+    input  wire[`DATA_WIDTH - 1 : 0] pMem_iWrData,
+    input  wire[`DATA_WIDTH - 1 : 0] pMem_iWrByt,
 
-    output reg [`DATA_WIDTH - 1 : 0] bMEMPortDualIO_oRdData
+    output reg [`DATA_WIDTH - 1 : 0] pMem_oRdData
 );
 
     reg[`DATA_WIDTH - 1 : 0] mem[`MEMS_NUM];
@@ -17,14 +17,17 @@ module MemEmbed(
     initial begin
         integer i;
         $readmemh("/home/myyerrol/Workspaces/oscc-cpu/mem.txt", mem);
-`ifdef BTRACE_MEMORY
+`ifdef VTRACE_MEMORY
         for (i = 0; i < `MEMS_NUM; i++) begin
-            $display("[btrace] mem[%d]: %x", i, mem[i]);
+            $display("[vtrace] mem[%d]: %x", i, mem[i]);
         end
 `endif
-`ifdef BTRACE_MONITOR
-        $monitor("[btrace] iaddr: %x, addr: %x, mem[addr]: %x",
-                 bMEMPortDualIO_iAddr,
+    end
+
+    always @(*) begin
+`ifdef VTRACE_MONITOR
+        $display("[vtrace] iaddr: %x, addr: %x, mem[addr]: %x",
+                 pMem_iAddr,
                  addr,
                  mem[addr]);
 `endif
@@ -32,15 +35,15 @@ module MemEmbed(
 
     wire [`DATA_WIDTH - 1 : 0] addr;
     wire [`DATA_WIDTH - 1 : 0] wr_data;
-    assign addr = (bMEMPortDualIO_iAddr - `ADDR_SIM) / 4;
-    assign wr_data = bMEMPortDualIO_iWrData;
+    assign addr = (pMem_iAddr - `ADDR_SIM) / 4;
+    assign wr_data = pMem_iWrData;
 
-    always @(bMEMPortDualIO_iAddr or bMEMPortDualIO_iWrData) begin
-        if (bMEMPortDualIO_iRdEn) begin
-            bMEMPortDualIO_oRdData <= mem[addr];
+    always @(pMem_iAddr or pMem_iWrData) begin
+        if (pMem_iRdEn) begin
+            pMem_oRdData <= mem[addr];
         end
-        if (bMEMPortDualIO_iWrEn) begin
-            case (bMEMPortDualIO_iWrByt)
+        if (pMem_iWrEn) begin
+            case (pMem_iWrByt)
                 `MEM_BYT_1_U: begin
                     mem[addr] <= {wr_data[63 : 08], wr_data[07 : 0]};
                 end
