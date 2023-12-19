@@ -4,12 +4,14 @@
 `define RESP_WIDTH 2
 `define MODE_WIDTH 2
 `define BYTE_WIDTH 8
+`define SIGS_WIDTH 10
+`define MEMS_WIDTH 16
 `define INST_WIDTH 32
 `define ADDR_WIDTH 64
 `define DATA_WIDTH 64
 `define MASK_WIDTH `DATA_WIDTH / `BYTE_WIDTH
 
-`define MEMS_NUM 64'h00008000
+`define MEMS_NUM 1 << `MEMS_WIDTH
 `define ADDR_SIM 64'h80000000
 
 `define DATA_ZERO = 1'd0
