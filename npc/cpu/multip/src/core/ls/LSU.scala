@@ -5,6 +5,7 @@ import chisel3.util._
 
 import cpu.blackbox._
 import cpu.common._
+import cpu.mem._
 import cpu.port._
 
 class LSU extends Module with ConfigInst {
@@ -63,38 +64,13 @@ class LSU extends Module with ConfigInst {
         mMRU.io.iData := io.iMemRdDataLoad
     }
     else if (MEMS_TYP.equals("DPIAXI4Lite")) {
-        val mAXI4LiteM = Module(new AXI4LiteM)
-        mAXI4LiteM.io.iClock := clock;
-        mAXI4LiteM.io.iReset := reset;
-        mAXI4LiteM.io.iMode  := MODE_RD
-        mAXI4LiteM.io.iAddr  := io.iPC
-        mAXI4LiteM.io.iData  := DontCare
-        mAXI4LiteM.io.iMask  := DontCare
+        val mAXI4LiteIFU  = Module(new AXI4LiteIFU)
+        mAXI4LiteIFU.io.iAddr := io.iPC
 
-        val mMemDPIDirect = Module(new MemDPIDirect)
+        val mAXI4LiteSRAM = Module(new AXI4LiteSRAM)
+        mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM.io.pAXI4
 
-        val mAXI4LiteS = Module(new AXI4LiteS)
-        mAXI4LiteS.io.iClock := clock
-        mAXI4LiteS.io.iReset := reset
-        mAXI4LiteS.io.iMode  := MODE_RD
-        mAXI4LiteS.io.iData  := mMemDPIDirect.io.oMemRdDataInst
-        mAXI4LiteS.io.iResp  := RESP_OKEY
-        mAXI4LiteS.io.oData  := DontCare
-        mAXI4LiteS.io.oMask  := DontCare
-
-        mMemDPIDirect.io.iClock         := clock
-        mMemDPIDirect.io.iReset         := reset
-        mMemDPIDirect.io.iMemRdEn       := true.B
-        mMemDPIDirect.io.iMemRdAddrInst := mAXI4LiteS.io.oAddr
-        mMemDPIDirect.io.iMemRdAddrLoad := DontCare
-        mMemDPIDirect.io.iMemWrEn       := false.B
-        mMemDPIDirect.io.iMemWrAddr     := DontCare
-        mMemDPIDirect.io.iMemWrData     := DontCare
-        mMemDPIDirect.io.iMemWrLen      := DontCare
-
-        mAXI4LiteM.io.pAXI4 <> mAXI4LiteS.io.pAXI4
-
-        io.pLSU.oMemRdDataInst := mAXI4LiteM.io.oData
+        io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oData
     }
     else if (MEMS_TYP.equals("Embed")) {
         val mMemEmbed = Module(new MemEmbed)
