@@ -48,6 +48,7 @@ module AXI4LiteM(
                  pAXI4_r_ready,
                  oData,
                  pAXI4_r_bits_resp);
+        $display();
 `endif
     end
 
@@ -71,7 +72,7 @@ module AXI4LiteM(
 
     //-------------------------------------------------------------------------
     reg                       r_rready;
-    reg [`ADDR_WIDTH - 1 : 0] r_araddr;
+    // reg [`ADDR_WIDTH - 1 : 0] r_araddr;
     reg [`DATA_WIDTH - 1 : 0] r_rdata;
 
     reg                       r_awvalid;
@@ -86,7 +87,8 @@ module AXI4LiteM(
     assign oResp               = pAXI4_r_bits_resp;
 
     assign pAXI4_ar_valid      = w_arvalid;
-    assign pAXI4_ar_bits_addr  = r_araddr;
+    // assign pAXI4_ar_bits_addr  = r_araddr;
+    assign pAXI4_ar_bits_addr  = w_araddr;
     assign pAXI4_r_ready       = r_rready;
     assign pAXI4_aw_valid      = r_awvalid;
     assign pAXI4_aw_bits_addr  = r_awaddr;
@@ -104,17 +106,17 @@ module AXI4LiteM(
     assign w_rd_data_handshake = pAXI4_r_valid  && pAXI4_r_ready;
 
     //-------------------------------------------------------------------------
-    always @(posedge iClock) begin
-        if (iReset) begin
-            r_araddr <= `ADDR_WIDTH'b0;
-        end
-        else if (w_rd_addr_handshake) begin
-            r_araddr <= iAddr;
-        end
-        else begin
-            r_araddr <= r_araddr;
-        end
-    end
+    // always @(posedge iClock) begin
+    //     if (iReset) begin
+    //         r_araddr <= `ADDR_WIDTH'b0;
+    //     end
+    //     else if (w_rd_addr_handshake) begin
+    //         r_araddr <= iAddr;
+    //     end
+    //     else begin
+    //         r_araddr <= r_araddr;
+    //     end
+    // end
 
     always @(posedge iClock) begin
         if (iReset) begin

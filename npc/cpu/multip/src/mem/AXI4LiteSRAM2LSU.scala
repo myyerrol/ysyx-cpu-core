@@ -18,7 +18,7 @@ class AXI4LiteSRAM2LSU extends Module with ConfigInst {
     mAXI4LiteS.io.iClock := clock
     mAXI4LiteS.io.iReset := reset
     mAXI4LiteS.io.iMode  := MODE_RD
-    mAXI4LiteS.io.iData  := mMemDPIDirect.io.oMemRdDataInst
+    mAXI4LiteS.io.iData  := mMemDPIDirect.io.oMemRdDataLoad
     mAXI4LiteS.io.iResp  := RESP_OKEY
     mAXI4LiteS.io.oData  := DontCare
     mAXI4LiteS.io.oMask  := DontCare
@@ -26,8 +26,8 @@ class AXI4LiteSRAM2LSU extends Module with ConfigInst {
     mMemDPIDirect.io.iClock         := clock
     mMemDPIDirect.io.iReset         := reset
     mMemDPIDirect.io.iMemRdEn       := true.B
-    mMemDPIDirect.io.iMemRdAddrInst := mAXI4LiteS.io.oAddr
-    mMemDPIDirect.io.iMemRdAddrLoad := DontCare
+    mMemDPIDirect.io.iMemRdAddrInst := DontCare
+    mMemDPIDirect.io.iMemRdAddrLoad := mAXI4LiteS.io.oAddr
     mMemDPIDirect.io.iMemWrEn       := false.B
     mMemDPIDirect.io.iMemWrAddr     := DontCare
     mMemDPIDirect.io.iMemWrData     := DontCare

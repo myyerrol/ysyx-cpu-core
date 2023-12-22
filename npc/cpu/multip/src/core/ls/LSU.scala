@@ -73,15 +73,25 @@ class LSU extends Module with ConfigInst {
     }
     else if (MEMS_TYP.equals("DPIAXI4Lite")) {
         val mAXI4LiteIFU  = Module(new AXI4LiteIFU)
-        mAXI4LiteIFU.io.iAddr  := io.iPC
-        mAXI4LiteIFU.io.iValid := (io.iMemRdEn && io.iMemRdSrc === MEM_RD_SRC_PC)
+        mAXI4LiteIFU.io.iAddr  :=  io.iPC
+        mAXI4LiteIFU.io.iValid := (io.iMemRdEn &&
+                                   io.iMemRdSrc === MEM_RD_SRC_PC)
 
         val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
         mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
 
         io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oData
 
+        // --------------------------------------------------------------------
+        val mAXI4LiteLSU = Module(new AXI4LiteLSU)
+        mAXI4LiteLSU.io.iAddr  :=  io.iALUOut
+        mAXI4LiteLSU.io.iValid := (io.iMemRdEn &&
+                                   io.iMemRdSrc === MEM_RD_SRC_ALU)
 
+        val mAXI4LiteSRAM2LSU = Module(new AXI4LiteSRAM2LSU)
+        mAXI4LiteLSU.io.pAXI4 <> mAXI4LiteSRAM2LSU.io.pAXI4
+
+        io.pLSU.oMemRdDataLoad := mAXI4LiteLSU.io.oData
     }
     else if (MEMS_TYP.equals("Embed")) {
         val mMemEmbed = Module(new MemEmbed)
@@ -111,6 +121,12 @@ class LSU extends Module with ConfigInst {
         }
 
         mMRU.io.iData := mMemEmbed.io.pMem.oRdData
+    }
+    else {
+        io.pLSU.oMemRdDataInst := DATA_ZERO
+        io.pLSU.oMemRdDataLoad := DATA_ZERO
+
+        mMRU.io.iData := DATA_ZERO
     }
 
     io.pLSU.oMemRdData := mMRU.io.oData

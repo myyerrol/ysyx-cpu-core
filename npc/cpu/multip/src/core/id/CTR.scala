@@ -99,6 +99,9 @@ class CTR extends Module with ConfigInstPattern {
     else if (MEMS_TYP.equals("DPIAXI4Lite")) {
         rStateCurr := STATE_IF
     }
+    else {
+        rStateCurr := STATE_RS
+    }
 
     val wPCWrEn    = WireInit(EN_FALSE)
     val wPCWrConEn = WireInit(EN_FALSE)
@@ -123,17 +126,17 @@ class CTR extends Module with ConfigInstPattern {
             wMemRdSrc  := MEM_RD_SRC_PC
         }
         is (STATE_IF) {
-            wPCNextEn  := EN_TRUE
-            wMemRdEn   := EN_TRUE
-            wMemRdSrc  := MEM_RD_SRC_PC
-            wIRWrEn    := EN_TRUE
-            wALUType   := ALU_TYPE_ADD
-            wALURS1    := ALU_RS1_PC
-            wALURS2    := ALU_RS2_4
+            wPCNextEn := EN_TRUE
+            wMemRdSrc := MEM_RD_SRC_PC
+            wIRWrEn   := EN_TRUE
+            wALUType  := ALU_TYPE_ADD
+            wALURS1   := ALU_RS1_PC
+            wALURS2   := ALU_RS2_4
 
             if (MEMS_TYP.equals("DPIDirect") ||
                 MEMS_TYP.equals("Embed")) {
                 rStateCurr := STATE_ID
+                wMemRdEn   := EN_TRUE
             }
             else if (MEMS_TYP.equals("DPIAXI4Lite")) {
                 when (mCountIFU.value === 1.U) {
@@ -146,6 +149,10 @@ class CTR extends Module with ConfigInstPattern {
                     rStateCurr := STATE_IF
                     wMemRdEn   := EN_TRUE
                 }
+            }
+            else {
+                rStateCurr := STATE_ID
+                wMemRdEn   := EN_TRUE
             }
         }
         is (STATE_ID) {
@@ -310,9 +317,9 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_BLTU ||
                        wInstName === INST_NAME_BGEU) {
                 rStateCurr := STATE_IF
-                wPCWrEn  := EN_TRUE
-                wPCWrSrc := PC_WR_SRC_JUMP
-                wALUType := MuxLookup(
+                wPCWrEn    := EN_TRUE
+                wPCWrSrc   := PC_WR_SRC_JUMP
+                wALUType   := MuxLookup(
                     wInstName,
                     ALU_TYPE_X,
                     Seq(
@@ -324,8 +331,13 @@ class CTR extends Module with ConfigInstPattern {
                         INST_NAME_BGEU -> ALU_TYPE_BGEU
                     )
                 )
-                wALURS1  := ALU_RS1_GPR
-                wALURS2  := ALU_RS2_GPR
+                wALURS1    := ALU_RS1_GPR
+                wALURS2    := ALU_RS2_GPR
+
+                if (MEMS_TYP.equals("DPIAXI4Lite")) {
+                    wMemRdEn  := EN_TRUE
+                    wMemRdSrc := MEM_RD_SRC_PC
+                }
             }
             .elsewhen (wInstName === INST_NAME_JAL) {
                 wALUType := ALU_TYPE_ADD
@@ -398,9 +410,29 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_LW  ||
                        wInstName === INST_NAME_LWU ||
                        wInstName === INST_NAME_LD) {
-                rStateCurr := STATE_WB
-                wMemRdEn   := EN_TRUE
-                wMemRdSrc  := MEM_RD_SRC_ALU
+                wMemRdSrc := MEM_RD_SRC_ALU
+
+                if (MEMS_TYP.equals("DPIDirect") ||
+                    MEMS_TYP.equals("Embed")) {
+                    rStateCurr := STATE_WB
+                    wMemRdEn   := EN_TRUE
+                }
+                else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+                    when (mCountLSURd.value === 1.U) {
+                        mCountLSURd.reset()
+                        rStateCurr := STATE_WB
+                        wMemRdEn   := EN_FALSE
+                    }
+                    .otherwise {
+                        mCountLSURd.inc()
+                        rStateCurr := STATE_LS
+                        wMemRdEn   := EN_TRUE
+                    }
+                }
+                else {
+                    rStateCurr := STATE_WB
+                    wMemRdEn   := EN_TRUE
+                }
             }
             .elsewhen (wInstName === INST_NAME_SB ||
                        wInstName === INST_NAME_SH ||
@@ -421,6 +453,11 @@ class CTR extends Module with ConfigInstPattern {
                     )
                 )
                 wALURS2    := ALU_RS2_GPR
+
+                if (MEMS_TYP.equals("DPIAXI4Lite")) {
+                    wMemRdEn  := EN_TRUE
+                    wMemRdSrc := MEM_RD_SRC_PC
+                }
             }
         }
         is (STATE_WB) {
@@ -455,6 +492,11 @@ class CTR extends Module with ConfigInstPattern {
                     )
                 )
                 wGPRWrSrc := GPR_WR_SRC_MEM
+            }
+
+            if (MEMS_TYP.equals("DPIAXI4Lite")) {
+                wMemRdEn  := EN_TRUE
+                wMemRdSrc := MEM_RD_SRC_PC
             }
         }
     }

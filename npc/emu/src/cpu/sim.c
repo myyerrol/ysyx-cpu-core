@@ -151,7 +151,7 @@ void runCPUSimModule(bool *inst_end_flag) {
 #if CPU_SINGLE
         *inst_end_flag = true;
 #else
-        if (top->io_pITrace_pCTR_oStateCurr == 1) {
+        if (top->io_pITrace_pCTR_oStateCurr == 2) {
             *inst_end_flag = true;
         }
         else {
