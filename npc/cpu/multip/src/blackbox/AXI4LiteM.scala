@@ -14,6 +14,8 @@ class AXI4LiteM extends BlackBox with ConfigInst {
         val iAddr  = Input (UInt(ADDR_WIDTH.W))
         val iData  = Input (UInt(DATA_WIDTH.W))
         val iMask  = Input (UInt(MASK_WIDTH.W))
+        val iValid = Input (Bool())
+
         val oData  = Output(UInt(DATA_WIDTH.W))
         val oResp  = Output(UInt(RESP_WIDTH.W))
 

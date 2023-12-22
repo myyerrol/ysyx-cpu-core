@@ -34,11 +34,8 @@ module AXI4LiteS(
 );
 
     //-------------------------------------------------------------------------
-    wire w_rd_a_active;
-    wire w_rd_d_active;
-    wire w_wr_a_active;
-    wire w_wr_d_active;
-    wire w_wr_b_active;
+    wire w_rd_addr_handshake;
+    wire w_rd_data_handshake;
 
     //-------------------------------------------------------------------------
     reg                       r_arready;
@@ -65,50 +62,13 @@ module AXI4LiteS(
     assign pAXI4_b_valid     = r_bvalid;
     assign pAXI4_b_bits_resp = r_wr_resp;
 
-    assign w_rd_a_active = pAXI4_ar_valid && pAXI4_ar_ready;
-    assign w_rd_d_active = pAXI4_r_valid  && pAXI4_r_ready;
-    assign w_wr_a_active = pAXI4_aw_valid && pAXI4_aw_ready;
-    assign w_wr_d_active = pAXI4_w_valid  && pAXI4_w_ready;
-    assign w_wr_b_active = pAXI4_b_valid  && pAXI4_b_ready;
+    assign w_rd_addr_handshake = pAXI4_ar_valid && pAXI4_ar_ready;
+    assign w_rd_data_handshake = pAXI4_r_valid  && pAXI4_r_ready;
 
-    // assign oAddr = (iMode === `MODE_RD) ? r_araddr : r_awaddr;
-    assign oData = (w_wr_d_active) ? pAXI4_w_bits_data : `DATA_WIDTH'b0;
-    assign oMask = (w_wr_d_active) ? pAXI4_w_bits_strb : `MASK_WIDTH'b0;
     always @(*) begin
         if (iMode === `MODE_RD) begin
-            r_addr = r_araddr;
+            r_addr    = pAXI4_ar_bits_addr;
             r_rd_resp = iResp;
-        end
-        else if (iMode === `MODE_WR) begin
-            r_addr = r_awaddr;
-            r_wr_resp = iResp;
-        end
-        else if (iMode === `MODE_RW) begin
-            if (w_rd_a_active && !w_wr_a_active) begin
-                r_addr = r_araddr;
-            end
-            else if (!w_rd_a_active && w_wr_a_active) begin
-                r_addr = r_awaddr;
-            end
-            else begin
-                r_addr = r_addr;
-            end
-
-            if (w_rd_d_active && !w_wr_b_active) begin
-                r_rd_resp = iResp;
-            end
-            else if (!w_rd_d_active && w_wr_b_active) begin
-                r_wr_resp = iResp;
-            end
-            else begin
-                r_rd_resp = r_rd_resp;
-                r_wr_resp = r_wr_resp;
-            end
-        end
-        else begin
-            r_addr = r_addr;
-            r_rd_resp = r_rd_resp;
-            r_wr_resp = r_wr_resp;
         end
     end
 
@@ -117,10 +77,10 @@ module AXI4LiteS(
         if (iReset) begin
             r_arready <= 1'b1;
         end
-        else if (w_rd_a_active) begin
+        else if (w_rd_addr_handshake) begin
             r_arready <= 1'b0;
         end
-        else if (w_rd_d_active) begin
+        else if (w_rd_data_handshake) begin
             r_arready <= 1'b1;
         end
         else begin
@@ -130,91 +90,16 @@ module AXI4LiteS(
 
     always @(posedge iClock) begin
         if (iReset) begin
-            r_araddr <= `ADDR_WIDTH'b0;
-        end
-        else if (w_rd_a_active) begin
-            r_araddr <= pAXI4_ar_bits_addr;
-        end
-        else if (w_rd_d_active) begin
-            r_araddr <= `ADDR_WIDTH'b0;
-        end
-        else begin
-            r_araddr <= r_araddr;
-        end
-    end
-
-    always @(posedge iClock) begin
-        if (iReset) begin
             r_rvalid <= 1'b0;
         end
-        else if (w_rd_a_active) begin
+        else if (w_rd_addr_handshake) begin
             r_rvalid <= 1'b1;
         end
-        else if (w_rd_d_active) begin
+        else if (w_rd_data_handshake) begin
             r_rvalid <= 1'b0;
         end
         else begin
             r_rvalid <= r_rvalid;
-        end
-    end
-
-    always @(posedge iClock) begin
-        if (iReset) begin
-            r_awready <= 1'b1;
-        end
-        else if (w_wr_a_active) begin
-            r_awready <= 1'b0;
-        end
-        else if (w_wr_d_active) begin
-            r_awready <= 1'b1;
-        end
-        else begin
-            r_awready <= r_awready;
-        end
-    end
-
-    always @(posedge iClock) begin
-        if (iReset) begin
-            r_awaddr <= `ADDR_WIDTH'b0;
-        end
-        else if (w_wr_a_active) begin
-            r_awaddr <= pAXI4_ar_bits_addr;
-        end
-        else if (w_wr_d_active) begin
-            r_awaddr <= `ADDR_WIDTH'b0;
-        end
-        else begin
-            r_awaddr <= r_awaddr;
-        end
-    end
-
-    always @(posedge iClock) begin
-        if (iReset) begin
-            r_wready <= 1'b0;
-        end
-        else if (w_wr_a_active) begin
-            r_wready <= 1'b1;
-        end
-        else if (w_wr_d_active) begin
-            r_wready <= 1'b0;
-        end
-        else begin
-            r_wready <= r_wready;
-        end
-    end
-
-    always @(posedge iClock) begin
-        if (iReset) begin
-            r_bvalid <= 1'b0;
-        end
-        else if (w_wr_d_active) begin
-            r_bvalid <= 1'b1;
-        end
-        else if (w_wr_b_active) begin
-            r_bvalid <= 1'b0;
-        end
-        else begin
-            r_bvalid <= r_bvalid;
         end
     end
 

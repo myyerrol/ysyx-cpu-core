@@ -13,6 +13,7 @@ class AXI4LiteS extends BlackBox with ConfigInst {
         val iMode  = Input (UInt(MODE_WIDTH.W))
         val iData  = Input (UInt(DATA_WIDTH.W))
         val iResp  = Input (UInt(RESP_WIDTH.W))
+
         val oAddr  = Output(UInt(ADDR_WIDTH.W))
         val oData  = Output(UInt(DATA_WIDTH.W))
         val oMask  = Output(UInt(MASK_WIDTH.W))

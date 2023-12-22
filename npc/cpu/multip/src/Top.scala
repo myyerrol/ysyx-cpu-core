@@ -15,7 +15,6 @@ class Top extends Module with ConfigInst {
         val pITrace  = new ITraceIO
     })
 
-    val mMemDPIDirect = Module(new MemDPIDirect)
     val mSysDPIDirect = Module(new SysDPIDirect)
 
     val mIFU = Module(new IFU)
@@ -36,18 +35,6 @@ class Top extends Module with ConfigInst {
     io.pITrace.pEXU <> mEXU.io.pEXU
     io.pITrace.pLSU <> mLSU.io.pLSU
     io.pITrace.pWBU <> mWBU.io.pWBU
-
-    if (MEMS_TYP.equals("DPIDirect")) {
-        mMemDPIDirect.io.iClock         := clock
-        mMemDPIDirect.io.iReset         := reset
-        mMemDPIDirect.io.iMemRdEn       := mLSU.io.pLSU.oMemRdEn
-        mMemDPIDirect.io.iMemRdAddrInst := mLSU.io.pLSU.oMemRdAddrInst
-        mMemDPIDirect.io.iMemRdAddrLoad := mLSU.io.pLSU.oMemRdAddrLoad
-        mMemDPIDirect.io.iMemWrEn       := mLSU.io.pLSU.oMemWrEn
-        mMemDPIDirect.io.iMemWrAddr     := mLSU.io.pLSU.oMemWrAddr
-        mMemDPIDirect.io.iMemWrData     := mLSU.io.pLSU.oMemWrData
-        mMemDPIDirect.io.iMemWrLen      := mLSU.io.pLSU.oMemWrLen
-    }
 
     val rInstName = RegNext(mIDU.io.pCTR.oInstName, INST_NAME_X)
     when (rInstName === INST_NAME_X && mIDU.io.pCTR.oStateCurr === STATE_EX) {
@@ -92,15 +79,6 @@ class Top extends Module with ConfigInst {
     mLSU.io.iPC        := mIFU.io.pIFU.oPC
     mLSU.io.iALUOut    := mEXU.io.pEXU.oALUOut
     mLSU.io.iMemWrData := mEXU.io.pEXU.oMemWrData
-
-    if (MEMS_TYP.equals("DPIDirect")) {
-        mLSU.io.iMemRdDataInst := mMemDPIDirect.io.oMemRdDataInst
-        mLSU.io.iMemRdDataLoad := mMemDPIDirect.io.oMemRdDataLoad
-    }
-    else {
-        mLSU.io.iMemRdDataInst := DATA_ZERO
-        mLSU.io.iMemRdDataLoad := DATA_ZERO
-    }
 
     mWBU.io.iInstName := mIDU.io.pCTR.oInstName
     mWBU.io.iMemByt   := mIDU.io.pCTR.oMemByt

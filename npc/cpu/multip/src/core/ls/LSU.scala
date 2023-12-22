@@ -19,9 +19,6 @@ class LSU extends Module with ConfigInst {
         val iALUOut        = Input(UInt(DATA_WIDTH.W))
         val iMemWrData     = Input(UInt(DATA_WIDTH.W))
 
-        val iMemRdDataInst = Input(UInt(INST_WIDTH.W))
-        val iMemRdDataLoad = Input(UInt(DATA_WIDTH.W))
-
         val pLSU           = new LSUIO
     })
 
@@ -58,19 +55,33 @@ class LSU extends Module with ConfigInst {
     mMRU.io.iData := DontCare
 
     if (MEMS_TYP.equals("DPIDirect")) {
-        io.pLSU.oMemRdDataInst := io.iMemRdDataInst
-        io.pLSU.oMemRdDataLoad := io.iMemRdDataLoad
+        val mMemDPIDirect = Module(new MemDPIDirect)
+        mMemDPIDirect.io.iClock         := clock
+        mMemDPIDirect.io.iReset         := reset
+        mMemDPIDirect.io.iMemRdEn       := io.pLSU.oMemRdEn
+        mMemDPIDirect.io.iMemRdAddrInst := io.pLSU.oMemRdAddrInst
+        mMemDPIDirect.io.iMemRdAddrLoad := io.pLSU.oMemRdAddrLoad
+        mMemDPIDirect.io.iMemWrEn       := io.pLSU.oMemWrEn
+        mMemDPIDirect.io.iMemWrAddr     := io.pLSU.oMemWrAddr
+        mMemDPIDirect.io.iMemWrData     := io.pLSU.oMemWrData
+        mMemDPIDirect.io.iMemWrLen      := io.pLSU.oMemWrLen
 
-        mMRU.io.iData := io.iMemRdDataLoad
+        io.pLSU.oMemRdDataInst := mMemDPIDirect.io.oMemRdDataInst
+        io.pLSU.oMemRdDataLoad := mMemDPIDirect.io.oMemRdDataLoad
+
+        mMRU.io.iData := mMemDPIDirect.io.oMemRdDataLoad
     }
     else if (MEMS_TYP.equals("DPIAXI4Lite")) {
         val mAXI4LiteIFU  = Module(new AXI4LiteIFU)
-        mAXI4LiteIFU.io.iAddr := io.iPC
+        mAXI4LiteIFU.io.iAddr  := io.iPC
+        mAXI4LiteIFU.io.iValid := (io.iMemRdEn && io.iMemRdSrc === MEM_RD_SRC_PC)
 
-        val mAXI4LiteSRAM = Module(new AXI4LiteSRAM)
-        mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM.io.pAXI4
+        val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
+        mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
 
         io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oData
+
+
     }
     else if (MEMS_TYP.equals("Embed")) {
         val mMemEmbed = Module(new MemEmbed)

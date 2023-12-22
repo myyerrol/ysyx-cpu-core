@@ -7,7 +7,7 @@ import cpu.blackbox._
 import cpu.common._
 import cpu.port._
 
-class AXI4LiteSRAM extends Module with ConfigInst {
+class AXI4LiteSRAM2IFU extends Module with ConfigInst {
     val io = IO(new Bundle {
         val pAXI4 = Flipped(new AXI4LiteIO)
     })

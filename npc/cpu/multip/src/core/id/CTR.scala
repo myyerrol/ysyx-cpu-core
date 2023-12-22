@@ -87,7 +87,9 @@ class CTR extends Module with ConfigInstPattern {
 
     val wInstName = lInst(0)
 
-    val (cNum, cFlag) = Counter(true.B, 5)
+    val mCountIFU   = Counter(2);
+    val mCountLSURd = Counter(2);
+    val mCountLSUWr = Counter(2);
 
     val rStateCurr = RegInit(STATE_RS)
     if (MEMS_TYP.equals("DPIDirect") ||
@@ -121,19 +123,6 @@ class CTR extends Module with ConfigInstPattern {
             wMemRdSrc  := MEM_RD_SRC_PC
         }
         is (STATE_IF) {
-            if (MEMS_TYP.equals("DPIDirect") ||
-                MEMS_TYP.equals("Embed")) {
-                rStateCurr := STATE_ID
-            }
-            else if (MEMS_TYP.equals("DPIAXI4Lite")) {
-                when (cFlag) {
-                    rStateCurr := STATE_ID
-                }
-                .otherwise {
-                    rStateCurr := STATE_IF
-                }
-            }
-
             wPCNextEn  := EN_TRUE
             wMemRdEn   := EN_TRUE
             wMemRdSrc  := MEM_RD_SRC_PC
@@ -141,6 +130,23 @@ class CTR extends Module with ConfigInstPattern {
             wALUType   := ALU_TYPE_ADD
             wALURS1    := ALU_RS1_PC
             wALURS2    := ALU_RS2_4
+
+            if (MEMS_TYP.equals("DPIDirect") ||
+                MEMS_TYP.equals("Embed")) {
+                rStateCurr := STATE_ID
+            }
+            else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+                when (mCountIFU.value === 1.U) {
+                    mCountIFU.reset()
+                    rStateCurr := STATE_ID
+                    wMemRdEn   := EN_FALSE
+                }
+                .otherwise {
+                    mCountIFU.inc()
+                    rStateCurr := STATE_IF
+                    wMemRdEn   := EN_TRUE
+                }
+            }
         }
         is (STATE_ID) {
             rStateCurr := STATE_EX
