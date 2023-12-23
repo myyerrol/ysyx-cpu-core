@@ -362,6 +362,11 @@ class CTR extends Module with ConfigInstPattern {
                 wALUType   := ALU_TYPE_ADD
                 wALURS1    := ALU_RS1_GPR
                 wALURS2    := ALU_RS2_IMM_I
+
+                if (MEMS_TYP.equals("DPIAXI4Lite")) {
+                    wMemRdEn  := EN_TRUE
+                    wMemRdSrc := MEM_RD_SRC_ALU
+                }
             }
             .elsewhen (wInstName === INST_NAME_SB ||
                        wInstName === INST_NAME_SH ||

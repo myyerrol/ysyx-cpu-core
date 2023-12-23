@@ -9,24 +9,30 @@ import cpu.port._
 
 class AXI4LiteLSU extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val iAddr  = Input (UInt(ADDR_WIDTH.W))
-        val iValid = Input (Bool())
+        val iRdValid = Input (Bool())
+        val iRdAddr  = Input (UInt(ADDR_WIDTH.W))
+        val iWrValid = Input (Bool())
+        val iWrAddr  = Input (UInt(ADDR_WIDTH.W))
+        val iWrData  = Input (UInt(DATA_WIDTH.W))
+        val iWrMask  = Input (UInt(MASK_WIDTH.W))
 
-        val oData  = Output(UInt(DATA_WIDTH.W))
+        val oRdData  = Output(UInt(DATA_WIDTH.W))
 
-        val pAXI4 = new AXI4LiteIO
+        val pAXI4    = new AXI4LiteIO
     })
 
     val mAXI4LiteM = Module(new AXI4LiteM)
-    mAXI4LiteM.io.iClock := clock;
-    mAXI4LiteM.io.iReset := reset;
-    mAXI4LiteM.io.iMode  := MODE_RD
-    mAXI4LiteM.io.iAddr  := io.iAddr
-    mAXI4LiteM.io.iData  := DontCare
-    mAXI4LiteM.io.iMask  := DontCare
-    mAXI4LiteM.io.iValid := io.iValid
+    mAXI4LiteM.io.iClock   := clock;
+    mAXI4LiteM.io.iReset   := reset;
+    mAXI4LiteM.io.iMode    := MODE_RD
+    mAXI4LiteM.io.iRdValid := io.iRdValid
+    mAXI4LiteM.io.iRdAddr  := io.iRdAddr
+    mAXI4LiteM.io.iWrValid := io.iWrValid
+    mAXI4LiteM.io.iWrAddr  := io.iWrAddr
+    mAXI4LiteM.io.iWrData  := io.iWrData
+    mAXI4LiteM.io.iWrMask  := io.iWrMask
 
-    io.oData := mAXI4LiteM.io.oData
+    io.oRdData := mAXI4LiteM.io.oRdData
 
     io.pAXI4 <> mAXI4LiteM.io.pAXI4
 }

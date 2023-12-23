@@ -19,7 +19,7 @@ class AXI4LiteSRAM2IFU extends Module with ConfigInst {
     mAXI4LiteS.io.iReset := reset
     mAXI4LiteS.io.iMode  := MODE_RD
     mAXI4LiteS.io.iData  := mMemDPIDirect.io.oMemRdDataInst
-    mAXI4LiteS.io.iResp  := RESP_OKEY
+    mAXI4LiteS.io.iResp  := DontCare
     mAXI4LiteS.io.oData  := DontCare
     mAXI4LiteS.io.oMask  := DontCare
 

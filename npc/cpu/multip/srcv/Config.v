@@ -1,5 +1,7 @@
 `define VTRACE_MEMORY
 `define VTRACE_MONITOR
+// `define VTRACE_AXI4_RD
+`define VTRACE_AXI4_WR
 
 `define RESP_WIDTH 2
 `define MODE_WIDTH 2
