@@ -30,17 +30,6 @@ extern "C" uint32_tt readInsData(uint64_tt addr, uint8_t len) {
     return data;
 }
 
-extern "C" uint64_tt readInsDataByAXI4Lite(uint64_tt addr, uint8_t len) {
-    uint64_tt data = 0;
-    if (addr != 0x00000000) {
-        data = (uint64_tt)readPhyMemData(addr, len);
-#ifdef CONFIG_MTRACE_COND_PROCESS
-        printfDebugMTrace((char *)"process", (char *)"rd ins axi4lite", addr, data, 0);
-#endif
-    }
-    return data;
-}
-
 extern "C" uint64_tt readMemData(uint64_tt addr, uint8_t len) {
     uint64_tt data = 0;
     if (addr == 0xa0000048) {
