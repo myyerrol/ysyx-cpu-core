@@ -72,15 +72,15 @@ class LSU extends Module with ConfigInst {
         mMRU.io.iData := mMemDPIDirect.io.oMemRdDataLoad
     }
     else if (MEMS_TYP.equals("DPIAXI4Lite")) {
-        val mAXI4LiteIFU  = Module(new AXI4LiteIFU)
-        mAXI4LiteIFU.io.iRdValid := (io.iMemRdEn &&
-                                     io.iMemRdSrc === MEM_RD_SRC_PC)
-        mAXI4LiteIFU.io.iRdAddr  :=  io.iPC
+        // val mAXI4LiteIFU  = Module(new AXI4LiteIFU)
+        // mAXI4LiteIFU.io.iRdValid := (io.iMemRdEn &&
+        //                              io.iMemRdSrc === MEM_RD_SRC_PC)
+        // mAXI4LiteIFU.io.iRdAddr  :=  io.iPC
 
-        val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
-        mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
+        // val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
+        // mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
 
-        io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oRdData
+        // io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oRdData
 
         // --------------------------------------------------------------------
         val mAXI4LiteLSU = Module(new AXI4LiteLSU)
@@ -88,9 +88,20 @@ class LSU extends Module with ConfigInst {
                                      io.iMemRdSrc === MEM_RD_SRC_ALU)
         mAXI4LiteLSU.io.iRdAddr  :=  io.iALUOut
         mAXI4LiteLSU.io.iWrValid :=  io.iMemWrEn
-        mAXI4LiteLSU.io.iWrAddr  :=  io.iALUOut
-        mAXI4LiteLSU.io.iWrData  :=  io.iMemWrData
-        mAXI4LiteLSU.io.iWrMask  :=  DontCare
+        // mAXI4LiteLSU.io.iWrAddr  :=  io.iALUOut
+        mAXI4LiteLSU.io.iWrAddr  :=  "x80000010".U(ADDR_WIDTH.W)
+        // mAXI4LiteLSU.io.iWrData  :=  io.iMemWrData
+        mAXI4LiteLSU.io.iWrData  :=  "x00000001".U(DATA_WIDTH.W)
+        mAXI4LiteLSU.io.iWrMask  :=  MuxLookup(
+            io.iMemByt,
+            "b11111111".U(MASK_WIDTH.W),
+            Seq(
+                MEM_BYT_1_U -> "b00000001".U(MASK_WIDTH.W),
+                MEM_BYT_2_U -> "b00000011".U(MASK_WIDTH.W),
+                MEM_BYT_4_U -> "b00001111".U(MASK_WIDTH.W),
+                MEM_BYT_8_U -> "b11111111".U(MASK_WIDTH.W)
+            )
+        )
 
         val mAXI4LiteSRAM2LSU = Module(new AXI4LiteSRAM2LSU)
         mAXI4LiteLSU.io.pAXI4 <> mAXI4LiteSRAM2LSU.io.pAXI4

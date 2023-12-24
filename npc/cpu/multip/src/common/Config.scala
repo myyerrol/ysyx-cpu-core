@@ -19,7 +19,7 @@ trait ConfigIO {
 }
 
 trait ConfigInst extends ConfigIO {
-    val ADDR_SIM  = "x80000000".U(DATA_WIDTH.W)
+    val ADDR_SIM  = "x80000000".U(ADDR_WIDTH.W)
     val DATA_ZERO = "x00000000".U(DATA_WIDTH.W)
     val GPRS_10   = 10.U(GPRS_WIDTH.W)
 

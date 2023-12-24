@@ -15,18 +15,18 @@ class AXI4LiteSRAM2IFU extends Module with ConfigInst {
     val mAXI4LiteS    = Module(new AXI4LiteS)
     val mMemDPIDirect = Module(new MemDPIDirect)
 
-    mAXI4LiteS.io.iClock := clock
-    mAXI4LiteS.io.iReset := reset
-    mAXI4LiteS.io.iMode  := MODE_RD
-    mAXI4LiteS.io.iData  := mMemDPIDirect.io.oMemRdDataInst
-    mAXI4LiteS.io.iResp  := DontCare
-    mAXI4LiteS.io.oData  := DontCare
-    mAXI4LiteS.io.oMask  := DontCare
+    mAXI4LiteS.io.iClock  := clock
+    mAXI4LiteS.io.iReset  := reset
+    mAXI4LiteS.io.iMode   := MODE_RD
+    mAXI4LiteS.io.iRdData := mMemDPIDirect.io.oMemRdDataInst
+    mAXI4LiteS.io.iResp   := DontCare
+    mAXI4LiteS.io.oWrData := DontCare
+    mAXI4LiteS.io.oWrMask := DontCare
 
     mMemDPIDirect.io.iClock         := clock
     mMemDPIDirect.io.iReset         := reset
     mMemDPIDirect.io.iMemRdEn       := true.B
-    mMemDPIDirect.io.iMemRdAddrInst := mAXI4LiteS.io.oAddr
+    mMemDPIDirect.io.iMemRdAddrInst := mAXI4LiteS.io.oRdAddr
     mMemDPIDirect.io.iMemRdAddrLoad := DontCare
     mMemDPIDirect.io.iMemWrEn       := false.B
     mMemDPIDirect.io.iMemWrAddr     := DontCare

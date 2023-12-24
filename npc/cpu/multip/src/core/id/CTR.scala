@@ -126,34 +126,38 @@ class CTR extends Module with ConfigInstPattern {
             wMemRdSrc  := MEM_RD_SRC_PC
         }
         is (STATE_IF) {
-            wPCNextEn := EN_TRUE
-            wMemRdSrc := MEM_RD_SRC_PC
-            wIRWrEn   := EN_TRUE
-            wALUType  := ALU_TYPE_ADD
-            wALURS1   := ALU_RS1_PC
-            wALURS2   := ALU_RS2_4
+            rStateCurr := STATE_IF
+            wMemWrEn := EN_TRUE
+            wMemByt  := MEM_BYT_8_U
 
-            if (MEMS_TYP.equals("DPIDirect") ||
-                MEMS_TYP.equals("Embed")) {
-                rStateCurr := STATE_ID
-                wMemRdEn   := EN_TRUE
-            }
-            else if (MEMS_TYP.equals("DPIAXI4Lite")) {
-                when (mCountIFU.value === 1.U) {
-                    mCountIFU.reset()
-                    rStateCurr := STATE_ID
-                    wMemRdEn   := EN_FALSE
-                }
-                .otherwise {
-                    mCountIFU.inc()
-                    rStateCurr := STATE_IF
-                    wMemRdEn   := EN_TRUE
-                }
-            }
-            else {
-                rStateCurr := STATE_ID
-                wMemRdEn   := EN_TRUE
-            }
+            // wPCNextEn := EN_TRUE
+            // wMemRdSrc := MEM_RD_SRC_PC
+            // wIRWrEn   := EN_TRUE
+            // wALUType  := ALU_TYPE_ADD
+            // wALURS1   := ALU_RS1_PC
+            // wALURS2   := ALU_RS2_4
+
+            // if (MEMS_TYP.equals("DPIDirect") ||
+            //     MEMS_TYP.equals("Embed")) {
+            //     rStateCurr := STATE_ID
+            //     wMemRdEn   := EN_TRUE
+            // }
+            // else if (MEMS_TYP.equals("DPIAXI4Lite")) {
+            //     when (mCountIFU.value === 1.U) {
+            //         mCountIFU.reset()
+            //         rStateCurr := STATE_ID
+            //         wMemRdEn   := EN_FALSE
+            //     }
+            //     .otherwise {
+            //         mCountIFU.inc()
+            //         rStateCurr := STATE_IF
+            //         wMemRdEn   := EN_TRUE
+            //     }
+            // }
+            // else {
+            //     rStateCurr := STATE_ID
+            //     wMemRdEn   := EN_TRUE
+            // }
         }
         is (STATE_ID) {
             rStateCurr := STATE_EX
