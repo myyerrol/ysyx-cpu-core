@@ -367,14 +367,14 @@ void runCPUSimModule(bool *inst_end_flag) {
     LOG_BRIEF("[itrace] [idu]       imm data:         " FMT_WORD "",
               top->io_pITrace_pIDU_oImmData);
 
-    // LOG_BRIEF("[itrace] [exu]       pc next:          " FMT_WORD "",
-    //           top->io_pITrace_pEXU_oPCNext);
-    // LOG_BRIEF("[itrace] [exu]       pc jump:          " FMT_WORD "",
-    //           top->io_pITrace_pEXU_oPCJump);
-    // LOG_BRIEF("[itrace] [exu]       alu zero:         %d",
-    //           top->io_pITrace_pEXU_oALUZero);
-    // LOG_BRIEF("[itrace] [exu]       alu out:          " FMT_WORD "",
-    //           top->io_pITrace_pEXU_oALUOut);
+    LOG_BRIEF("[itrace] [exu]       pc next:          " FMT_WORD "",
+              top->io_pITrace_pEXU_oPCNext);
+    LOG_BRIEF("[itrace] [exu]       pc jump:          " FMT_WORD "",
+              top->io_pITrace_pEXU_oPCJump);
+    LOG_BRIEF("[itrace] [exu]       alu zero:         %d",
+              top->io_pITrace_pEXU_oALUZero);
+    LOG_BRIEF("[itrace] [exu]       alu out:          " FMT_WORD "",
+              top->io_pITrace_pEXU_oALUOut);
 
     // LOG_BRIEF("[itrace] [lsu]       mem rd en:        %d",
     //           top->io_pITrace_pLSU_oMemRdEn);

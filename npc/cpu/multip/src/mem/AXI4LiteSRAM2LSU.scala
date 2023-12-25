@@ -12,24 +12,24 @@ class AXI4LiteSRAM2LSU extends Module with ConfigInst {
         val pAXI4 = Flipped(new AXI4LiteIO)
     })
 
-    val mAXI4LiteS    = Module(new AXI4LiteS)
-    val mMemDPIDirect = Module(new MemDPIDirect)
+    val mAXI4LiteS        = Module(new AXI4LiteS)
+    val mMemDPIDirectTime = Module(new MemDPIDirectTime)
 
     mAXI4LiteS.io.iClock  := clock
     mAXI4LiteS.io.iReset  := reset
     mAXI4LiteS.io.iMode   := MODE_RD
-    mAXI4LiteS.io.iRdData := mMemDPIDirect.io.oMemRdDataLoad
+    mAXI4LiteS.io.iRdData := mMemDPIDirectTime.io.oMemRdDataLoad
     mAXI4LiteS.io.iResp   := DontCare
 
-    mMemDPIDirect.io.iClock         := clock
-    mMemDPIDirect.io.iReset         := reset
-    mMemDPIDirect.io.iMemRdEn       := true.B
-    mMemDPIDirect.io.iMemRdAddrInst := DontCare
-    mMemDPIDirect.io.iMemRdAddrLoad := mAXI4LiteS.io.oRdAddr
-    mMemDPIDirect.io.iMemWrEn       := io.pAXI4.w.valid && io.pAXI4.w.ready
-    mMemDPIDirect.io.iMemWrAddr     := mAXI4LiteS.io.oWrAddr
-    mMemDPIDirect.io.iMemWrData     := mAXI4LiteS.io.oWrData
-    mMemDPIDirect.io.iMemWrLen      := MuxLookup(
+    mMemDPIDirectTime.io.iClock         := clock
+    mMemDPIDirectTime.io.iReset         := reset
+    mMemDPIDirectTime.io.iMemRdEn       := io.pAXI4.ar.valid && io.pAXI4.ar.ready
+    mMemDPIDirectTime.io.iMemRdAddrInst := DontCare
+    mMemDPIDirectTime.io.iMemRdAddrLoad := mAXI4LiteS.io.oRdAddr
+    mMemDPIDirectTime.io.iMemWrEn       := io.pAXI4.w.valid && io.pAXI4.w.ready
+    mMemDPIDirectTime.io.iMemWrAddr     := mAXI4LiteS.io.oWrAddr
+    mMemDPIDirectTime.io.iMemWrData     := mAXI4LiteS.io.oWrData
+    mMemDPIDirectTime.io.iMemWrLen      := MuxLookup(
         mAXI4LiteS.io.oWrMask,
         8.U(BYTE_WIDTH.W),
         Seq(

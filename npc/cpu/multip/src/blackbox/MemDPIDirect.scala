@@ -5,7 +5,7 @@ import chisel3.util._
 
 import cpu.common._
 
-class MemDPIDirect extends BlackBox with ConfigInst {
+class MemDPIDirect extends BlackBox with ConfigIO {
     val io = IO(new Bundle {
         val iClock         = Input (Clock())
         val iReset         = Input (Reset())

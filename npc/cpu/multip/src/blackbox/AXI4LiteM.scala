@@ -19,8 +19,9 @@ class AXI4LiteM extends BlackBox with ConfigInst {
         val iWrMask  = Input (UInt(MASK_WIDTH.W))
 
         val oRdData  = Output(UInt(DATA_WIDTH.W))
-        val oResp    = Output(UInt(RESP_WIDTH.W))
+        val oRdResp  = Output(UInt(RESP_WIDTH.W))
+        val oWrResp  = Output(UInt(RESP_WIDTH.W))
 
-        val pAXI4  = new AXI4LiteIO
+        val pAXI4    = new AXI4LiteIO
     })
 }

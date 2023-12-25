@@ -61,12 +61,10 @@ module AXI4LiteS(
     assign pAXI4_ar_ready    = r_arready;
     assign pAXI4_r_valid     = r_rvalid;
     assign pAXI4_r_bits_data = iRdData;
-    // assign pAXI4_r_bits_resp = r_rd_resp;
     assign pAXI4_r_bits_resp = iResp;
     assign pAXI4_aw_ready    = r_awready;
     assign pAXI4_w_ready     = r_wready;
     assign pAXI4_b_valid     = r_bvalid;
-    // assign pAXI4_b_bits_resp = r_wr_resp;
     assign pAXI4_b_bits_resp = iResp;
 
     assign w_rd_addr_handshake = pAXI4_ar_valid && pAXI4_ar_ready;
@@ -74,13 +72,6 @@ module AXI4LiteS(
     assign w_wr_addr_handshake = pAXI4_aw_valid && pAXI4_aw_ready;
     assign w_wr_data_handshake = pAXI4_w_valid  && pAXI4_w_ready;
     assign w_wr_resp_handshake = pAXI4_b_valid  && pAXI4_b_ready;
-
-    // always @(*) begin
-    //     if (iMode === `MODE_RD) begin
-    //         r_addr    = pAXI4_ar_bits_addr;
-    //         r_rd_resp = iResp;
-    //     end
-    // end
 
     //-------------------------------------------------------------------------
     always @(posedge iClock) begin
@@ -147,10 +138,10 @@ module AXI4LiteS(
         if (iReset) begin
             r_bvalid <= 1'b0;
         end
-        else if (w_wr_resp_handshake) begin
+        else if (w_wr_data_handshake) begin
             r_bvalid <= 1'b1;
         end
-        else if (r_bvalid) begin
+        else if (w_wr_resp_handshake) begin
             r_bvalid <= 1'b0;
         end
         else begin

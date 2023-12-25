@@ -18,7 +18,7 @@ module MemEmbed(
     wire [`DATA_WIDTH - 1 : 0] w_wr_data;
 
     assign w_vir_addr   = pMem_iAddr;
-    assign w_phy_addr_t = (w_vir_addr - `ADDR_SIM) / 4;
+    assign w_phy_addr_t = (w_vir_addr - `ADDR_INIT) / 4;
     assign w_phy_addr   = w_phy_addr_t[`MEMS_WIDTH - 1 : 0];
     assign w_wr_data    = pMem_iWrData;
 

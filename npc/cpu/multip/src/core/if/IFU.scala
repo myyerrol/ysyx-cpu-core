@@ -24,8 +24,8 @@ class IFU extends Module with ConfigInst {
         val pIFU      = new IFUIO
     })
 
-    val rPC  = RegInit(ADDR_SIM)
-    val wNPC = WireInit(ADDR_SIM)
+    val rPC  = RegInit(ADDR_INIT)
+    val wNPC = WireInit(ADDR_INIT)
 
     when (io.iPCWrSrc === PC_WR_SRC_NEXT) {
         wNPC := io.iPCNext

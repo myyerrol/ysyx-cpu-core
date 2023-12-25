@@ -15,11 +15,11 @@ trait ConfigIO {
     val MASK_WIDTH = DATA_WIDTH / BYTE_WIDTH
 
     val GPRS_NUM = 1 << GPRS_WIDTH
-    val MEMS_TYP = "DPIAXI4Lite" // DPIDirect, DPIAXI4Lite, Embed
+    val MEMS_TYP = "DPIDirect" // DPIDirect, DPIAXI4Lite, Embed
 }
 
 trait ConfigInst extends ConfigIO {
-    val ADDR_SIM  = "x80000000".U(ADDR_WIDTH.W)
+    val ADDR_INIT = "x80000000".U(ADDR_WIDTH.W)
     val DATA_ZERO = "x00000000".U(DATA_WIDTH.W)
     val GPRS_10   = 10.U(GPRS_WIDTH.W)
 

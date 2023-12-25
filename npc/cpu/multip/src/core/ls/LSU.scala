@@ -55,58 +55,56 @@ class LSU extends Module with ConfigInst {
     mMRU.io.iData := DontCare
 
     if (MEMS_TYP.equals("DPIDirect")) {
-        val mMemDPIDirect = Module(new MemDPIDirect)
-        mMemDPIDirect.io.iClock         := clock
-        mMemDPIDirect.io.iReset         := reset
-        mMemDPIDirect.io.iMemRdEn       := io.pLSU.oMemRdEn
-        mMemDPIDirect.io.iMemRdAddrInst := io.pLSU.oMemRdAddrInst
-        mMemDPIDirect.io.iMemRdAddrLoad := io.pLSU.oMemRdAddrLoad
-        mMemDPIDirect.io.iMemWrEn       := io.pLSU.oMemWrEn
-        mMemDPIDirect.io.iMemWrAddr     := io.pLSU.oMemWrAddr
-        mMemDPIDirect.io.iMemWrData     := io.pLSU.oMemWrData
-        mMemDPIDirect.io.iMemWrLen      := io.pLSU.oMemWrLen
+        val mMemDPIDirectComob = Module(new MemDPIDirectComb)
+        mMemDPIDirectComob.io.iClock         := clock
+        mMemDPIDirectComob.io.iReset         := reset
+        mMemDPIDirectComob.io.iMemRdEn       := io.pLSU.oMemRdEn
+        mMemDPIDirectComob.io.iMemRdAddrInst := io.pLSU.oMemRdAddrInst
+        mMemDPIDirectComob.io.iMemRdAddrLoad := io.pLSU.oMemRdAddrLoad
+        mMemDPIDirectComob.io.iMemWrEn       := io.pLSU.oMemWrEn
+        mMemDPIDirectComob.io.iMemWrAddr     := io.pLSU.oMemWrAddr
+        mMemDPIDirectComob.io.iMemWrData     := io.pLSU.oMemWrData
+        mMemDPIDirectComob.io.iMemWrLen      := io.pLSU.oMemWrLen
 
-        io.pLSU.oMemRdDataInst := mMemDPIDirect.io.oMemRdDataInst
-        io.pLSU.oMemRdDataLoad := mMemDPIDirect.io.oMemRdDataLoad
+        io.pLSU.oMemRdDataInst := mMemDPIDirectComob.io.oMemRdDataInst
+        io.pLSU.oMemRdDataLoad := mMemDPIDirectComob.io.oMemRdDataLoad
 
-        mMRU.io.iData := mMemDPIDirect.io.oMemRdDataLoad
+        mMRU.io.iData := mMemDPIDirectComob.io.oMemRdDataLoad
     }
     else if (MEMS_TYP.equals("DPIAXI4Lite")) {
-        // val mAXI4LiteIFU  = Module(new AXI4LiteIFU)
-        // mAXI4LiteIFU.io.iRdValid := (io.iMemRdEn &&
-        //                              io.iMemRdSrc === MEM_RD_SRC_PC)
-        // mAXI4LiteIFU.io.iRdAddr  :=  io.iPC
+        val mAXI4LiteIFU  = Module(new AXI4LiteIFU)
+        mAXI4LiteIFU.io.iRdValid := (io.iMemRdEn &&
+                                     io.iMemRdSrc === MEM_RD_SRC_PC)
+        mAXI4LiteIFU.io.iRdAddr  :=  io.iPC
 
-        // val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
-        // mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
+        val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
+        mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
 
-        // io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oRdData
+        io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oRdData
 
         // --------------------------------------------------------------------
-        val mAXI4LiteLSU = Module(new AXI4LiteLSU)
-        mAXI4LiteLSU.io.iRdValid := (io.iMemRdEn &&
-                                     io.iMemRdSrc === MEM_RD_SRC_ALU)
-        mAXI4LiteLSU.io.iRdAddr  :=  io.iALUOut
-        mAXI4LiteLSU.io.iWrValid :=  io.iMemWrEn
+        // val mAXI4LiteLSU = Module(new AXI4LiteLSU)
+        // mAXI4LiteLSU.io.iRdValid := (io.iMemRdEn &&
+        //                              io.iMemRdSrc === MEM_RD_SRC_ALU)
+        // mAXI4LiteLSU.io.iRdAddr  :=  io.iALUOut
+        // mAXI4LiteLSU.io.iWrValid :=  io.iMemWrEn
         // mAXI4LiteLSU.io.iWrAddr  :=  io.iALUOut
-        mAXI4LiteLSU.io.iWrAddr  :=  "x80000010".U(ADDR_WIDTH.W)
         // mAXI4LiteLSU.io.iWrData  :=  io.iMemWrData
-        mAXI4LiteLSU.io.iWrData  :=  "x00000001".U(DATA_WIDTH.W)
-        mAXI4LiteLSU.io.iWrMask  :=  MuxLookup(
-            io.iMemByt,
-            "b11111111".U(MASK_WIDTH.W),
-            Seq(
-                MEM_BYT_1_U -> "b00000001".U(MASK_WIDTH.W),
-                MEM_BYT_2_U -> "b00000011".U(MASK_WIDTH.W),
-                MEM_BYT_4_U -> "b00001111".U(MASK_WIDTH.W),
-                MEM_BYT_8_U -> "b11111111".U(MASK_WIDTH.W)
-            )
-        )
+        // mAXI4LiteLSU.io.iWrMask  :=  MuxLookup(
+        //     io.iMemByt,
+        //     "b11111111".U(MASK_WIDTH.W),
+        //     Seq(
+        //         MEM_BYT_1_U -> "b00000001".U(MASK_WIDTH.W),
+        //         MEM_BYT_2_U -> "b00000011".U(MASK_WIDTH.W),
+        //         MEM_BYT_4_U -> "b00001111".U(MASK_WIDTH.W),
+        //         MEM_BYT_8_U -> "b11111111".U(MASK_WIDTH.W)
+        //     )
+        // )
 
-        val mAXI4LiteSRAM2LSU = Module(new AXI4LiteSRAM2LSU)
-        mAXI4LiteLSU.io.pAXI4 <> mAXI4LiteSRAM2LSU.io.pAXI4
+        // val mAXI4LiteSRAM2LSU = Module(new AXI4LiteSRAM2LSU)
+        // mAXI4LiteLSU.io.pAXI4 <> mAXI4LiteSRAM2LSU.io.pAXI4
 
-        io.pLSU.oMemRdDataLoad := mAXI4LiteLSU.io.oRdData
+        // io.pLSU.oMemRdDataLoad := mAXI4LiteLSU.io.oRdData
     }
     else if (MEMS_TYP.equals("Embed")) {
         val mMemEmbed = Module(new MemEmbed)

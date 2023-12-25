@@ -1,6 +1,6 @@
 `include "Config.v"
 
-module MemDPIDirect(
+module MemDPIDirectComb(
     input  wire                       iClock,
     input  wire                       iReset,
     input  wire                       iMemRdEn,

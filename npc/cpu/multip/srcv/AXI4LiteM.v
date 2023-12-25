@@ -12,7 +12,8 @@ module AXI4LiteM(
     input  wire [`DATA_WIDTH - 1 : 0] iWrData,
     input  wire [`MASK_WIDTH - 1 : 0] iWrMask,
     output wire [`DATA_WIDTH - 1 : 0] oRdData,
-    output wire [`RESP_WIDTH - 1 : 0] oResp,
+    output wire [`RESP_WIDTH - 1 : 0] oRdResp,
+    output wire [`RESP_WIDTH - 1 : 0] oWrResp,
 
     input  wire                       pAXI4_ar_ready,
     output wire                       pAXI4_ar_valid,
@@ -51,7 +52,7 @@ module AXI4LiteM(
         $display("[vtrace] rvalid:     %d, rready:     %d, rdata:  %x, rresp: %d",
                  pAXI4_r_valid,
                  pAXI4_r_ready,
-                 oRdData,
+                 pAXI4_r_bits_data,
                  pAXI4_r_bits_resp);
 `endif
 `ifdef VTRACE_AXI4_WR
@@ -78,8 +79,10 @@ module AXI4LiteM(
 
     //-------------------------------------------------------------------------
     parameter P_STATE_IDLE     = 'd0;
-    parameter P_STATE_RD_TRANS = 'd1;
-    parameter P_STATE_RD_END   = 'd2;
+    parameter P_STATE_RD_ADDR  = 'd1;
+    parameter P_STATE_RD_DATA  = 'd2;
+    parameter P_STATE_RD_END   = 'd3;
+
     parameter P_STATE_WR_TRANS = 'd1;
     parameter P_STATE_WR_END   = 'd2;
 
@@ -91,7 +94,6 @@ module AXI4LiteM(
     //-------------------------------------------------------------------------
     wire                       w_arvalid;
     wire [`ADDR_WIDTH - 1 : 0] w_araddr;
-    wire [`DATA_WIDTH - 1 : 0] w_ardata;
     wire                       w_awvalid;
     wire [`ADDR_WIDTH - 1 : 0] w_awaddr;
     wire [`DATA_WIDTH - 1 : 0] w_wdata;
@@ -108,6 +110,7 @@ module AXI4LiteM(
     wire                       w_wr_resp_handshake;
 
     //-------------------------------------------------------------------------
+    reg                       r_arvalid;
     reg                       r_rready;
     reg [`DATA_WIDTH - 1 : 0] r_rdata;
     reg                       r_wvalid;
@@ -117,21 +120,21 @@ module AXI4LiteM(
 
     //-------------------------------------------------------------------------
     assign oRdData             = (iReset) ? `DATA_WIDTH'b0 : r_rdata;
-    assign oResp               = `RESP_OKEY;
+    assign oRdResp             = `RESP_OKEY;
+    assign oWrResp             = `RESP_OKEY;
 
-    assign pAXI4_ar_valid      = w_arvalid;
+    // assign pAXI4_ar_valid      = w_arvalid;
+    assign pAXI4_ar_valid      = r_arvalid;
     assign pAXI4_ar_bits_addr  = w_araddr;
     assign pAXI4_r_ready       = r_rready;
     assign pAXI4_aw_valid      = w_awvalid;
     assign pAXI4_aw_bits_addr  = w_awaddr;
     assign pAXI4_w_valid       = r_wvalid;
-    // assign pAXI4_w_bits_data   = r_wdata;
-    // assign pAXI4_w_bits_strb   = r_wstrb;
     assign pAXI4_w_bits_data   = w_wdata;
     assign pAXI4_w_bits_strb   = w_wstrb;
     assign pAXI4_b_ready       = 1'b1;
 
-    assign w_arvalid           = iRdValid;
+    // assign w_arvalid           = iRdValid;
     assign w_araddr            = (iReset) ? `ADDR_WIDTH'b0 : iRdAddr;
     assign w_awvalid           = iWrValid;
     assign w_awaddr            = (iReset) ? `ADDR_WIDTH'b0 : iWrAddr;
@@ -149,6 +152,21 @@ module AXI4LiteM(
     assign w_wr_resp_handshake = pAXI4_b_valid  && pAXI4_b_ready;
 
     //-------------------------------------------------------------------------
+    always @(posedge iClock) begin
+        if (iReset) begin
+            r_arvalid <= 1'b0;
+        end
+        else if (w_rd_start) begin
+            r_arvalid <= 1'b1;
+        end
+        else if (w_rd_addr_handshake) begin
+            r_arvalid <= 1'b0;
+        end
+        else begin
+            r_arvalid <= r_arvalid;
+        end
+    end
+
     always @(posedge iClock) begin
         if (iReset) begin
             r_rready <= 1'b0;
@@ -187,7 +205,7 @@ module AXI4LiteM(
             r_wvalid <= 1'b0;
         end
         else begin
-            r_wvalid <= r_rready;
+            r_wvalid <= r_wvalid;
         end
     end
 
@@ -205,22 +223,22 @@ module AXI4LiteM(
         case (r_state_rd_curr)
             P_STATE_IDLE: begin
                 if (w_rd_start) begin
-                    r_state_rd_next = P_STATE_RD_TRANS;
+                    r_state_rd_next = P_STATE_RD_ADDR;
                 end
                 else begin
                     r_state_rd_next = P_STATE_IDLE;
                 end
             end
-            P_STATE_RD_TRANS: begin
+            P_STATE_RD_ADDR: begin
+                r_state_rd_next = P_STATE_RD_DATA;
+            end
+            P_STATE_RD_DATA: begin
                 if (w_rd_last) begin
-                    r_state_rd_next = P_STATE_RD_END;
+                    r_state_rd_next = P_STATE_IDLE;
                 end
                 else begin
-                    r_state_rd_next = P_STATE_RD_TRANS;
+                    r_state_rd_next = P_STATE_RD_DATA;
                 end
-            end
-            P_STATE_RD_END: begin
-                r_state_rd_next = P_STATE_IDLE;
             end
             default: begin
                 r_state_rd_next = P_STATE_IDLE;

@@ -1,7 +1,7 @@
 `define VTRACE_MEMORY
 `define VTRACE_MONITOR
-// `define VTRACE_AXI4_RD
-`define VTRACE_AXI4_WR
+`define VTRACE_AXI4_RD
+// `define VTRACE_AXI4_WR
 
 `define RESP_WIDTH 2
 `define MODE_WIDTH 2
@@ -14,7 +14,7 @@
 `define MASK_WIDTH `DATA_WIDTH / `BYTE_WIDTH
 
 `define MEMS_NUM 1 << `MEMS_WIDTH
-`define ADDR_SIM 64'h80000000
+`define ADDR_INIT 64'h80000000
 
 `define DATA_ZERO = 1'd0
 
