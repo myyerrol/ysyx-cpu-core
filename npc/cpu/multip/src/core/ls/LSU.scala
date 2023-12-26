@@ -80,11 +80,6 @@ class LSU extends Module with ConfigInst {
                                      io.iMemRdSrc === MEM_RD_SRC_PC)
         mAXI4LiteIFU.io.iRdAddr  :=  io.iPC
 
-        // val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
-        // mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
-
-        io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oRdData
-
         // --------------------------------------------------------------------
         val mAXI4LiteLSU = Module(new AXI4LiteLSU)
         mAXI4LiteLSU.io.iRdValid := (io.iMemRdEn &&
@@ -104,17 +99,16 @@ class LSU extends Module with ConfigInst {
             )
         )
 
-        // val mAXI4LiteSRAM2LSU = Module(new AXI4LiteSRAM2LSU)
-        // mAXI4LiteLSU.io.pAXI4 <> mAXI4LiteSRAM2LSU.io.pAXI4
-
-        io.pLSU.oMemRdDataLoad := mAXI4LiteLSU.io.oRdData
-
+        // --------------------------------------------------------------------
         val mAXI4LiteArbiter = Module(new AXI4LiteArbiter)
         mAXI4LiteArbiter.io.iState   := io.iState
         mAXI4LiteArbiter.io.pAXI4IFU <> mAXI4LiteIFU.io.pAXI4
         mAXI4LiteArbiter.io.pAXI4LSU <> mAXI4LiteLSU.io.pAXI4
 
         // --------------------------------------------------------------------
+        io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oRdData
+        io.pLSU.oMemRdDataLoad := mAXI4LiteLSU.io.oRdData
+
         mMRU.io.iData := mAXI4LiteLSU.io.oRdData
     }
     else if (MEMS_TYP.equals("Embed")) {
