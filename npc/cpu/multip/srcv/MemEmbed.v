@@ -27,19 +27,23 @@ module MemEmbed(
     initial begin
         integer i;
         $readmemh("/home/myyerrol/Workspaces/oscc-cpu/mem.txt", r_mem);
-`ifdef VTRACE_MEMORY
+`ifdef VTRACE_MONITOR
+`ifdef VTRACE_MONITOR_MEMORY
         for (i = 0; i < `MEMS_NUM; i++) begin
             $display("[vtrace] mem[%d]: %x", i, r_mem[i]);
         end
+`endif
 `endif
     end
 
     always @(*) begin
 `ifdef VTRACE_MONITOR
+`ifdef VTRACE_MONITOR_MEMORY
         $display("[vtrace] addr: %x, addr: %x, mem[addr]: %x",
                  pMem_iAddr,
                  w_phy_addr,
                  r_mem[w_phy_addr]);
+`endif
 `endif
     end
 

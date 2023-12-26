@@ -41,7 +41,7 @@ module AXI4LiteM(
     always @(posedge iClock) begin
 `ifdef VTRACE_MONITOR
         $display("[vtrace] clock:      %d, reset:      %d", iClock, iReset);
-`ifdef VTRACE_AXI4_RD
+`ifdef VTRACE_MONITOR_AXI4_RD
         $display("[vtrace] ------------------------------------------------------");
         $display("[vtrace] state curr: %d, state next: %d", r_state_rd_curr,
                                                             r_state_rd_next);
@@ -55,7 +55,7 @@ module AXI4LiteM(
                  pAXI4_r_bits_data,
                  pAXI4_r_bits_resp);
 `endif
-`ifdef VTRACE_AXI4_WR
+`ifdef VTRACE_MONITOR_AXI4_WR
         $display("[vtrace] ------------------------------------------------------");
         $display("[vtrace] state curr: %d, state next: %d", r_state_wr_curr,
                                                             r_state_wr_next);
