@@ -121,8 +121,8 @@ module AXI4LiteM(
 
     //-------------------------------------------------------------------------
     assign oRdData             = (iReset) ? `DATA_WIDTH'b0 : r_rdata;
-    assign oRdResp             = `RESP_OKEY;
-    assign oWrResp             = `RESP_OKEY;
+    assign oRdResp             = pAXI4_r_bits_resp;
+    assign oWrResp             = pAXI4_b_bits_resp;
 
     assign pAXI4_ar_valid      = r_arvalid;
     assign pAXI4_ar_bits_addr  = r_araddr;

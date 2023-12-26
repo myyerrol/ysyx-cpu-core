@@ -7,9 +7,11 @@ import cpu.blackbox._
 import cpu.common._
 import cpu.port._
 
-class AXI4LiteSRAM2LSU extends Module with ConfigInst {
+class AXI4LiteSRAM extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val pAXI4 = Flipped(new AXI4LiteIO)
+        val iState = Input(UInt(SIGS_WIDTH.W))
+
+        val pAXI4  = Flipped(new AXI4LiteIO)
     })
 
     val mAXI4LiteS        = Module(new AXI4LiteS)
@@ -18,14 +20,20 @@ class AXI4LiteSRAM2LSU extends Module with ConfigInst {
     mAXI4LiteS.io.iClock  := clock
     mAXI4LiteS.io.iReset  := reset
     mAXI4LiteS.io.iMode   := DontCare
-    mAXI4LiteS.io.iRdData := mMemDPIDirectTime.io.oMemRdDataLoad
+    mAXI4LiteS.io.iRdData := Mux(io.iState === STATE_IF,
+                                 mMemDPIDirectTime.io.oMemRdDataInst,
+                                 mMemDPIDirectTime.io.oMemRdDataLoad)
     mAXI4LiteS.io.iResp   := DontCare
 
     mMemDPIDirectTime.io.iClock         := clock
     mMemDPIDirectTime.io.iReset         := reset
     mMemDPIDirectTime.io.iMemRdEn       := io.pAXI4.ar.valid && io.pAXI4.ar.ready
-    mMemDPIDirectTime.io.iMemRdAddrInst := DontCare
-    mMemDPIDirectTime.io.iMemRdAddrLoad := mAXI4LiteS.io.oRdAddr
+    mMemDPIDirectTime.io.iMemRdAddrInst := Mux(io.iState === STATE_IF,
+                                               mAXI4LiteS.io.oRdAddr,
+                                               DontCare)
+    mMemDPIDirectTime.io.iMemRdAddrLoad := Mux(io.iState === STATE_LS,
+                                               mAXI4LiteS.io.oRdAddr,
+                                               DontCare)
     mMemDPIDirectTime.io.iMemWrEn       := io.pAXI4.w.valid && io.pAXI4.w.ready
     mMemDPIDirectTime.io.iMemWrAddr     := mAXI4LiteS.io.oWrAddr
     mMemDPIDirectTime.io.iMemWrData     := mAXI4LiteS.io.oWrData

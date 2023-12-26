@@ -61,11 +61,11 @@ module AXI4LiteS(
     assign pAXI4_ar_ready    = r_arready;
     assign pAXI4_r_valid     = r_rvalid;
     assign pAXI4_r_bits_data = iRdData;
-    assign pAXI4_r_bits_resp = iResp;
+    assign pAXI4_r_bits_resp = `AXI4_RESP_OKEY;
     assign pAXI4_aw_ready    = r_awready;
     assign pAXI4_w_ready     = r_wready;
     assign pAXI4_b_valid     = r_bvalid;
-    assign pAXI4_b_bits_resp = iResp;
+    assign pAXI4_b_bits_resp = `AXI4_RESP_OKEY;
 
     assign w_rd_addr_handshake = pAXI4_ar_valid && pAXI4_ar_ready;
     assign w_rd_data_handshake = pAXI4_r_valid  && pAXI4_r_ready;

@@ -23,11 +23,11 @@
 `define MEM_BYT_4_U 10'd3
 `define MEM_BYT_8_U 10'd4
 
-`define RESP_OKEY   2'd0
-`define RESP_EXOKAY 2'd1
-`define RESP_SLVEER 2'd2
-`define RESP_DECEER 2'd3
+`define AXI4_RESP_OKEY   2'd0
+`define AXI4_RESP_EXOKAY 2'd1
+`define AXI4_RESP_SLVEER 2'd2
+`define AXI4_RESP_DECEER 2'd3
 
-`define MODE_RD 2'd0
-`define MODE_WR 2'd1
-`define MODE_RW 2'd2
+`define AXI4_MODE_RD 2'd0
+`define AXI4_MODE_WR 2'd1
+`define AXI4_MODE_RW 2'd2

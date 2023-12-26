@@ -79,6 +79,7 @@ class Top extends Module with ConfigInst {
     mLSU.io.iPC        := mIFU.io.pIFU.oPC
     mLSU.io.iALUOut    := mEXU.io.pEXU.oALUOut
     mLSU.io.iMemWrData := mEXU.io.pEXU.oMemWrData
+    mLSU.io.iState     := mIDU.io.pCTR.oStateCurr
 
     mWBU.io.iInstName := mIDU.io.pCTR.oInstName
     mWBU.io.iMemByt   := mIDU.io.pCTR.oMemByt

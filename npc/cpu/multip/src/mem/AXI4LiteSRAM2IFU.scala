@@ -17,7 +17,7 @@ class AXI4LiteSRAM2IFU extends Module with ConfigInst {
 
     mAXI4LiteS.io.iClock  := clock
     mAXI4LiteS.io.iReset  := reset
-    mAXI4LiteS.io.iMode   := MODE_RD
+    mAXI4LiteS.io.iMode   := DontCare
     mAXI4LiteS.io.iRdData := mMemDPIDirectTime.io.oMemRdDataInst
     mAXI4LiteS.io.iResp   := DontCare
     mAXI4LiteS.io.oWrData := DontCare
@@ -28,7 +28,7 @@ class AXI4LiteSRAM2IFU extends Module with ConfigInst {
     mMemDPIDirectTime.io.iMemRdEn       := io.pAXI4.ar.valid && io.pAXI4.ar.ready
     mMemDPIDirectTime.io.iMemRdAddrInst := mAXI4LiteS.io.oRdAddr
     mMemDPIDirectTime.io.iMemRdAddrLoad := DontCare
-    mMemDPIDirectTime.io.iMemWrEn       := false.B
+    mMemDPIDirectTime.io.iMemWrEn       := DontCare
     mMemDPIDirectTime.io.iMemWrAddr     := DontCare
     mMemDPIDirectTime.io.iMemWrData     := DontCare
     mMemDPIDirectTime.io.iMemWrLen      := DontCare

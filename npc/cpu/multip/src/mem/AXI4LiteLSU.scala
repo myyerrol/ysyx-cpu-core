@@ -24,7 +24,7 @@ class AXI4LiteLSU extends Module with ConfigInst {
     val mAXI4LiteM = Module(new AXI4LiteM)
     mAXI4LiteM.io.iClock   := clock;
     mAXI4LiteM.io.iReset   := reset;
-    mAXI4LiteM.io.iMode    := MODE_RD
+    mAXI4LiteM.io.iMode    := DontCare
     mAXI4LiteM.io.iRdValid := io.iRdValid
     mAXI4LiteM.io.iRdAddr  := io.iRdAddr
     mAXI4LiteM.io.iWrValid := io.iWrValid

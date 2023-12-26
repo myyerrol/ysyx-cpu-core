@@ -8,10 +8,10 @@ import cpu.port._
 
 class CTR extends Module with ConfigInstPattern {
     val io = IO(new Bundle {
-        val iPC    = Input(UInt(DATA_WIDTH.W))
-        val iInst  = Input(UInt(INST_WIDTH.W))
+        val iPC   = Input(UInt(DATA_WIDTH.W))
+        val iInst = Input(UInt(INST_WIDTH.W))
 
-        val pCTR   = new CTRIO
+        val pCTR  = new CTRIO
     })
 
     var lInst = ListLookup(
@@ -425,11 +425,9 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_SH ||
                        wInstName === INST_NAME_SW ||
                        wInstName === INST_NAME_SD) {
-                // rStateCurr := STATE_IF
-                wPCWrEn    := EN_TRUE
-                wPCWrSrc   := PC_WR_SRC_NEXT
-                // wMemWrEn   := EN_TRUE
-                wMemByt    := MuxLookup(
+                wPCWrEn := EN_TRUE
+                wPCWrSrc:= PC_WR_SRC_NEXT
+                wMemByt := MuxLookup(
                     wInstName,
                     MEM_BYT_X,
                     Seq(
@@ -439,7 +437,7 @@ class CTR extends Module with ConfigInstPattern {
                         INST_NAME_SD -> MEM_BYT_8_U
                     )
                 )
-                wALURS2    := ALU_RS2_GPR
+                wALURS2 := ALU_RS2_GPR
 
                 if (MEMS_TYP.equals("DPIAXI4Lite")) {
                     when (mCountLSUWr.value === 3.U) {

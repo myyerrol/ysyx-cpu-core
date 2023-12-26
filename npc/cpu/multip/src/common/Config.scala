@@ -26,12 +26,12 @@ trait ConfigInst extends ConfigIO {
     val EN_TRUE  = true.B
     val EN_FALSE = false.B
 
-    val STATE_RS = 0.U
-    val STATE_IF = 1.U
-    val STATE_ID = 2.U
-    val STATE_EX = 3.U
-    val STATE_LS = 4.U
-    val STATE_WB = 5.U
+    val STATE_RS = 0.U(SIGS_WIDTH.W)
+    val STATE_IF = 1.U(SIGS_WIDTH.W)
+    val STATE_ID = 2.U(SIGS_WIDTH.W)
+    val STATE_EX = 3.U(SIGS_WIDTH.W)
+    val STATE_LS = 4.U(SIGS_WIDTH.W)
+    val STATE_WB = 5.U(SIGS_WIDTH.W)
 
     val INST_NAME_X      =  0.U(SIGS_WIDTH.W)
     val INST_NAME_SLL    =  1.U(SIGS_WIDTH.W)
@@ -159,14 +159,14 @@ trait ConfigInst extends ConfigIO {
     val ALU_RS2_IMM_J = 6.U(SIGS_WIDTH.W)
     val ALU_RS2_4     = 7.U(SIGS_WIDTH.W)
 
-    val RESP_OKEY   = 0.U(RESP_WIDTH.W)
-    val RESP_EXOKAY = 1.U(RESP_WIDTH.W)
-    val RESP_SLVEER = 2.U(RESP_WIDTH.W)
-    val RESP_DECEER = 3.U(RESP_WIDTH.W)
+    val AXI4_RESP_OKEY   = 0.U(RESP_WIDTH.W)
+    val AXI4_RESP_EXOKAY = 1.U(RESP_WIDTH.W)
+    val AXI4_RESP_SLVEER = 2.U(RESP_WIDTH.W)
+    val AXI4_RESP_DECEER = 3.U(RESP_WIDTH.W)
 
-    val MODE_RD       = 0.U(MODE_WIDTH.W)
-    val MODE_WR       = 1.U(MODE_WIDTH.W)
-    val MODE_RW       = 2.U(MODE_WIDTH.W)
+    val AXI4_MODE_RD = 0.U(MODE_WIDTH.W)
+    val AXI4_MODE_WR = 1.U(MODE_WIDTH.W)
+    val AXI4_MODE_RW = 2.U(MODE_WIDTH.W)
 }
 
 trait ConfigInstPattern extends ConfigInst {

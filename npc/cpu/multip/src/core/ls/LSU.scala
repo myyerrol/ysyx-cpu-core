@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import cpu.blackbox._
+import cpu.bus._
 import cpu.common._
 import cpu.mem._
 import cpu.port._
@@ -18,6 +19,8 @@ class LSU extends Module with ConfigInst {
         val iPC            = Input(UInt(DATA_WIDTH.W))
         val iALUOut        = Input(UInt(DATA_WIDTH.W))
         val iMemWrData     = Input(UInt(DATA_WIDTH.W))
+
+        val iState         = Input(UInt(SIGS_WIDTH.W))
 
         val pLSU           = new LSUIO
     })
@@ -77,8 +80,8 @@ class LSU extends Module with ConfigInst {
                                      io.iMemRdSrc === MEM_RD_SRC_PC)
         mAXI4LiteIFU.io.iRdAddr  :=  io.iPC
 
-        val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
-        mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
+        // val mAXI4LiteSRAM2IFU = Module(new AXI4LiteSRAM2IFU)
+        // mAXI4LiteIFU.io.pAXI4 <> mAXI4LiteSRAM2IFU.io.pAXI4
 
         io.pLSU.oMemRdDataInst := mAXI4LiteIFU.io.oRdData
 
@@ -101,11 +104,17 @@ class LSU extends Module with ConfigInst {
             )
         )
 
-        val mAXI4LiteSRAM2LSU = Module(new AXI4LiteSRAM2LSU)
-        mAXI4LiteLSU.io.pAXI4 <> mAXI4LiteSRAM2LSU.io.pAXI4
+        // val mAXI4LiteSRAM2LSU = Module(new AXI4LiteSRAM2LSU)
+        // mAXI4LiteLSU.io.pAXI4 <> mAXI4LiteSRAM2LSU.io.pAXI4
 
         io.pLSU.oMemRdDataLoad := mAXI4LiteLSU.io.oRdData
 
+        val mAXI4LiteArbiter = Module(new AXI4LiteArbiter)
+        mAXI4LiteArbiter.io.iState   := io.iState
+        mAXI4LiteArbiter.io.pAXI4IFU <> mAXI4LiteIFU.io.pAXI4
+        mAXI4LiteArbiter.io.pAXI4LSU <> mAXI4LiteLSU.io.pAXI4
+
+        // --------------------------------------------------------------------
         mMRU.io.iData := mAXI4LiteLSU.io.oRdData
     }
     else if (MEMS_TYP.equals("Embed")) {
