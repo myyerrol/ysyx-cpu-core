@@ -87,21 +87,12 @@ class CTR extends Module with ConfigInstPattern {
 
     val wInstName = lInst(0)
 
+    val mCount      = Counter(2);
     val mCountIFU   = Counter(4);
-    val mCountLSURd = Counter(2);
-    val mCountLSUWr = Counter(2);
+    val mCountLSURd = Counter(4);
+    val mCountLSUWr = Counter(4);
 
     val rStateCurr = RegInit(STATE_IF)
-    // if (MEMS_TYP.equals("DPIDirect") ||
-    //     MEMS_TYP.equals("Embed")) {
-    //     rStateCurr := STATE_RS
-    // }
-    // else if (MEMS_TYP.equals("DPIAXI4Lite")) {
-    //     rStateCurr := STATE_IF
-    // }
-    // else {
-    //     rStateCurr := STATE_RS
-    // }
 
     val wPCWrEn    = WireInit(EN_FALSE)
     val wPCWrConEn = WireInit(EN_FALSE)
@@ -120,11 +111,6 @@ class CTR extends Module with ConfigInstPattern {
     val wALURS2    = WireInit(ALU_RS2_X)
 
     switch (rStateCurr) {
-        // is (STATE_RS) {
-        //     rStateCurr := STATE_IF
-        //     wMemRdEn   := EN_TRUE
-        //     wMemRdSrc  := MEM_RD_SRC_PC
-        // }
         is (STATE_IF) {
             wPCNextEn := EN_TRUE
             wMemRdSrc := MEM_RD_SRC_PC
@@ -137,18 +123,28 @@ class CTR extends Module with ConfigInstPattern {
                 when (mCountIFU.value === 3.U) {
                     mCountIFU.reset()
                     rStateCurr := STATE_ID
+                    wMemRdEn   := EN_FALSE
                 }
                 .otherwise {
                     when (mCountIFU.value === 0.U) {
                         wMemRdEn := EN_TRUE
+                    }
+                    .otherwise {
+                        wMemRdEn := EN_FALSE
                     }
                     mCountIFU.inc()
                     rStateCurr := STATE_IF
                 }
             }
             else {
-                rStateCurr := STATE_ID
-                wMemRdEn   := EN_TRUE
+                wMemRdEn := EN_TRUE
+                when (mCount.value === 0.U) {
+                    mCount.inc()
+                    rStateCurr := STATE_IF
+                }
+                .otherwise {
+                    rStateCurr := STATE_ID
+                }
             }
         }
         is (STATE_ID) {
@@ -404,15 +400,20 @@ class CTR extends Module with ConfigInstPattern {
                 wMemRdSrc := MEM_RD_SRC_ALU
 
                 if (MEMS_TYP.equals("DPIAXI4Lite")) {
-                    when (mCountLSURd.value === 1.U) {
+                    when (mCountLSURd.value === 3.U) {
                         mCountLSURd.reset()
                         rStateCurr := STATE_WB
                         wMemRdEn   := EN_FALSE
                     }
                     .otherwise {
+                        when (mCountLSURd.value === 0.U) {
+                            wMemRdEn := EN_TRUE
+                        }
+                        .otherwise {
+                            wMemRdEn := EN_FALSE
+                        }
                         mCountLSURd.inc()
                         rStateCurr := STATE_LS
-                        wMemRdEn   := EN_TRUE
                     }
                 }
                 else {
@@ -424,8 +425,9 @@ class CTR extends Module with ConfigInstPattern {
                        wInstName === INST_NAME_SH ||
                        wInstName === INST_NAME_SW ||
                        wInstName === INST_NAME_SD) {
-                // wPCWrEn    := EN_TRUE
-                // wPCWrSrc   := PC_WR_SRC_NEXT
+                // rStateCurr := STATE_IF
+                wPCWrEn    := EN_TRUE
+                wPCWrSrc   := PC_WR_SRC_NEXT
                 // wMemWrEn   := EN_TRUE
                 wMemByt    := MuxLookup(
                     wInstName,
@@ -440,23 +442,23 @@ class CTR extends Module with ConfigInstPattern {
                 wALURS2    := ALU_RS2_GPR
 
                 if (MEMS_TYP.equals("DPIAXI4Lite")) {
-                    when (mCountLSUWr.value === 1.U) {
+                    when (mCountLSUWr.value === 3.U) {
                         mCountLSUWr.reset()
                         rStateCurr := STATE_IF
-                        wPCWrEn    := EN_TRUE
-                        wPCWrSrc   := PC_WR_SRC_NEXT
-                        wMemWrEn   := EN_FALSE
                     }
                     .otherwise {
+                        when (mCountLSUWr.value === 0.U) {
+                            wMemWrEn := EN_TRUE
+                        }
+                        .otherwise {
+                            wMemWrEn := EN_FALSE
+                        }
                         mCountLSUWr.inc()
                         rStateCurr := STATE_LS
-                        wMemWrEn   := EN_TRUE
                     }
                 }
                 else {
                     rStateCurr := STATE_IF
-                    wPCWrEn    := EN_TRUE
-                    wPCWrSrc   := PC_WR_SRC_NEXT
                     wMemWrEn   := EN_TRUE
                 }
             }

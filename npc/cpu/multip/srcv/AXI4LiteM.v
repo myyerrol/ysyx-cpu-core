@@ -82,9 +82,9 @@ module AXI4LiteM(
     parameter P_STATE_RD_ADDR  = 'd1;
     parameter P_STATE_RD_DATA  = 'd2;
     parameter P_STATE_RD_END   = 'd3;
-
-    parameter P_STATE_WR_TRANS = 'd1;
-    parameter P_STATE_WR_END   = 'd2;
+    parameter P_STATE_WR_ADDR  = 'd1;
+    parameter P_STATE_WR_DATA  = 'd2;
+    parameter P_STATE_WR_END   = 'd3;
 
     reg [2 : 0] r_state_rd_curr;
     reg [2 : 0] r_state_rd_next;
@@ -92,8 +92,6 @@ module AXI4LiteM(
     reg [2 : 0] r_state_wr_next;
 
     //-------------------------------------------------------------------------
-    wire                       w_arvalid;
-    wire [`ADDR_WIDTH - 1 : 0] w_araddr;
     wire                       w_awvalid;
     wire [`ADDR_WIDTH - 1 : 0] w_awaddr;
     wire [`DATA_WIDTH - 1 : 0] w_wdata;
@@ -111,8 +109,11 @@ module AXI4LiteM(
 
     //-------------------------------------------------------------------------
     reg                       r_arvalid;
+    reg [`ADDR_WIDTH - 1 : 0] r_araddr;
     reg                       r_rready;
     reg [`DATA_WIDTH - 1 : 0] r_rdata;
+    reg                       r_awvalid;
+    reg [`ADDR_WIDTH - 1 : 0] r_awaddr;
     reg                       r_wvalid;
     reg [`DATA_WIDTH - 1 : 0] r_wdata;
     reg [`MASK_WIDTH - 1 : 0] r_wstrb;
@@ -123,20 +124,16 @@ module AXI4LiteM(
     assign oRdResp             = `RESP_OKEY;
     assign oWrResp             = `RESP_OKEY;
 
-    // assign pAXI4_ar_valid      = w_arvalid;
     assign pAXI4_ar_valid      = r_arvalid;
-    assign pAXI4_ar_bits_addr  = w_araddr;
+    assign pAXI4_ar_bits_addr  = r_araddr;
     assign pAXI4_r_ready       = r_rready;
-    assign pAXI4_aw_valid      = w_awvalid;
-    assign pAXI4_aw_bits_addr  = w_awaddr;
+    assign pAXI4_aw_valid      = r_awvalid;
+    assign pAXI4_aw_bits_addr  = r_awaddr;
     assign pAXI4_w_valid       = r_wvalid;
     assign pAXI4_w_bits_data   = w_wdata;
     assign pAXI4_w_bits_strb   = w_wstrb;
     assign pAXI4_b_ready       = 1'b1;
 
-    // assign w_arvalid           = iRdValid;
-    assign w_araddr            = (iReset) ? `ADDR_WIDTH'b0 : iRdAddr;
-    assign w_awvalid           = iWrValid;
     assign w_awaddr            = (iReset) ? `ADDR_WIDTH'b0 : iWrAddr;
     assign w_wdata             = (iReset) ? `DATA_WIDTH'b0 : iWrData;
     assign w_wstrb             = (iReset) ? `MASK_WIDTH'b0 : iWrMask;
@@ -169,6 +166,18 @@ module AXI4LiteM(
 
     always @(posedge iClock) begin
         if (iReset) begin
+            r_araddr <= `ADDR_WIDTH'b0;
+        end
+        else if (w_rd_start) begin
+            r_araddr <= iRdAddr;
+        end
+        else begin
+            r_araddr <= r_araddr;
+        end
+    end
+
+    always @(posedge iClock) begin
+        if (iReset) begin
             r_rready <= 1'b0;
         end
         else if (w_rd_addr_handshake) begin
@@ -196,6 +205,33 @@ module AXI4LiteM(
 
     always @(posedge iClock) begin
         if (iReset) begin
+            r_awvalid <= 1'b0;
+        end
+        else if (w_wr_start) begin
+            r_awvalid <= 1'b1;
+        end
+        else if (w_wr_addr_handshake) begin
+            r_awvalid <= 1'b0;
+        end
+        else begin
+            r_awvalid <= r_awvalid;
+        end
+    end
+
+    always @(posedge iClock) begin
+        if (iReset) begin
+            r_awaddr <= `ADDR_WIDTH'b0;
+        end
+        else if (w_wr_start) begin
+            r_awaddr <= iWrAddr;
+        end
+        else begin
+            r_awaddr <= r_awaddr;
+        end
+    end
+
+    always @(posedge iClock) begin
+        if (iReset) begin
             r_wvalid <= 1'b0;
         end
         else if (w_wr_addr_handshake) begin
@@ -210,75 +246,75 @@ module AXI4LiteM(
     end
 
     //-------------------------------------------------------------------------
-    always @(posedge iClock) begin
-        if (iReset) begin
-            r_state_rd_curr <= P_STATE_IDLE;
-        end
-        else begin
-            r_state_rd_curr <= r_state_rd_next;
-        end
-    end
+    // always @(posedge iClock) begin
+    //     if (iReset) begin
+    //         r_state_rd_curr <= P_STATE_IDLE;
+    //     end
+    //     else begin
+    //         r_state_rd_curr <= r_state_rd_next;
+    //     end
+    // end
 
-    always @(*) begin
-        case (r_state_rd_curr)
-            P_STATE_IDLE: begin
-                if (w_rd_start) begin
-                    r_state_rd_next = P_STATE_RD_ADDR;
-                end
-                else begin
-                    r_state_rd_next = P_STATE_IDLE;
-                end
-            end
-            P_STATE_RD_ADDR: begin
-                r_state_rd_next = P_STATE_RD_DATA;
-            end
-            P_STATE_RD_DATA: begin
-                if (w_rd_last) begin
-                    r_state_rd_next = P_STATE_IDLE;
-                end
-                else begin
-                    r_state_rd_next = P_STATE_RD_DATA;
-                end
-            end
-            default: begin
-                r_state_rd_next = P_STATE_IDLE;
-            end
-        endcase
-    end
+    // always @(*) begin
+    //     case (r_state_rd_curr)
+    //         P_STATE_IDLE: begin
+    //             if (w_rd_start) begin
+    //                 r_state_rd_next = P_STATE_RD_ADDR;
+    //             end
+    //             else begin
+    //                 r_state_rd_next = P_STATE_IDLE;
+    //             end
+    //         end
+    //         P_STATE_RD_ADDR: begin
+    //             r_state_rd_next = P_STATE_RD_DATA;
+    //         end
+    //         P_STATE_RD_DATA: begin
+    //             if (w_rd_last) begin
+    //                 r_state_rd_next = P_STATE_IDLE;
+    //             end
+    //             else begin
+    //                 r_state_rd_next = P_STATE_RD_DATA;
+    //             end
+    //         end
+    //         default: begin
+    //             r_state_rd_next = P_STATE_IDLE;
+    //         end
+    //     endcase
+    // end
 
-    always @(posedge iClock) begin
-        if (iReset) begin
-            r_state_wr_curr <= P_STATE_IDLE;
-        end
-        else begin
-            r_state_wr_curr <= r_state_wr_next;
-        end
-    end
+    // always @(posedge iClock) begin
+    //     if (iReset) begin
+    //         r_state_wr_curr <= P_STATE_IDLE;
+    //     end
+    //     else begin
+    //         r_state_wr_curr <= r_state_wr_next;
+    //     end
+    // end
 
-    always @(*) begin
-        case (r_state_wr_curr)
-            P_STATE_IDLE: begin
-                if (w_wr_start) begin
-                    r_state_wr_next = P_STATE_WR_TRANS;
-                end
-                else begin
-                    r_state_wr_next = P_STATE_IDLE;
-                end
-            end
-            P_STATE_WR_TRANS: begin
-                if (w_wr_last) begin
-                    r_state_wr_next = P_STATE_WR_END;
-                end
-                else begin
-                    r_state_wr_next = P_STATE_WR_TRANS;
-                end
-            end
-            P_STATE_WR_END: begin
-                r_state_wr_next = P_STATE_IDLE;
-            end
-            default: begin
-                r_state_wr_next = P_STATE_IDLE;
-            end
-        endcase
-    end
+    // always @(*) begin
+    //     case (r_state_wr_curr)
+    //         P_STATE_IDLE: begin
+    //             if (w_wr_start) begin
+    //                 r_state_wr_next = P_STATE_WR_ADDR;
+    //             end
+    //             else begin
+    //                 r_state_wr_next = P_STATE_IDLE;
+    //             end
+    //         end
+    //         P_STATE_WR_ADDR: begin
+    //             r_state_wr_next = P_STATE_WR_DATA;
+    //         end
+    //         P_STATE_WR_DATA: begin
+    //             if (w_wr_last) begin
+    //                 r_state_wr_next = P_STATE_IDLE;
+    //             end
+    //             else begin
+    //                 r_state_wr_next = P_STATE_WR_DATA;
+    //             end
+    //         end
+    //         default: begin
+    //             r_state_wr_next = P_STATE_IDLE;
+    //         end
+    //     endcase
+    // end
 endmodule

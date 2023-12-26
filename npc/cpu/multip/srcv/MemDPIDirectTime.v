@@ -37,4 +37,22 @@ module MemDPIDirectTime(
         end
     end
 
+    always @(posedge iClock) begin
+        if (iReset) begin
+            oMemRdDataLoad <= `DATA_WIDTH'b0;
+        end
+        else if (iMemRdEn) begin
+            oMemRdDataLoad <= readMemData(iMemRdAddrLoad, 8);
+        end
+        else begin
+            oMemRdDataLoad <= oMemRdDataLoad;
+        end
+    end
+
+    always @(posedge iClock) begin
+        if (iMemWrEn) begin
+            writeMemData(iMemWrAddr, iMemWrData, iMemWrLen);
+        end
+    end
+
 endmodule

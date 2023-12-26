@@ -33,10 +33,10 @@ void printfDebugITrace() {
     itrace_head = itrace;
     while (*itrace_head != NULL && itrace_head != itrace_tail) {
         if (itrace_head == itrace_curr) {
-            printf("[itrace] ----> %s\n", *itrace_head);
+            LOG_BRIEF("[itrace] ----> %s", *itrace_head);
         }
         else {
-            printf("[itrace]       %s\n", *itrace_head);
+            LOG_BRIEF("[itrace]       %s", *itrace_head);
         }
         char *itrace_temp = *itrace_head;
         free(itrace_temp);
@@ -50,17 +50,17 @@ void printfDebugMTrace(char *type,
                        word_t data,
                        word_t len) {
     if (strcmp(type, "process") == 0) {
-        printf("[mtrace] addr: " FMT_WORD " data: " FMT_WORD " %s\n", addr,
-                                                                      data,
-                                                                      dir);
+        LOG_BRIEF("[mtrace] addr: " FMT_WORD " data: " FMT_WORD " %s", addr,
+                                                                       data,
+                                                                       dir);
     }
     else if (strcmp(type, "result") == 0) {
         word_t addr_base = (addr != 0) ? addr : CONFIG_MBASE;
         for (word_t i = 0; i < len; i++) {
             addr = addr_base + i * 4;
             data = readPhyMemData(addr, 8);
-            printf("[mtrace] addr: " FMT_WORD " data: " FMT_WORD "\n", addr,
-                                                                       data);
+            LOG_BRIEF("[mtrace] addr: " FMT_WORD " data: " FMT_WORD, addr,
+                                                                     data);
         }
     }
 }
@@ -73,35 +73,35 @@ static char **inst_func_name_head = inst_func_name_arr;
 static char  *func_name_arr[ARR_LEN];
 
 static int judgeDebugFTraceIsELF64(FILE *fp) {
-  char buf[16];
-  int  nread = fread(buf, 1, 16, fp);
-  fseek(fp, 0, SEEK_SET);
-  // 如果读到的数据小于16位则不是ELF64格式文件
-  if (nread < 16) {
-    return 0;
-  }
-  // 如果前4个字符存在不同则不是ELF64格式文件
-  if (strncmp(buf, ELFMAG, SELFMAG)) {
-    return 0;
-  }
-  // 如果缓存数据与标准不等则不是ELF64格式文件
-  if (buf[EI_CLASS] != ELFCLASS64) {
-    return 0;
-  }
+    char buf[16];
+    int  nread = fread(buf, 1, 16, fp);
+    fseek(fp, 0, SEEK_SET);
+    // 如果读到的数据小于16位则不是ELF64格式文件
+    if (nread < 16) {
+        return 0;
+    }
+    // 如果前4个字符存在不同则不是ELF64格式文件
+    if (strncmp(buf, ELFMAG, SELFMAG)) {
+        return 0;
+    }
+    // 如果缓存数据与标准不等则不是ELF64格式文件
+    if (buf[EI_CLASS] != ELFCLASS64) {
+        return 0;
+    }
 
-  return 1;
+    return 1;
 }
 
 static char *getDebugFTraceFunc(Elf64_Addr addr) {
-  Elf64_Addr offset = addr - CONFIG_MBASE;
-  ASSERT(offset < ARR_LEN, "[trace] out of bounds: %ld", offset);
-  if (func_name_arr[offset] != NULL) {
-    return func_name_arr[offset];
-  }
-  else {
-    return (char *)"";
-  }
-}
+    Elf64_Addr offset = addr - CONFIG_MBASE;
+    ASSERT(offset < ARR_LEN, "[trace] out of bounds: %ld", offset);
+    if (func_name_arr[offset] != NULL) {
+        return func_name_arr[offset];
+    }
+    else {
+        return (char *)"";
+    }
+    }
 
 static void initDebugFTrace(char *elf_file) {
     if (elf_file != NULL) {

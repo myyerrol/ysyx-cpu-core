@@ -46,7 +46,7 @@ extern "C" uint64_tt readMemData(uint64_tt addr, uint8_t len) {
         data = (uint64_tt)readPhyMemData(addr, len);
     }
     else {
-        return data;
+        data = 0;
     }
 #ifdef CONFIG_MTRACE_COND_PROCESS
     printfDebugMTrace((char *)"process", (char *)"rd mem", addr, data, 0);
