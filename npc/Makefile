@@ -39,7 +39,8 @@ VERILATOR_CFLAGS += -MMD --build -cc \
 
 INC_PATH += $(NPC_HOME)/emu/include \
             $(NPC_HOME)/emu/include/generated
-INCFLAGS = $(addprefix -I, $(INC_PATH))
+INCFLAGS =  $(addprefix -I, $(INC_PATH))
+INCS     =  $(shell find $(INC_PATH) -name "*.h")
 
 CFLAGS_BUILD += $(call REMOVE_QUOTE,$(CONFIG_CC_OPT))
 CFLAGS_BUILD += $(if $(CONFIG_CC_LTO),-flto,)
@@ -90,7 +91,7 @@ $(SRCVS_PROJECT_GEN): $(SRCSS_PROJECT)
 	cd cpu && \
 	mkdir -p $(BUILD_DIR_PROJECT) && \
 	mill -i $(PROJECT_TEMP).test.runMain TopMain -td $(BUILD_DIR_PROJECT)
-$(BIN_PROJECT): $(SRCS) $(CONFIG)
+$(BIN_PROJECT): $(INCS) $(SRCS) $(CONFIG)
 	@rm -rf $(OBJ_DIR_PROJECT)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 	--top-module $(TOPNAME) $(SRCS) \
@@ -100,14 +101,14 @@ $(BIN_PROJECT): $(SRCS) $(CONFIG)
 	$(abspath $(BIN_PROJECT))
 
 ifdef CONFIG_DIFFTEST
-    ARGS_DIFF = --diff=$(NEMU_HOME)/build/riscv64-nemu-interpreter-so
+    ARGS_EMBED_DIFF = --diff=$(NEMU_HOME)/build/riscv64-nemu-interpreter-so
 endif
 
-override ARGS ?= --log=$(BUILD_DIR)/npc-log.txt
-override ARGS += $(ARGS_DIFF)
+override ARGS_EMBED ?= --log=$(BUILD_DIR)/npc-log.txt
+override ARGS_EMBED += $(ARGS_EMBED_DIFF)
 
 IMG ?=
-NPC_EXEC := $(BIN_PROJECT) $(ARGS) $(IMG)
+NPC_EXEC := $(BIN_PROJECT) $(ARGS_EMBED) $(ARGS) $(IMG)
 
 .PHONY: test gen run gdb sim reformat checkformat clean
 
@@ -128,7 +129,7 @@ run: $(BIN_PROJECT)
 gdb: $(BIN_PROJECT)
 	$(call git_commit, "gdb NPC")
 	rm -rf $(BUILD_DIR_PROJECT)/wave.vcd
-	gdb -s $(BIN_PROJECT) --args $(NPC_EXEC)
+	gdb -s $(BIN_PROJECT) --ARGS_EMBED $(NPC_EXEC)
 
 sim: $(BIN_PROJECT)
 	$(call git_commit, "sim NPC")
