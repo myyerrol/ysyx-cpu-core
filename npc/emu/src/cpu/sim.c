@@ -123,30 +123,13 @@ uint64_t sim_pc   = 0;
 uint64_t sim_snpc = 0;
 uint64_t sim_dnpc = 0;
 uint64_t sim_inst = 0;
-uint64_t sim_cycle_num = 0;
+uint64_t sim_cycle_num = 1;
 
 void runCPUSimModule(bool *inst_end_flag) {
     if (!sim_ebreak) {
         sim_pc   = top->io_pIFU_oPC;
         sim_snpc = sim_pc + 4;
         sim_inst = top->io_pIFU_oInst;
-
-        runCPUSimModuleCycle();
-
-        sim_dnpc = top->io_pIFU_oPC;
-
-        sim_cycle_num++;
-
-#if CPU_SINGLE
-        *inst_end_flag = true;
-#else
-        if (top->io_pITrace_pCTR_oStateCurr == 2) {
-            *inst_end_flag = true;
-        }
-        else {
-            *inst_end_flag = false;
-        }
-#endif
 
 #ifdef CONFIG_ITRACE_COND_PROCESS
     LOG_BRIEF("[itrace]             cycle num:        %ld", sim_cycle_num);
@@ -223,14 +206,14 @@ void runCPUSimModule(bool *inst_end_flag) {
 
     char *state_curr = (char *)"";
     switch (top->io_pITrace_pCTR_oStateCurr) {
-        case 0:  state_curr = (char *)"RS"; break;
+        case 0:  state_curr = (char *)"X";  break;
         case 1:  state_curr = (char *)"IF"; break;
         case 2:  state_curr = (char *)"ID"; break;
         case 3:  state_curr = (char *)"EX"; break;
         case 4:  state_curr = (char *)"LS"; break;
         case 5:  state_curr = (char *)"WB"; break;
         case 6:  state_curr = (char *)"ME"; break;
-        default: state_curr = (char *)"RS"; break;
+        default: state_curr = (char *)"X"; break;
     }
     LOG_BRIEF("[itrace] [idu] [ctr] state curr:       %s", state_curr);
 
@@ -402,6 +385,25 @@ void runCPUSimModule(bool *inst_end_flag) {
     LOG_BRIEF();
 #endif
 
+        runCPUSimModuleCycle();
+
+        sim_dnpc = top->io_pIFU_oPC;
+        sim_cycle_num++;
+
+#if   CFLAGS_CPU_TYPE_SINGLE
+        *inst_end_flag = true;
+#elif CFLAGS_CPU_TYPE_MULTIP
+        if (top->io_pITrace_pCTR_oStateCurr == 2) {
+            *inst_end_flag = true;
+        }
+        else {
+            *inst_end_flag = false;
+        }
+#elif CFLAGS_CPU_TYPE_PIPELINE
+
+#endif
+
+
 #ifdef CONFIG_FTRACE
         bool inst_func_call = top->io_oInstCall;
         bool inst_func_ret  = top->io_oInstRet;
@@ -422,6 +424,7 @@ void runCPUSimModule(bool *inst_end_flag) {
     }
 
     if (sim_ebreak) {
+        sim_cycle_num--;
         setNPCState(NPC_END, sim_pc, top->io_oEndData);
     }
 }

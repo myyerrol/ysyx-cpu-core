@@ -156,8 +156,8 @@ static void printfMonitorWelcome() {
 
     LOG_BRIEF_COLOR("[monitor] [welcome] date: %s, %s", __TIME__, __DATE__);
 
-    LOG_BRIEF("Welcome to %s-NPC!", ANSI_FMT(str(__GUEST_ISA__),
-                                             ANSI_FG_YELLOW ANSI_BG_RED));
+    LOG_BRIEF("Welcome to %s-%s-NPC!", ANSI_FMT(str(CFLAGS_GUEST_ISA), ANSI_FG_YELLOW ANSI_BG_RED),
+                                       ANSI_FMT(str(CFLAGS_CPU_TYPE),  ANSI_FG_YELLOW ANSI_BG_RED));
     LOG_BRIEF("For help, type \"h\"");
 }
 
