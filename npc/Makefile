@@ -69,7 +69,7 @@ LDFLAGS += $(CFLAGS_BUILD)                \
 
 SRCSS_DIR           = $(abspath $(NPC_HOME)/cpu/src)
 SRCSS_SRC_BLACKLIST =
-SRCSS_DIR_BLACKLIST = $(addprefix $(SRCSS_DIR)/core/, $(CPU_BLACKLIST))
+SRCSS_DIR_BLACKLIST = $(addprefix $(SRCSS_DIR)/stage/, $(CPU_BLACKLIST))
 SRCSS_BLACKLIST     = $(SRCSS_SRC_BLACKLIST)                               \
                       $(shell find $(SRCSS_DIR_BLACKLIST) -name "*.scala")
 SRCSS_WHITELIST     = $(shell find $(SRCSS_DIR) -name "*.scala")

@@ -7,7 +7,7 @@ object TopMain extends App with Build {
     println("Generating the CPU hardware")
 
     if (CPU_TYPE.equals("single")) {
-        def top = new cpu.core.single.Top()
+        def top = new cpu.stage.single.Top()
         val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
         val useMFC = true
         if (useMFC) {
@@ -20,7 +20,7 @@ object TopMain extends App with Build {
         }
     }
     else if (CPU_TYPE.equals("multip")) {
-        def top = new cpu.core.multip.Top()
+        def top = new cpu.stage.multip.Top()
         val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
         val useMFC = true
         if (useMFC) {
@@ -33,7 +33,7 @@ object TopMain extends App with Build {
         }
     }
     else if (CPU_TYPE.equals("pipeline")) {
-        def top = new cpu.core.pipeline.Top()
+        def top = new cpu.stage.pipeline.Top()
         val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
         val useMFC = true
         if (useMFC) {
