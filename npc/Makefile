@@ -100,10 +100,17 @@ SRCS = $(SRCVS_GEN) $(SRCVS) $(SRCCS)
 
 CONFIG = $(NPC_HOME)/emu/.config
 
-BUILD = "package cpu.common\n\ntrait Build {\n    val CPU_TYPE = \"$(CPU)\"\n}"
+BUILD_PATH = $(SRCSS_DIR)/common/Build.scala
+BUILD_INFO = "package cpu.common\n\ntrait Build {\n    val CPU_TYPE = \"$(CPU)\"\n}"
+
+ifeq ($(shell cat $(BUILD_PATH) | grep $(CPU)),)
+    $(shell rm -rf out)
+    $(shell rm -rf cpu/build)
+    $(shell rm -rf cpu/test_run_dir)
+endif
 
 $(SRCVS_GEN): $(SRCSS)
-	echo $(BUILD) > $(NPC_HOME)/cpu/src/common/Build.scala && \
+	echo $(BUILD_INFO) > $(BUILD_PATH) && \
 	mkdir -p $(DIR_BUILD) &&                                  \
 	mill -i cpu.test.runMain TopMain -td $(DIR_BUILD)
 $(NPC_BIN): $(INCS) $(SRCS) $(CONFIG)
