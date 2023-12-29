@@ -100,16 +100,19 @@ SRCS = $(SRCVS_GEN) $(SRCVS) $(SRCCS)
 
 CONFIG = $(NPC_HOME)/emu/.config
 
+BUILD = "package cpu.common\n\ntrait Build {\n    val CPU_TYPE = \"$(CPU)\"\n}"
+
 $(SRCVS_GEN): $(SRCSS)
-	mkdir -p $(DIR_BUILD) &&                          \
+	echo $(BUILD) > $(NPC_HOME)/cpu/src/common/Build.scala && \
+	mkdir -p $(DIR_BUILD) &&                                  \
 	mill -i cpu.test.runMain TopMain -td $(DIR_BUILD)
 $(NPC_BIN): $(INCS) $(SRCS) $(CONFIG)
 	@rm -rf $(DIR_OBJ)
-	$(VERILATOR) $(VERILATOR_CFLAGS)                  \
-	--top-module $(CFG_CFLAGS_TOP_NAME) $(SRCS)              \
-	$(addprefix -CFLAGS ,  $(CFLAGS))                 \
-	$(addprefix -LDFLAGS , $(LDFLAGS))                \
-	--Mdir $(DIR_OBJ) --exe -o                        \
+	$(VERILATOR) $(VERILATOR_CFLAGS)            \
+	--top-module $(CFG_CFLAGS_TOP_NAME) $(SRCS) \
+	$(addprefix -CFLAGS ,  $(CFLAGS))           \
+	$(addprefix -LDFLAGS , $(LDFLAGS))          \
+	--Mdir $(DIR_OBJ) --exe -o                  \
 	$(abspath $(NPC_BIN))
 
 ifdef CONFIG_DIFFTEST

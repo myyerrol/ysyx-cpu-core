@@ -1,4 +1,4 @@
-package cpu.core
+package cpu.core.multip
 
 import chisel3._
 import chisel3.util._

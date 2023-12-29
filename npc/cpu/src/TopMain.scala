@@ -1,18 +1,48 @@
+import chisel3._
 import circt.stage._
 
-// import cpu.core._
+import cpu.common._
 
-object TopMain extends App {
+object TopMain extends App with Build {
     println("Generating the CPU hardware")
-    def top = new cpu.core.Top()
-    val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
-    val useMFC = true
-    if (useMFC) {
-        (new ChiselStage).execute(
-            args,
-            generator :+ CIRCTTargetAnnotation(CIRCTTarget.Verilog))
+
+    if (CPU_TYPE.equals("single")) {
+        def top = new cpu.core.single.Top()
+        val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
+        val useMFC = true
+        if (useMFC) {
+            (new ChiselStage).execute(
+                args,
+                generator :+ CIRCTTargetAnnotation(CIRCTTarget.Verilog))
+        }
+        else {
+            (new chisel3.stage.ChiselStage).execute(args, generator)
+        }
     }
-    else {
-        (new chisel3.stage.ChiselStage).execute(args, generator)
+    else if (CPU_TYPE.equals("multip")) {
+        def top = new cpu.core.multip.Top()
+        val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
+        val useMFC = true
+        if (useMFC) {
+            (new ChiselStage).execute(
+                args,
+                generator :+ CIRCTTargetAnnotation(CIRCTTarget.Verilog))
+        }
+        else {
+            (new chisel3.stage.ChiselStage).execute(args, generator)
+        }
+    }
+    else if (CPU_TYPE.equals("pipeline")) {
+        def top = new cpu.core.pipeline.Top()
+        val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
+        val useMFC = true
+        if (useMFC) {
+            (new ChiselStage).execute(
+                args,
+                generator :+ CIRCTTargetAnnotation(CIRCTTarget.Verilog))
+        }
+        else {
+            (new chisel3.stage.ChiselStage).execute(args, generator)
+        }
     }
 }
