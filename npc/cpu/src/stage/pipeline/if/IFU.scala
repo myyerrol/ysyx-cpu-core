@@ -4,14 +4,27 @@ import chisel3._
 import chisel3.util._
 
 import cpu.common._
+import cpu.port._
 
 class IFU extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val ifio = new IFIO
+        val iJmpEn = Input(Bool())
+        val iJmpPC = Input(UInt(ADDR_WIDTH.W))
+        val iInst  = Input(UInt(INST_WIDTH.W))
+
+        val pIFU   = new IFUIO
     })
 
-    protected val pc     = RegInit(ADDR_INIT)
-    protected val pcNext = pc + 4.U
+    val rPC = RegInit(ADDR_INIT)
+    val wPCNext = MuxCase(
+        rPC + 4.U(ADDR_WIDTH.W),
+        Seq(
+            (io.iJmpEn === true.B) -> io.iJmpPC
+        )
+    )
 
-    io.ifio.pc := pcNext
+    rPC := wNPC
+
+    io.pIFU.oPC   := rPC
+    io.pIFU.oInst := io.iInst
 }
