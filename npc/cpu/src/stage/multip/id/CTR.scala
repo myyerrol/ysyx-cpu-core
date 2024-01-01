@@ -85,16 +85,15 @@ class CTR extends Module with ConfigInstPattern {
         )
     )
 
-    val wInstName = lInst(0)
-
     val mCountIFU   = Counter(4);
     val mCountLSURd = Counter(4);
     val mCountLSUWr = Counter(4);
 
+    val wInstName = lInst(0)
+
     val rStateCurr = RegInit(STATE_IF)
 
     val wPCWrEn    = WireInit(EN_FL)
-    val wPCWrConEn = WireInit(EN_FL)
     val wPCWrSrc   = WireInit(PC_WR_SRC_X)
     val wPCNextEn  = WireInit(EN_FL)
     val wPCJumpEn  = WireInit(EN_FL)

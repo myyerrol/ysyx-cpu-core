@@ -106,7 +106,8 @@ class IDU extends Module with ConfigInstPattern {
             DIVW   -> List(INST_NAME_DIVW,   ALU_TYPE_DIVW,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             DIVUW  -> List(INST_NAME_DIVUW,  ALU_TYPE_DIVUW, ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             REMU   -> List(INST_NAME_REMU,   ALU_TYPE_REMU,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
-            REMW   -> List(INST_NAME_REMW,   ALU_TYPE_REMW,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU))
+            REMW   -> List(INST_NAME_REMW,   ALU_TYPE_REMW,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU)
+        )
     )
     val wInstName = lInst(0)
     val wALUType  = lInst(1)

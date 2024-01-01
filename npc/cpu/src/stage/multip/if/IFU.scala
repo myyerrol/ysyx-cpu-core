@@ -3,7 +3,6 @@ package cpu.stage.multip
 import chisel3._
 import chisel3.util._
 
-import cpu.blackbox._
 import cpu.common._
 import cpu.port._
 
@@ -12,8 +11,6 @@ class IFU extends Module with ConfigInst {
         val iInstName = Input(UInt(SIGS_WIDTH.W))
         val iPCWrEn   = Input(Bool())
         val iPCWrSrc  = Input(UInt(SIGS_WIDTH.W))
-        val iMemRdEn  = Input(UInt(SIGS_WIDTH.W))
-        val iMemRdSrc = Input(UInt(SIGS_WIDTH.W))
         val iIRWrEn   = Input(Bool())
 
         val iPCNext   = Input(UInt(ADDR_WIDTH.W))

@@ -37,6 +37,7 @@ class IDU extends Module with ConfigInst {
     mGPR.io.iWrData  := io.iGPRWrData
 
     io.pGPR          <> mGPR.io.pGPR
+
     io.pIDU.oRS1Addr := wRS1Addr
     io.pIDU.oRS2Addr := wRS2Addr
     io.pIDU.oRDAddr  := wRDAddr
