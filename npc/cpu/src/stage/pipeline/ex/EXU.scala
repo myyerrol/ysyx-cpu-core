@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import cpu.common._
+import cpu.module._
 import cpu.port._
 
 class EXU extends Module with ConfigInst {
@@ -47,9 +48,9 @@ class EXU extends Module with ConfigInst {
     mALU.io.iRS1Data := wRS1Data
     mALU.io.iRS2Data := wRS2Data
 
-    io.pEXU.oPCNext    := rPCNext
-    io.pEXU.oPCJump    := rPCJump
+    io.pEXU.oPCNext    := DontCare
+    io.pEXU.oPCJump    := DontCare
     io.pEXU.oALUZero   := mALU.io.oZero
-    io.pEXU.oALUOut    := mALUOut.io.oData
+    io.pEXU.oALUOut    := mALU.io.oOut
     io.pEXU.oMemWrData := wRS2Data
 }

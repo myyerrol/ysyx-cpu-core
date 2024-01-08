@@ -22,10 +22,10 @@ class IFU extends Module with ConfigInst {
     })
 
     val rPC  = RegInit(ADDR_INIT)
-    val wNPC = WireInit(ADDR_INIT)
+    val wPCNext = WireInit(ADDR_INIT)
 
     when (io.iPCWrSrc === PC_WR_SRC_NEXT) {
-        wNPC := io.iPCNext
+        wPCNext := io.iPCNext
     }
     .elsewhen (io.iPCWrSrc === PC_WR_SRC_JUMP) {
         when (io.iInstName === INST_NAME_BEQ  ||
@@ -34,15 +34,15 @@ class IFU extends Module with ConfigInst {
               io.iInstName === INST_NAME_BGE  ||
               io.iInstName === INST_NAME_BLTU ||
               io.iInstName === INST_NAME_BGEU) {
-            wNPC := Mux(io.iALUZero === 1.U, io.iPCJump, io.iPCNext)
+            wPCNext := Mux(io.iALUZero === 1.U, io.iPCJump, io.iPCNext)
         }
         .otherwise {
-            wNPC := io.iPCJump
+            wPCNext := io.iPCJump
         }
     }
 
     when (io.iPCWrEn) {
-        rPC         := wNPC
+        rPC         := wPCNext
         io.pIFU.oPC := rPC
     }
     .otherwise {

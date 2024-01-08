@@ -1,4 +1,4 @@
-package cpu.stage.multip
+package cpu.module
 
 import chisel3._
 import chisel3.util._

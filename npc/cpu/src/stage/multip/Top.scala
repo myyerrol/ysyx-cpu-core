@@ -52,8 +52,6 @@ class Top extends Module with ConfigInst {
     mIFU.io.iInstName := mIDU.io.pCTR.oInstName
     mIFU.io.iPCWrEn   := mIDU.io.pCTR.oPCWrEn
     mIFU.io.iPCWrSrc  := mIDU.io.pCTR.oPCWrSrc
-    mIFU.io.iMemRdEn  := mIDU.io.pCTR.oMemRdEn
-    mIFU.io.iMemRdSrc := mIDU.io.pCTR.oMemRdSrc
     mIFU.io.iIRWrEn   := mIDU.io.pCTR.oIRWrEn
     mIFU.io.iPCNext   := mEXU.io.pEXU.oPCNext
     mIFU.io.iPCJump   := mEXU.io.pEXU.oPCJump

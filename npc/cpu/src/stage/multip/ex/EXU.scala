@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import cpu.common._
+import cpu.module._
 import cpu.port._
 
 class EXU extends Module with ConfigInst {

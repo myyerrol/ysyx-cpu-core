@@ -1,4 +1,4 @@
-CPU      ?=
+CPU      ?= x
 CPU_LIST := single pipeline multip
 
 ifeq ($(filter $(CPU_LIST), $(CPU)),)
@@ -110,8 +110,8 @@ ifeq ($(shell cat $(BUILD_PATH) | grep $(CPU)),)
 endif
 
 $(SRCVS_GEN): $(SRCSS)
-	echo $(BUILD_INFO) > $(BUILD_PATH) && \
-	mkdir -p $(DIR_BUILD) &&                                  \
+	echo $(BUILD_INFO) > $(BUILD_PATH) &&             \
+	mkdir -p $(DIR_BUILD) &&                          \
 	mill -i cpu.test.runMain TopMain -td $(DIR_BUILD)
 $(NPC_BIN): $(INCS) $(SRCS) $(CONFIG)
 	@rm -rf $(DIR_OBJ)

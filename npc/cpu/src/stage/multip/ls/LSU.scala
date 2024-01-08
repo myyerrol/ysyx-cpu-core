@@ -11,18 +11,18 @@ import cpu.port._
 
 class LSU extends Module with ConfigInst {
     val io = IO(new Bundle {
-        val iMemRdEn       = Input(Bool())
-        val iMemRdSrc      = Input(UInt(SIGS_WIDTH.W))
-        val iMemWrEn       = Input(Bool())
-        val iMemByt        = Input(UInt(SIGS_WIDTH.W))
+        val iMemRdEn   = Input(Bool())
+        val iMemRdSrc  = Input(UInt(SIGS_WIDTH.W))
+        val iMemWrEn   = Input(Bool())
+        val iMemByt    = Input(UInt(SIGS_WIDTH.W))
 
-        val iPC            = Input(UInt(ADDR_WIDTH.W))
-        val iALUOut        = Input(UInt(DATA_WIDTH.W))
-        val iMemWrData     = Input(UInt(DATA_WIDTH.W))
+        val iPC        = Input(UInt(ADDR_WIDTH.W))
+        val iALUOut    = Input(UInt(DATA_WIDTH.W))
+        val iMemWrData = Input(UInt(DATA_WIDTH.W))
 
-        val iState         = Input(UInt(SIGS_WIDTH.W))
+        val iState     = Input(UInt(SIGS_WIDTH.W))
 
-        val pLSU           = new LSUIO
+        val pLSU       = new LSUIO
     })
 
     io.pLSU.oMemRdEn       := io.iMemRdEn

@@ -23,7 +23,7 @@ class IFU extends Module with ConfigInst {
         )
     )
 
-    rPC := wNPC
+    rPC := wPCNext
 
     io.pIFU.oPC   := rPC
     io.pIFU.oInst := io.iInst
