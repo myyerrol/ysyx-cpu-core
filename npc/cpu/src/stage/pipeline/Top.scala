@@ -14,6 +14,11 @@ class Top extends Module with ConfigInst {
         val pIFU     = new IFUIO
         val pGPR     = new GPRIO
         val pITrace  = new ITraceIO
+
+        val oPC1 = Output(UInt(ADDR_WIDTH.W))
+        val oPC2 = Output(UInt(ADDR_WIDTH.W))
+        val oPC3 = Output(UInt(ADDR_WIDTH.W))
+        val oPC4 = Output(UInt(ADDR_WIDTH.W))
     });
 
     val mSysDPIDirect = Module(new SysDPIDirect)
@@ -29,11 +34,23 @@ class Top extends Module with ConfigInst {
     val mEXU2LSU = Module(new EXU2LSU)
     val mLSU2WBU = Module(new LSU2WBU)
 
+    io.oPC1 := mIFU2IDU.io.pRegPipe.oPC
+    io.oPC2 := mIDU2EXU.io.pRegPipe.oPC
+    io.oPC3 := mEXU2LSU.io.pRegPipe.oPC
+    io.oPC4 := mLSU2WBU.io.pRegPipe.oPC
+
     io.oEndData := 0.U
 
-    io.pIFU    <> DontCare
-    io.pGPR    <> DontCare
-    io.pITrace <> DontCare
+    io.pIFU.oPC   := mIFU.io.pIFU.oPC
+    io.pIFU.oInst := mLSU.io.pLSU.oMemRdDataInst
+
+    io.pGPR <> mIDU.io.pGPR
+
+    io.pITrace.pCTR <> mIDU.io.pCTR
+    io.pITrace.pIDU <> mIDU.io.pIDU
+    io.pITrace.pEXU <> mEXU.io.pEXU
+    io.pITrace.pLSU <> mLSU.io.pLSU
+    io.pITrace.pWBU <> mWBU.io.pWBU
 
     mIFU.io.iJmpEn := false.B
     mIFU.io.iJmpPC := ADDR_INIT
@@ -94,7 +111,7 @@ class Top extends Module with ConfigInst {
     mLSU.io.iMemRdEn   := true.B
     mLSU.io.iMemWrEn   := mEXU2LSU.io.pCTR.oMemWrEn
     mLSU.io.iMemByt    := mEXU2LSU.io.pCTR.oMemByt
-    mLSU.io.iPC        := mEXU2LSU.io.pRegPipe.oPC
+    mLSU.io.iPC        := mIFU.io.pIFU.oPC
     mLSU.io.iALUOut    := mEXU2LSU.io.pEXU.oALUOut
     mLSU.io.iMemWrData := mEXU2LSU.io.pEXU.oMemWrData
 
