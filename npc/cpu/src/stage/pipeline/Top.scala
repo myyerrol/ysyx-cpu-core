@@ -14,11 +14,6 @@ class Top extends Module with ConfigInst {
         val pIFU     = new IFUIO
         val pGPR     = new GPRIO
         val pITrace  = new ITraceIO
-
-        val oPC1 = Output(UInt(ADDR_WIDTH.W))
-        val oPC2 = Output(UInt(ADDR_WIDTH.W))
-        val oPC3 = Output(UInt(ADDR_WIDTH.W))
-        val oPC4 = Output(UInt(ADDR_WIDTH.W))
     });
 
     val mSysDPIDirect = Module(new SysDPIDirect)
@@ -33,11 +28,6 @@ class Top extends Module with ConfigInst {
     val mIDU2EXU = Module(new IDU2EXU)
     val mEXU2LSU = Module(new EXU2LSU)
     val mLSU2WBU = Module(new LSU2WBU)
-
-    io.oPC1 := mIFU2IDU.io.pRegPipe.oPC
-    io.oPC2 := mIDU2EXU.io.pRegPipe.oPC
-    io.oPC3 := mEXU2LSU.io.pRegPipe.oPC
-    io.oPC4 := mLSU2WBU.io.pRegPipe.oPC
 
     io.oEndData := 0.U
 

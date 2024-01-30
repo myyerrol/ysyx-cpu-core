@@ -13,15 +13,6 @@
 typedef unsigned int       uint32_tt;
 typedef unsigned long long uint64_tt;
 
-typedef struct {
-    uint64_t  pc;
-    char inst [256];
-    char stage[256];
-} PipeStruct;
-
-PipeStruct pipe_arr[64];
-int pipe_cnt = 0;
-
 bool sim_ebreak = false;
 
 extern "C" void judgeIsEbreak(uint8_t inst_end_flag) {
@@ -134,9 +125,6 @@ uint64_t sim_dnpc = 0;
 uint64_t sim_inst = 0;
 uint64_t sim_cycle_num = 1;
 
-
-uint64_t io_oPC1_last = 0;
-
 void runCPUSimModule(bool *inst_end_flag) {
     if (!sim_ebreak) {
         sim_pc   = top->io_pIFU_oPC;
@@ -145,45 +133,6 @@ void runCPUSimModule(bool *inst_end_flag) {
 
 #ifdef CONFIG_ITRACE_COND_PROCESS
     LOG_BRIEF("[itrace] cycle num: %ld", sim_cycle_num);
-
-    LOG_BRIEF("[itrace] PC1: " FMT_WORD, top->io_oPC1);
-    LOG_BRIEF("[itrace] PC2: " FMT_WORD, top->io_oPC2);
-    LOG_BRIEF("[itrace] PC3: " FMT_WORD, top->io_oPC3);
-    LOG_BRIEF("[itrace] PC4: " FMT_WORD, top->io_oPC4);
-
-    if (top->io_oPC1 == 0 || (top->io_oPC1 != io_oPC1_last)) {
-        pipe_arr[pipe_cnt].pc = top->io_pIFU_oPC;
-        strcpy(pipe_arr[pipe_cnt].inst,  "X");
-        strcpy(pipe_arr[pipe_cnt].stage, "IF");
-        pipe_cnt++;
-        io_oPC1_last = top->io_oPC1;
-    }
-
-    for (int i = 0; i < 32; i++) {
-        PipeStruct pipe = pipe_arr[i];
-        if (pipe.pc != 0) {
-            if (pipe.pc == top->io_oPC1) {
-                strcat(pipe_arr[i].stage, "  ID");
-            }
-            else if (pipe.pc == top->io_oPC2) {
-                strcat(pipe_arr[i].stage, "  EX");
-            }
-            else if (pipe.pc == top->io_oPC3) {
-                strcat(pipe_arr[i].stage, "  LS");
-            }
-            else if (pipe.pc == top->io_oPC4) {
-                strcat(pipe_arr[i].stage, "  WB");
-            }
-            else {
-                if (pipe_cnt == 5) {
-                    pipe_cnt = 0;
-                }
-            }
-
-            LOG_BRIEF("pipe_arr[%d]: %lx, %s, %s", i, pipe_arr[i].pc, pipe_arr[i].inst, pipe_arr[i].stage);
-        }
-    }
-
 
     // char *inst_name = (char *)"";
     // switch (top->io_pITrace_pCTR_oInstName) {
@@ -250,24 +199,6 @@ void runCPUSimModule(bool *inst_end_flag) {
     //     default: inst_name = (char *)"X";      break;
     // }
     // LOG_BRIEF("[itrace] %s ", inst_name);
-
-    // if (strcmp(inst_name, "X") == 0) {
-    //     strcpy(pipe_arr[pipe_cnt].inst,  "X");
-    //     strcpy(pipe_arr[pipe_cnt].stage, "IF");
-    //     pipe_cnt++;
-    // }
-    // else {
-
-    // }
-
-    // for (int i = 0; i < 32; i++) {
-    //     if (pipe_arr[i].inst[0] != '\0') {
-    //         printf("pipe_arr[%d]: %s    %s\n", i, pipe_arr[i].inst, pipe_arr[i].stage);
-    //     }
-    // }
-
-
-
 
     // LOG_BRIEF("[itrace]             cycle num:        %ld", sim_cycle_num);
     // LOG_BRIEF("[itrace] [ifu]       pc:               " FMT_WORD,
