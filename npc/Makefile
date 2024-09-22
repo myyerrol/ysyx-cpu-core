@@ -144,17 +144,14 @@ gen: $(SRCVS_GEN)
 	@echo "success"
 
 run: $(NPC_BIN)
-	$(call git_commit, "run NPC")
 	rm -rf $(DIR_BUILD)/wave.vcd
 	$(NPC_EXEC)
 
 gdb: $(NPC_BIN)
-	$(call git_commit, "gdb NPC")
 	rm -rf $(DIR_BUILD)/wave.vcd
 	gdb -s $(NPC_BIN) --ARGS_EMBED $(NPC_EXEC)
 
 sim: $(NPC_BIN)
-	$(call git_commit, "sim NPC")
 	gtkwave $(DIR_BUILD)/wave.vcd
 	@echo "success"
 
