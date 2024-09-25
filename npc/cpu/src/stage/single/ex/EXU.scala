@@ -75,12 +75,18 @@ class EXU extends Module with ConfigInst {
             (io.iALUType === ALU_TYPE_BLTU)  ->  (io.iALURS1Val < io.iALURS2Val),
             (io.iALUType === ALU_TYPE_BGEU)  ->  (io.iALURS1Val >= io.iALURS2Val),
             (io.iALUType === ALU_TYPE_JALR)  -> ((io.iALURS1Val + io.iALURS2Val) & wJalrMask),
-            (io.iALUType === ALU_TYPE_MUL)   ->  (io.iALURS1Val * io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_DIVU)  ->  (io.iALURS1Val / io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_DIVW)  ->  (io.iALURS1Val(31, 0).asSInt() / io.iALURS2Val(31, 0).asSInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_DIVUW) ->  (io.iALURS1Val(31, 0).asUInt() / io.iALURS2Val(31, 0).asUInt()).asUInt(),
-            (io.iALUType === ALU_TYPE_REMU)  ->  (io.iALURS1Val % io.iALURS2Val),
-            (io.iALUType === ALU_TYPE_REMW)  ->  (io.iALURS1Val(31, 0).asSInt() % io.iALURS2Val(31, 0).asSInt()).asUInt()
+            (io.iALUType === ALU_TYPE_MUL)   ->  (io.iALURS1Val * io.iALURS2Val)(63, 0),
+            (io.iALUType === ALU_TYPE_MULH)  ->  (io.iALURS1Val.asSInt() * io.iALURS2Val.asSInt())(127, 64),
+            (io.iALUType === ALU_TYPE_MULHSU) -> (io.iALURS1Val.asSInt() * io.iALURS2Val.asUInt())(127, 64),
+            (io.iALUType === ALU_TYPE_MULHU)  -> (io.iALURS1Val.asUInt() * io.iALURS2Val.asUInt())(127, 64),
+            (io.iALUType === ALU_TYPE_DIV)   ->  Mux(io.iALURS2Val === 0.U, -1.S(DATA_WIDTH.W).asUInt(), (io.iALURS1Val.asSInt() / io.iALURS2Val.asSInt())(63, 0)),
+            (io.iALUType === ALU_TYPE_DIVU)  ->  Mux(io.iALURS2Val === 0.U, -1.S(DATA_WIDTH.W).asUInt(), io.iALURS1Val / io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_DIVW)  ->  Mux(io.iALURS2Val === 0.U, -1.S(DATA_WIDTH.W).asUInt(), SignExten((io.iALURS1Val(31, 0).asSInt() / io.iALURS2Val(31, 0).asSInt()).asUInt(), 64)),
+            (io.iALUType === ALU_TYPE_DIVUW) ->  Mux(io.iALURS2Val === 0.U, -1.S(DATA_WIDTH.W).asUInt(), io.iALURS1Val(31, 0) / io.iALURS2Val(31, 0)),
+            (io.iALUType === ALU_TYPE_REM)   ->  Mux(io.iALURS2Val === 0.U, io.iALURS1Val, SignExten((io.iALURS1Val.asSInt() % io.iALURS2Val.asSInt())(31, 0), 64)),
+            (io.iALUType === ALU_TYPE_REMU)  ->  Mux(io.iALURS2Val === 0.U, io.iALURS1Val, io.iALURS1Val % io.iALURS2Val),
+            (io.iALUType === ALU_TYPE_REMW)  ->  Mux(io.iALURS2Val === 0.U, io.iALURS1Val, SignExten((io.iALURS1Val(31, 0).asSInt() % io.iALURS2Val(31, 0).asSInt()).asUInt(), 64)),
+            (io.iALUType === ALU_TYPE_REMUW) ->  Mux(io.iALURS2Val === 0.U, io.iALURS1Val, SignExten(io.iALURS1Val(31, 0) % io.iALURS2Val(31, 0), 64))
         )
     )
 
@@ -183,9 +189,13 @@ class EXU extends Module with ConfigInst {
                     (io.iMemByt === MEM_BYT_8_S) -> memRdDataByt8
                 )
             )
-            io.oGPRWrData := memRdData
+            io.oGPRWrData := Mux(io.iInstRDAddr === GPRS_ZERO,
+                                 DATA_ZERO,
+                                 memRdData)
         }.otherwise {
-            io.oGPRWrData := wGPRWrData
+            io.oGPRWrData := Mux(io.iInstRDAddr === GPRS_ZERO,
+                                 DATA_ZERO,
+                                 wGPRWrData)
         }
     }.otherwise {
         io.oGPRWrEn   := false.B

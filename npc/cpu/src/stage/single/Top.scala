@@ -56,8 +56,8 @@ class Top extends Module with ConfigInst {
     io.pITrace.pCTR.oGPRWrEn   := mIDU.io.oGPRWrEn
     io.pITrace.pCTR.oGPRWrSrc  := mIDU.io.oGPRWrSrc
     io.pITrace.pCTR.oALUType   := mIDU.io.oALUType
-    io.pITrace.pCTR.oALURS1    := DontCare
-    io.pITrace.pCTR.oALURS2    := DontCare
+    io.pITrace.pCTR.oALURS1    := mIDU.io.oALURS1
+    io.pITrace.pCTR.oALURS2    := mIDU.io.oALURS2
 
     io.pITrace.pIDU.oRS1Addr := mIDU.io.oInstRS1Addr
     io.pITrace.pIDU.oRS2Addr := mIDU.io.oInstRS2Addr

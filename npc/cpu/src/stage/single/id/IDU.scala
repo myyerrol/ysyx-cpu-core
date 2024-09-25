@@ -24,6 +24,8 @@ class IDU extends Module with ConfigInstPattern {
 
         val oInstName    = Output(UInt(SIGS_WIDTH.W))
         val oALUType     = Output(UInt(SIGS_WIDTH.W))
+        val oALURS1      = Output(UInt(SIGS_WIDTH.W))
+        val oALURS2      = Output(UInt(SIGS_WIDTH.W))
         val oALURS1Val   = Output(UInt(DATA_WIDTH.W))
         val oALURS2Val   = Output(UInt(DATA_WIDTH.W))
         val oJmpEn       = Output(Bool())
@@ -40,6 +42,7 @@ class IDU extends Module with ConfigInstPattern {
         Array(
             SLL    -> List(INST_NAME_SLL,    ALU_TYPE_SLL,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             SLLI   -> List(INST_NAME_SLLI,   ALU_TYPE_SLL,   ALU_RS1_GPR,  ALU_RS2_IMM_I, JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            SRL    -> List(INST_NAME_SRL,    ALU_TYPE_SRL,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             SRLI   -> List(INST_NAME_SRLI,   ALU_TYPE_SRL,   ALU_RS1_GPR,  ALU_RS2_IMM_I, JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             SRA    -> List(INST_NAME_SRA,    ALU_TYPE_SRA,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             SRAI   -> List(INST_NAME_SRAI,   ALU_TYPE_SRA,   ALU_RS1_GPR,  ALU_RS2_IMM_I, JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
@@ -67,6 +70,7 @@ class IDU extends Module with ConfigInstPattern {
             ANDI   -> List(INST_NAME_ANDI,   ALU_TYPE_AND,   ALU_RS1_GPR,  ALU_RS2_IMM_I, JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
 
             SLT    -> List(INST_NAME_SLT,    ALU_TYPE_SLT,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            SLTI   -> List(INST_NAME_SLTI,   ALU_TYPE_SLT,   ALU_RS1_GPR,  ALU_RS2_IMM_I, JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             SLTU   -> List(INST_NAME_SLTU,   ALU_TYPE_SLTU,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             SLTIU  -> List(INST_NAME_SLTIU,  ALU_TYPE_SLTU,  ALU_RS1_GPR,  ALU_RS2_IMM_I, JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
 
@@ -101,12 +105,18 @@ class IDU extends Module with ConfigInstPattern {
             MRET   -> List(INST_NAME_MRET,   ALU_TYPE_ADD,   ALU_RS1_X,    ALU_RS2_CSR,   JMP_TR, MEM_WR_FL, MEM_BYT_X,   GPR_WR_FL, GPR_WR_SRC_X),
 
             MUL    -> List(INST_NAME_MUL,    ALU_TYPE_MUL,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            MULH   -> List(INST_NAME_MULH,   ALU_TYPE_MULH,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            MULHSU -> List(INST_NAME_MULHSU, ALU_TYPE_MULHSU, ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            MULHU  -> List(INST_NAME_MULHU,  ALU_TYPE_MULHU,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             MULW   -> List(INST_NAME_MULW,   ALU_TYPE_MUL,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            DIV    -> List(INST_NAME_DIV,    ALU_TYPE_DIV,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             DIVU   -> List(INST_NAME_DIVU,   ALU_TYPE_DIVU,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             DIVW   -> List(INST_NAME_DIVW,   ALU_TYPE_DIVW,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             DIVUW  -> List(INST_NAME_DIVUW,  ALU_TYPE_DIVUW, ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            REM    -> List(INST_NAME_REM,    ALU_TYPE_REM,   ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
             REMU   -> List(INST_NAME_REMU,   ALU_TYPE_REMU,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
-            REMW   -> List(INST_NAME_REMW,   ALU_TYPE_REMW,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU)
+            REMW   -> List(INST_NAME_REMW,   ALU_TYPE_REMW,  ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
+            REMUW  -> List(INST_NAME_REMUW,  ALU_TYPE_REMUW, ALU_RS1_GPR,  ALU_RS2_GPR,   JMP_FL, MEM_WR_FL, MEM_BYT_X,   GPR_WR_TR, GPR_WR_SRC_ALU),
         )
     )
     val wInstName = lInst(0)
@@ -201,6 +211,8 @@ class IDU extends Module with ConfigInstPattern {
 
     io.oInstName   := wInstName
     io.oALUType    := wALUType
+    io.oALURS1     := wALURS1
+    io.oALURS2     := wALURS2
     io.oALURS1Val  := aluRS1Val
     io.oALURS2Val  := aluRS2Val
     io.oJmpEn      := wJmpEn
